@@ -1,0 +1,387 @@
+:root {
+    --mainRGB: 245, 245, 250;
+    --contentRGB: 10, 10, 10;
+    --interactiveRGB: 200, 15, 20;
+
+    --main: rgb(var(--mainRGB));
+    --main-9: rgba(var(--mainRGB), .9);
+    --main-8: rgba(var(--mainRGB), .8);
+    --main-7: rgba(var(--mainRGB), .7);
+    --main-6: rgba(var(--mainRGB), .6);
+    --main-5: rgba(var(--mainRGB), .5);
+    --main-4: rgba(var(--mainRGB), .4);
+    --main-3: rgba(var(--mainRGB), .3);
+    --main-2: rgba(var(--mainRGB), .2);
+    --main-1: rgba(var(--mainRGB), .1);
+    --content: rgb(var(--contentRGB));
+    --content-9: rgba(var(--contentRGB), .9);
+    --content-8: rgba(var(--contentRGB), .8);
+    --content-7: rgba(var(--contentRGB), .7);
+    --content-6: rgba(var(--contentRGB), .6);
+    --content-5: rgba(var(--contentRGB), .5);
+    --content-4: rgba(var(--contentRGB), .4);
+    --content-3: rgba(var(--contentRGB), .3);
+    --content-2: rgba(var(--contentRGB), .2);
+    --content-1: rgba(var(--contentRGB), .1);
+    --interactive: rgb(var(--interactiveRGB));
+    --interactive-9: rgba(var(--interactiveRGB), .9);
+    --interactive-8: rgba(var(--interactiveRGB), .8);
+    --interactive-7: rgba(var(--interactiveRGB), .7);
+    --interactive-6: rgba(var(--interactiveRGB), .6);
+    --interactive-5: rgba(var(--interactiveRGB), .5);
+    --interactive-4: rgba(var(--interactiveRGB), .4);
+    --interactive-3: rgba(var(--interactiveRGB), .3);
+    --interactive-2: rgba(var(--interactiveRGB), .2);
+    --interactive-1: rgba(var(--interactiveRGB), .1);
+}
+
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+*:focus-visible:not(input):not(textarea):not(select) {
+    outline: solid .25rem var(--interactive);
+    outline-offset: .35rem;
+    border-radius: 5px;
+}
+
+html,
+body,
+#app {
+    height: 100%;
+}
+
+html {
+    hanging-punctuation: first last;
+}
+
+body {
+    min-height: 100svh;
+    color: var(--content);
+    background-color: var(--main);
+    position: relative;
+
+    transition: background-color .5s, color .2s;
+}
+
+
+/* Common Elements */
+
+img,
+picture,
+svg,
+video {
+    max-width: 100%;
+    height: auto;
+    user-select: none;
+}
+
+ion-icon {
+    pointer-events: none;
+    font-size: 1.5em;
+    color: inherit;
+    visibility: visible;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    text-wrap: balance;
+}
+
+p,
+li {
+    max-width: 70ch;
+    text-wrap: pretty;
+}
+
+
+/* Pseudo-elements */
+
+::selection {
+    background-color: var(--interactive);
+    color: var(--main);
+}
+
+::placeholder {
+    color: var(--content-7);
+    opacity: 1;
+}
+
+textarea::-webkit-scrollbar {
+    width: .5rem;
+}
+
+textarea::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+textarea::-webkit-scrollbar-thumb {
+    background-color: var(--content);
+    border-radius: 2px;
+}
+
+.modernScrollbar::-webkit-scrollbar {
+    height: .3rem;
+}
+
+.modernScrollbar::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+.modernScrollbar::-webkit-scrollbar-thumb {
+    background-color: var(--content-3);
+    border-radius: 10px;
+}
+
+.modernScrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: var(--content-8);
+}
+
+.noScrollbar::-webkit-scrollbar {
+    height: 0;
+}
+
+.noScrollbar::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+.noScrollbar::-webkit-scrollbar-thumb {
+    background-color: transparent;
+}
+
+.noScrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: transparent;
+}
+
+
+/* Buttons and Links */
+
+button,
+input,
+input,
+textarea,
+a {
+    outline: none;
+    border: none;
+    background-color: transparent;
+    font-family: inherit;
+    color: inherit;
+    font-size: inherit;
+}
+
+select {
+    color: var(--content);
+    background-color: transparent;
+    -webkit-appearance: none;
+    appearance: none;
+    border: none;
+    font-size: 1rem;
+}
+
+a,
+button {
+    user-select: none;
+    cursor: pointer;
+}
+
+a {
+    text-decoration: none;
+}
+
+.button,
+.ghostButton,
+.baseButton,
+.link {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1ch;
+
+    width: fit-content;
+    height: fit-content;
+    padding: .325em .75em;
+
+    border-radius: 10px;
+
+    font-weight: 700;
+
+    transition: .2s all;
+}
+
+.button {
+    background-color: var(--interactive);
+}
+
+.button:hover,
+.button:focus-visible {
+    filter: brightness(120%);
+}
+
+[data-theme="light"] .button {
+    background-color: var(--interactive-9);
+    color: var(--main);
+}
+
+.ghostButton {
+    border: 2px solid var(--interactive);
+    background-color: var(--interactive-1);
+    box-shadow: 0 0 .5rem var(--content-2);
+}
+
+.ghostButton:hover,
+.ghostButton:focus-visible {
+    background-color: var(--interactive-3);
+}
+
+.baseButton {
+    background-color: transparent;
+}
+
+.baseButton:hover,
+.baseButton:focus-visible {
+    background-color: var(--content-1);
+}
+
+.baseButton.active {
+    background-color: var(--content-3);
+}
+
+.link {
+    position: relative;
+
+    padding: .3em 0;
+}
+
+.link::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+
+    width: 100%;
+    height: .25em;
+    border-radius: 4px;
+    background-color: var(--interactive);
+
+    transform: scaleX(0);
+    transform-origin: right;
+
+    transition: transform .2s ease-in-out;
+}
+
+.link:hover::before,
+.link:focus-visible::before,
+.link.active::before {
+    transform-origin: left;
+    transform: scaleX(1);
+}
+
+
+/* Articles */
+
+article {
+    margin-top: 3rem;
+    line-height: 1.8;
+    font-size: 1.2rem;
+}
+
+article h1 {
+    font-size: 2rem;
+    line-height: normal;
+    margin-bottom: 2rem;
+}
+
+article h2 {
+    font-size: 1.5rem;
+    line-height: normal;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+article p {
+    color: var(--content-9);
+    line-height: 1.8;
+}
+
+article ul {
+    margin: 2rem 0;
+}
+
+article section {
+    margin-bottom: 1.25rem;
+}
+
+article a {
+    margin: 5rem auto 2rem;
+    font-size: 1.15rem;
+    text-align: center;
+    min-width: 33%;
+}
+
+article li {
+    margin-top: 2ex;
+    margin-left: 1ch;
+    list-style-position: inside;
+    list-style-type: square;
+}
+
+article footer {
+    display: grid;
+    place-items: center;
+    margin-top: 4rem;
+}
+
+article footer p {
+    color: var(--content);
+    max-width: 60ch;
+    font-size: 1.15rem;
+    text-align: center;
+}
+
+
+/* Animations */
+
+@media (prefers-reduced-motion: no-preference) {
+    .scrollAppear {
+        opacity: 0;
+
+        animation: scrollAppear linear forwards;
+        animation-timeline: view(y);
+        animation-range: cover 25vh 50vh;
+    }
+
+    @keyframes scrollAppear {
+        to {
+            opacity: 1;
+        }
+    }
+
+    .scrollScale {
+        opacity: 0;
+        scale: .8;
+
+        animation: scrollScale linear forwards;
+        animation-timeline: view(y);
+        animation-range: cover 25vh 50vh;
+    }
+
+    @keyframes scrollScale {
+        to {
+            opacity: 1;
+            scale: 1;
+        }
+    }
+}
+
+.hide {
+    display: none !important;
+}
