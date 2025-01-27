@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { baseImageRoute, baseRoute, dictionary } from '../stores';
+	import { baseRoute, dictionary } from '../stores';
 
 	export let imageSrc: string;
 	export let imageAlt: string;
@@ -10,7 +10,7 @@
 </script>
 
 <a href="{baseRoute}/catalog/products/{href}" class="item">
-	<img src="{baseImageRoute}/{imageSrc}" alt={imageAlt} />
+	<img src={imageSrc} alt={imageAlt} />
 	<div class="details">
 		<h2>{name}</h2>
 		{#if oldPrice}

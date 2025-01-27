@@ -6,8 +6,7 @@
 		type CatalogCategory,
 		denormalizeCatalogCategory,
 	} from '../mockDb';
-	import { baseImageRoute, baseRoute, dictionary, language } from '../stores';
-	import ChangeLanguage from './changeLanguage.svelte';
+	import { baseImageRoute, baseRoute, dictionary, isAdmin, language, user } from '../stores';
 	import Logo from './logo.svelte';
 	import SNav from './sNav.svelte';
 	import { fade } from 'svelte/transition';
@@ -48,7 +47,7 @@
 			<ion-icon name="menu-outline" />
 		</button>
 
-		<a class="x" href={baseRoute} aria-label={$dictionary.homepage}>
+		<a class="x" href="{baseRoute}/" aria-label={$dictionary.homepage}>
 			{#key isCatalogMenuVisible}
 				<Logo version={isCatalogMenuVisible ? 'dark' : 'light'} />
 			{/key}
@@ -82,9 +81,16 @@
 				class:active={$page.url.pathname === `${baseRoute}/our-work`}
 				href="{baseRoute}/our-work">{$dictionary.ourWork}</a
 			> -->
+			{#if $isAdmin}
+				<a
+					class="link"
+					class:active={$page.url.pathname.includes(`${baseRoute}/admin`)}
+					href="{baseRoute}/admin">{$dictionary.admin}</a
+				>
+			{/if}
 		</section>
 
-		<a class="s" href={baseRoute} aria-label={$dictionary.homepage}>
+		<a class="s" href="{baseRoute}/" aria-label={$dictionary.homepage}>
 			<Logo />
 		</a>
 	</div>

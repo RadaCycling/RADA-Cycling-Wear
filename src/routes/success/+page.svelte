@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { baseImageRoute, baseRoute, cartItems, dictionary } from '../stores';
+	import { baseRoute, cartItems, dictionary, productsStore } from '../stores';
 	import { denormalizeCartItems } from '../mockDb';
 	import { onMount } from 'svelte';
 
@@ -7,7 +7,9 @@
 	function getCartImages() {
 		try {
 			if ($cartItems.length > 0) {
-				cartImages = denormalizeCartItems($cartItems).map((item) => item.imageSrc);
+				cartImages = denormalizeCartItems($cartItems, $productsStore).map(
+					(item) => item.imageSrc,
+				);
 
 				$cartItems = [];
 			}
@@ -26,10 +28,10 @@
 <div class="success-page">
 	<h1>{$dictionary.thankYouForYourPurchase}</h1>
 	<p>{$dictionary.orderPlacedMessage}</p>
-	<a href={baseRoute} class="button">{$dictionary.returnToHome}</a>
+	<a href="{baseRoute}/" class="button">{$dictionary.returnToHome}</a>
 	<div class="cartImages">
 		{#each cartImages as image}
-			<img src="{baseImageRoute}/{image}" alt={$dictionary.cartItemPurchased} />
+			<img src={image} alt={$dictionary.cartItemPurchased} />
 		{/each}
 	</div>
 </div>

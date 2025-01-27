@@ -2,10 +2,10 @@
 	import { onMount } from 'svelte';
 	import { scale } from 'svelte/transition';
 	import { baseImageRoute, language } from '../stores';
-	import type { craftItem } from '../mockDb';
+	import type { PortfolioItem } from '../mockDb';
 
 	export let close: () => void;
-	export let selectedImage: craftItem;
+	export let selectedImage: PortfolioItem;
 
 	// Close modal on Escape key press
 	const handleKeydown = (event: KeyboardEvent) => {

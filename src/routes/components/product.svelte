@@ -1,18 +1,18 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { baseImageRoute, baseRoute, dictionary, language } from '../stores';
+	import { baseRoute, dictionary, language, productsStore } from '../stores';
 	import { findProductsByIds, type Product, type translatableContent } from '../mockDb';
 
 	export let product: Product;
 
 	let name: translatableContent = product.name;
 	let imageSrc: string = product.imageSources[0];
-	let imageHoverSource: string | undefined = product.imageHoverSource;
+	let imageHoverSource: string | null = product.imageHoverSource;
 	let imageAlt: translatableContent = product.imageAlt;
 	let price: string = product.price;
-	let oldPrice: string | undefined = product.oldPrice;
+	let oldPrice: string | null = product.oldPrice;
 	let versions: Product[] | undefined = product.versionsIds
-		? findProductsByIds(product.versionsIds)
+		? findProductsByIds(product.versionsIds, $productsStore)
 		: undefined;
 	let href: string = product.href;
 
@@ -81,12 +81,7 @@
 
 <div class="product">
 	<a href="{baseRoute}/catalog/products/{href}" aria-label={name[$language]}>
-		<img
-			bind:this={img}
-			class="mainImage"
-			src="{baseImageRoute}/{imageSrc}"
-			alt={imageAlt[$language]}
-		/>
+		<img bind:this={img} class="mainImage" src={imageSrc} alt={imageAlt[$language]} />
 		{#if oldPrice}
 			<p class="discount hide">{calculateDiscount(oldPrice, price)} {$dictionary.discount}</p>
 		{/if}
@@ -116,11 +111,7 @@
 					class:current={currentVersionSrc === item.imageSources[0]}
 					on:click={() => changeVersion(item)}
 				>
-					<img
-						width="50px"
-						src="{baseImageRoute}/{item.imageSources[0]}"
-						alt={item.imageAlt[$language]}
-					/>
+					<img width="50px" src={item.imageSources[0]} alt={item.imageAlt[$language]} />
 				</button>
 			{/each}
 		</div>

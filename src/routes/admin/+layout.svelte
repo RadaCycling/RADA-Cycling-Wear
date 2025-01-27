@@ -5,7 +5,7 @@
 </script>
 
 <div class="admin-layout">
-	<aside class="sidebar">
+	<aside class="sidebar hide">
 		<nav>
 			<ul>
 				<li>
@@ -50,9 +50,6 @@
 						href="{baseRoute}/admin/messages">Messages</a
 					>
 				</li>
-			</ul>
-			<ul>
-				<li><button class="baseButton">Log out</button></li>
 			</ul>
 		</nav>
 	</aside>
@@ -108,7 +105,7 @@
 	}
 
 	.content {
-		margin-top: 3rem;
+		/* margin-top: 3rem; */
 		padding: 2rem 2rem 4rem;
 	}
 </style>

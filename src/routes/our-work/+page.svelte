@@ -2,13 +2,13 @@
 	import { fade } from 'svelte/transition';
 	import WorkPost from '../components/workPost.svelte';
 	import { baseImageRoute, dictionary, language } from '../stores';
-	import { crafts, type craftItem } from '../mockDb';
+	import { portfolio, type PortfolioItem } from '../mockDb';
 
-	let images = crafts;
+	let images = portfolio;
 
-	let selectedImage: craftItem | null = null;
+	let selectedImage: PortfolioItem | null = null;
 
-	function selectImage(image: craftItem | null): void {
+	function selectImage(image: PortfolioItem | null): void {
 		selectedImage = image;
 	}
 </script>

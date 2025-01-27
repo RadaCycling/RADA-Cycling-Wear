@@ -1,12 +1,6 @@
 <script lang="ts">
 	import { fade, scale } from 'svelte/transition';
-	import {
-		baseImageRoute,
-		dictionary,
-		type CartItem,
-		cartItems,
-		language,
-	} from '../../../stores';
+	import { dictionary, type CartItem, cartItems, language, productsStore } from '../../../stores';
 	import Products from '../../../components/products.svelte';
 	import Review from '../../../components/review.svelte';
 	import {
@@ -103,10 +97,12 @@
 		sizeId = undefined;
 		sizeName = undefined;
 
-		product = findProductByHref($page.params.productName);
+		product = findProductByHref($page.params.productName, $productsStore);
 
 		if (product) {
-			versions = product.versionsIds ? findProductsByIds(product.versionsIds) : undefined;
+			versions = product.versionsIds
+				? findProductsByIds(product.versionsIds, $productsStore)
+				: undefined;
 			sizeOptions = allSizeOptions.filter((option) =>
 				product?.categoryIds.includes(option.id),
 			);
@@ -118,7 +114,7 @@
 			averageRating = calculateAverageRating(productReviews) || '-';
 			reviewCount = productReviews.length;
 
-			similarProducts = findSimilarProducts(product, 8);
+			similarProducts = findSimilarProducts(product, 8, $productsStore);
 
 			checkIfProductIsInCart();
 		}
@@ -192,7 +188,7 @@
 							>
 								<img
 									width="50px"
-									src="{baseImageRoute}/{item.imageSources[0]}"
+									src={item.imageSources[0]}
 									alt={item.imageAlt[$language]}
 								/>
 							</a>

@@ -545,7 +545,9 @@ export type Product = {
     description: translatableContent,
     details: TableEntry[],
     imageSources: string[],
+    dbImageSources: string[],
     imageHoverSource: string | null,
+    dbImageHoverSource: string | null,
     imageAlt: translatableContent,
     price: string,
     oldPrice: string | null,
@@ -553,6 +555,7 @@ export type Product = {
     versionsIds: string[] | null,
     href: string,
     categoryIds: number[]
+    unitsInStock: number
 }
 
 type TableEntry = {
@@ -560,225 +563,7 @@ type TableEntry = {
     value: translatableContent;
 };
 
-export let products: Record<string, Product> = {
-    "menjersey": {
-        id: "menjersey",
-        name: { en: "Men's Jersey", es: "Camiseta Para Hombres" },
-        status: true,
-        categoryIds: [0, 1, 3, 7, 8, 10, 11, 12, 13, 16, 17, 18, 19, 20, 21],
-        description: {
-            en: `
-                Our Jersey is designed to sit close to the skin, made with a lightweight performance fabric that wicks away moisture, provides added sun protection, breathability, and improved comfort and support.
-                <ul style="margin-top: 10px; list-style-position: inside;">
-                    <li>High compression silicon waist band ensures it stays in place during performance</li>
-                    <li>High stretch and high compression silicon arm gripper</li>
-                    <li>Gusseted rear pockets that expand to carry snacks and tools</li>
-                    <li>Rear water-resistant storage pocket</li>
-                    <li>Concealed zipper</li>
-                </ul>
-            `,
-            es: `
-                Nuestra camiseta está diseñada para ajustarse cerca de la piel, fabricada con un tejido de rendimiento ligero que absorbe la humedad, proporciona protección solar adicional, transpirabilidad y mayor comodidad y soporte.
-                <ul style="margin-top: 10px; list-style-position: inside;">
-                    <li>La banda de cintura de silicona de alta compresión asegura que se mantenga en su lugar durante la actividad</li>
-                    <li>Agarre de brazo de alta elasticidad y alta compresión</li>
-                    <li>Bolsillos traseros con fuelle que se expanden para llevar bocadillos y herramientas</li>
-                    <li>Bolsillo trasero impermeable</li>
-                    <li>Cremallera oculta</li>
-                </ul>
-            `
-        },
-        details: [
-            { label: { en: 'Material', es: 'Material' }, value: { en: 'High-Quality, Breathable Polyester', es: 'Poliéster transpirable de alta calidad' } },
-            { label: { en: 'Color', es: 'Color' }, value: { en: 'Vibrant Red', es: 'Rojo vibrante' } },
-            { label: { en: 'Size Availability', es: 'Disponibilidad de tallas' }, value: { en: 'XS, S, M, L, XL, XXL', es: 'XS, S, M, L, XL, XXL' } },
-            { label: { en: 'Fit Type', es: 'Tipo de ajuste' }, value: { en: 'Ergonomic, Race Fit', es: 'Ajuste ergonómico, de competición' } },
-            { label: { en: 'Features', es: 'Características' }, value: { en: 'Quick-Dry, UV Protection, Anti-Sweat', es: 'Secado rápido, protección UV, anti-sudor' } },
-            { label: { en: 'Warranty', es: 'Garantía' }, value: { en: "1 Year Manufacturer's Warranty", es: "Garantía de 1 año del fabricante" } },
-            { label: { en: 'Care Instructions', es: 'Instrucciones de cuidado' }, value: { en: 'Machine Washable, Do Not Iron', es: 'Lavable a máquina, no planchar' } },
-        ],
-        imageSources: ["Resources/jersey_men_1.jpeg", "Resources/jersey_men_2.jpeg", "Resources/jersey_men_3.jpeg", "Resources/jersey_men_4.jpeg", "Resources/jersey_men_5.jpeg"],
-        imageHoverSource: "Resources/jersey_men_2.jpeg",
-        imageAlt: { en: "Red Jersey 2024", es: "Camiseta Roja 2024" },
-        price: "$89.99",
-        oldPrice: null,
-        mainVersion: true,
-        versionsIds: null,
-        href: "men-jersey",
-    },
-    "womenjersey": {
-        id: "womenjersey",
-        name: { en: "Women's Jersey", es: "Camiseta Para Mujeres" },
-        status: true,
-        categoryIds: [0, 1, 3, 8, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21],
-        description: {
-            en: `
-                Our Jersey is designed to sit close to the skin, made with a lightweight performance fabric that wicks away moisture, provides added sun protection, breathability, and improved comfort and support.
-                <ul style="margin-top: 10px; list-style-position: inside;">
-                    <li>High compression silicon waist band ensures it stays in place during performance</li>
-                    <li>High stretch and high compression silicon arm gripper</li>
-                    <li>Gusseted rear pockets that expand to carry snacks and tools</li>
-                    <li>Rear water-resistant storage pocket</li>
-                    <li>Concealed zipper</li>
-                </ul>
-            `,
-            es: `
-                Nuestra camiseta está diseñada para ajustarse cerca de la piel, fabricada con un tejido de rendimiento ligero que absorbe la humedad, proporciona protección solar adicional, transpirabilidad y mayor comodidad y soporte.
-                <ul style="margin-top: 10px; list-style-position: inside;">
-                    <li>La banda de cintura de silicona de alta compresión asegura que se mantenga en su lugar durante la actividad</li>
-                    <li>Agarre de brazo de alta elasticidad y alta compresión</li>
-                    <li>Bolsillos traseros con fuelle que se expanden para llevar bocadillos y herramientas</li>
-                    <li>Bolsillo trasero impermeable</li>
-                    <li>Cremallera oculta</li>
-                </ul>
-            `
-        },
-        details: [
-            { label: { en: 'Material', es: 'Material' }, value: { en: 'High-Quality, Breathable Polyester', es: 'Poliéster transpirable de alta calidad' } },
-            { label: { en: 'Color', es: 'Color' }, value: { en: 'Vibrant Blue', es: 'Azul vibrante' } },
-            { label: { en: 'Size Availability', es: 'Disponibilidad de tallas' }, value: { en: 'XS, S, M, L, XL, XXL', es: 'XS, S, M, L, XL, XXL' } },
-            { label: { en: 'Fit Type', es: 'Tipo de ajuste' }, value: { en: 'Ergonomic, Race Fit', es: 'Ajuste ergonómico, de competición' } },
-            { label: { en: 'Features', es: 'Características' }, value: { en: 'Quick-Dry, UV Protection, Anti-Sweat', es: 'Secado rápido, protección UV, anti-sudor' } },
-            { label: { en: 'Warranty', es: 'Garantía' }, value: { en: "1 Year Manufacturer's Warranty", es: "Garantía de 1 año del fabricante" } },
-            { label: { en: 'Care Instructions', es: 'Instrucciones de cuidado' }, value: { en: 'Machine Washable, Do Not Iron', es: 'Lavable a máquina, no planchar' } },
-        ],
-        imageSources: ["Resources/jersey_women_1.jpeg", "Resources/jersey_women_2.jpeg", "Resources/jersey_women_3.jpeg", "Resources/jersey_women_4.jpeg"],
-        imageHoverSource: "Resources/jersey_women_2.jpeg",
-        imageAlt: { en: "View Blue Jersey 2024", es: "Ver Camiseta Azul 2024" },
-        price: "$89.99",
-        oldPrice: null,
-        mainVersion: true,
-        versionsIds: null,
-        href: "women-jersey",
-    },
-    "menbib": {
-        id: "menbib",
-        name: { en: "Men's Bib", es: "Pantalón de Ciclismo Para Hombres" },
-        status: true,
-        categoryIds: [2, 4, 7, 8, 10, 11, 12, 13, 16, 17, 18, 19, 20, 21],
-        description: {
-            en: `
-                Our bib shorts are designed with Italian pads and fabrics, offering added levels of comfort and compression. The lightweight, breathable construction of the bib and brace straps minimizes unwanted movement, while maintaining airflow through your body and providing a more comfortable fit during longer rides.
-                <ul style="margin-top: 10px; list-style-position: inside;">
-                    <li style="margin-bottom: 5px;">We use Elastic Interface ultra-high density inserts made perfectly for road and off-road activities.</li>
-                    <li style="margin-bottom: 5px;">The perforations on the surface allow for higher air permeability, resulting in lower skin temperature and reduced moisture.</li>
-                    <li style="margin-bottom: 5px;">The ECO Carbonium Flash top fabric combines a special channel structure with the natural antistatic and bacteriostatic properties of the Carbonium thread.</li>
-                    <li style="margin-bottom: 5px;">The channel structure, made from extremely soft and recycled polyamide, helps collect, canalize, and expel moisture.</li>
-                    <li>Rapid-drying and eco-friendly.</li>
-                </ul>
-            `,
-            es: `
-                Nuestro pantalón de ciclismo está diseñado con almohadillas y telas italianas, ofreciendo mayores niveles de comodidad y compresión. La construcción ligera y transpirable de los tirantes minimiza el movimiento no deseado, mientras mantiene el flujo de aire a través de tu cuerpo, proporcionando un ajuste más cómodo durante los recorridos más largos.
-                <ul style="margin-top: 10px; list-style-position: inside;">
-                    <li style="margin-bottom: 5px;">Usamos insertos de Elastic Interface de ultra alta densidad, perfectamente diseñados para actividades en carretera y fuera de carretera.</li>
-                    <li style="margin-bottom: 5px;">Las perforaciones en la superficie permiten una mayor permeabilidad al aire, lo que resulta en una temperatura de la piel más baja y una menor humedad.</li>
-                    <li style="margin-bottom: 5px;">La tela superior ECO Carbonium Flash combina una estructura especial de canal con las propiedades antistáticas y bacteriostáticas naturales del hilo Carbonium.</li>
-                    <li style="margin-bottom: 5px;">La estructura de canales, hecha de poliamida reciclada y extremadamente suave, ayuda a recolectar, canalizar y expulsar la humedad.</li>
-                    <li>Secado rápido y ecológico.</li>
-                </ul>
-            `
-        },
-        details: [
-            { label: { en: 'Material', es: 'Material' }, value: { en: 'Premium Lycra for stretch and comfort', es: 'Licra premium para elasticidad y comodidad' } },
-            { label: { en: 'Chamois', es: 'Badana' }, value: { en: 'Multi-density, contoured foam padding', es: 'Acolchado de espuma contorneado de múltiples densidades' } },
-            { label: { en: 'Leg Grippers', es: 'Agarres para piernas' }, value: { en: 'Silicone dots for secure fit', es: 'Puntos de silicona para un ajuste seguro' } },
-            { label: { en: 'Stitching', es: 'Costuras' }, value: { en: 'Flatlock seams to prevent chafing', es: 'Costuras flatlock para prevenir rozaduras' } },
-            { label: { en: 'Straps', es: 'Tirantes' }, value: { en: 'Mesh for breathability and support', es: 'Malla para transpirabilidad y soporte' } },
-            { label: { en: 'Aerodynamics', es: 'Aerodinámica' }, value: { en: 'Wind tunnel tested design', es: 'Diseño probado en túnel de viento' } },
-            { label: { en: 'Durability', es: 'Durabilidad' }, value: { en: 'Reinforced stitching at stress points', es: 'Costuras reforzadas en puntos de estrés' } },
-            { label: { en: 'UV Protection', es: 'Protección UV' }, value: { en: 'UPF 50+ sun protection', es: 'Protección solar UPF 50+' } },
-            { label: { en: 'Care Instructions', es: 'Instrucciones de cuidado' }, value: { en: 'Machine wash cold, hang to dry', es: 'Lavar a máquina en frío, colgar para secar' } },
-        ],
-        imageSources: ["Resources/bib_men_3.jpeg", "Resources/bib_men_4.jpeg", "Resources/bib_men_5.jpeg"],
-        imageHoverSource: "Resources/bib_men_4.jpeg",
-        imageAlt: { en: "Red Cycling Bib 2024", es: "Pantalón de Ciclismo Rojo 2024" },
-        price: "$109.99",
-        oldPrice: null,
-        mainVersion: true,
-        versionsIds: null,
-        href: "men-bib",
-    },
-    "womenbib": {
-        id: "womenbib",
-        name: { en: "Women's Bib", es: "Pantalón de Ciclismo Para Mujeres" },
-        status: true,
-        categoryIds: [2, 4, 8, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21],
-        description: {
-            en: `
-                Our bib shorts are designed with Italian pads and fabrics, offering added levels of comfort and compression. The lightweight, breathable construction of the bib and brace straps minimizes unwanted movement, while maintaining airflow through your body and providing a more comfortable fit during longer rides.
-                <ul style="margin-top: 10px; list-style-position: inside;">
-                    <li style="margin-bottom: 5px;">We use Elastic Interface ultra-high density inserts made perfectly for road and off-road activities.</li>
-                    <li style="margin-bottom: 5px;">The perforations on the surface allow for higher air permeability, resulting in lower skin temperature and reduced moisture.</li>
-                    <li style="margin-bottom: 5px;">The ECO Carbonium Flash top fabric combines a special channel structure with the natural antistatic and bacteriostatic properties of the Carbonium thread.</li>
-                    <li style="margin-bottom: 5px;">The channel structure, made from extremely soft and recycled polyamide, helps collect, canalize, and expel moisture.</li>
-                    <li>Rapid-drying and eco-friendly.</li>
-                </ul>
-            `,
-            es: `
-                Nuestro pantalón de ciclismo está diseñado con almohadillas y telas italianas, ofreciendo mayores niveles de comodidad y compresión. La construcción ligera y transpirable de los tirantes minimiza el movimiento no deseado, mientras mantiene el flujo de aire a través de tu cuerpo, proporcionando un ajuste más cómodo durante los recorridos más largos.
-                <ul style="margin-top: 10px; list-style-position: inside;">
-                    <li style="margin-bottom: 5px;">Usamos insertos de Elastic Interface de ultra alta densidad, perfectamente diseñados para actividades en carretera y fuera de carretera.</li>
-                    <li style="margin-bottom: 5px;">Las perforaciones en la superficie permiten una mayor permeabilidad al aire, lo que resulta en una temperatura de la piel más baja y una menor humedad.</li>
-                    <li style="margin-bottom: 5px;">La tela superior ECO Carbonium Flash combina una estructura especial de canal con las propiedades antistáticas y bacteriostáticas naturales del hilo Carbonium.</li>
-                    <li style="margin-bottom: 5px;">La estructura de canales, hecha de poliamida reciclada y extremadamente suave, ayuda a recolectar, canalizar y expulsar la humedad.</li>
-                    <li>Secado rápido y ecológico.</li>
-                </ul>
-            `
-        },
-        details: [
-            { label: { en: 'Material', es: 'Material' }, value: { en: 'Premium Lycra for stretch and comfort', es: 'Licra premium para elasticidad y comodidad' } },
-            { label: { en: 'Chamois', es: 'Badana' }, value: { en: 'Multi-density, contoured foam padding', es: 'Acolchado de espuma contorneado de múltiples densidades' } },
-            { label: { en: 'Leg Grippers', es: 'Agarres para piernas' }, value: { en: 'Silicone dots for secure fit', es: 'Puntos de silicona para un ajuste seguro' } },
-            { label: { en: 'Stitching', es: 'Costuras' }, value: { en: 'Flatlock seams to prevent chafing', es: 'Costuras flatlock para prevenir rozaduras' } },
-            { label: { en: 'Straps', es: 'Tirantes' }, value: { en: 'Mesh for breathability and support', es: 'Malla para transpirabilidad y soporte' } },
-            { label: { en: 'Aerodynamics', es: 'Aerodinámica' }, value: { en: 'Wind tunnel tested design', es: 'Diseño probado en túnel de viento' } },
-            { label: { en: 'Durability', es: 'Durabilidad' }, value: { en: 'Reinforced stitching at stress points', es: 'Costuras reforzadas en puntos de estrés' } },
-            { label: { en: 'UV Protection', es: 'Protección UV' }, value: { en: 'UPF 50+ sun protection', es: 'Protección solar UPF 50+' } },
-            { label: { en: 'Care Instructions', es: 'Instrucciones de cuidado' }, value: { en: 'Machine wash cold, hang to dry', es: 'Lavar a máquina en frío, colgar para secar' } },
-        ],
-        imageSources: ["Resources/bib_women_3.jpeg", "Resources/bib_women_4.jpeg", "Resources/bib_women_5.jpeg"],
-        imageHoverSource: "Resources/bib_women_4.jpeg",
-        imageAlt: { en: "View Blue Cycling Bib 2024", es: "Ver Pantalón Azul de Ciclismo 2024" },
-        price: "$109.99",
-        oldPrice: null,
-        mainVersion: true,
-        versionsIds: null,
-        href: "women-bib",
-    },
-    "radaSocks": {
-        id: "radaSocks",
-        name: { en: "RADA Socks", es: "Calcetines RADA" },
-        status: true,
-        categoryIds: [6, 7, 8, 9, 10, 11, 12, 13, 15],
-        description: {
-            en: `
-                The lightweight, breathable material of our RADA sock is equipped with potent moisture-wicking properties to keep your feet comfortable and dry throughout your ride.
-            `,
-            es: `
-                El material ligero y transpirable de nuestro calcetín RADA está equipado con potentes propiedades para absorber la humedad, manteniendo tus pies cómodos y secos durante todo el recorrido.
-            `
-        },
-        details: [
-            { label: { en: 'Material', es: 'Material' }, value: { en: 'Premium Soft Cotton Blend', es: 'Mezcla de algodón suave premium' } },
-            { label: { en: 'Size', es: 'Tamaño' }, value: { en: 'One Size Fits Most', es: 'Talla única para la mayoría' } },
-            { label: { en: 'Height', es: 'Altura' }, value: { en: 'Crew Cut Length', es: 'Longitud a la altura de la tripulación' } },
-            { label: { en: 'Thickness', es: 'Grosor' }, value: { en: 'Medium Cushioning for Comfort', es: 'Amortiguación media para comodidad' } },
-            { label: { en: 'Features', es: 'Características' }, value: { en: 'Reinforced Heel & Toe, Arch Support', es: 'Talón y punta reforzados, soporte de arco' } },
-            { label: { en: 'Packaging', es: 'Empaque' }, value: { en: 'Eco-Friendly, Biodegradable Bag', es: 'Bolsa biodegradable ecológica' } },
-            { label: { en: 'Care Instructions', es: 'Instrucciones de cuidado' }, value: { en: 'Machine Wash Cold, Tumble Dry Low', es: 'Lavar a máquina en frío, secar en secadora a baja temperatura' } },
-        ],
-        imageSources: ["Resources/RadaSocks.webp"],
-        imageHoverSource: null,
-        imageAlt: { en: "RADA Socks", es: "Calcetines RADA" },
-        price: "$18.00",
-        oldPrice: null,
-        mainVersion: true,
-        versionsIds: null,
-        href: "rada-socks",
-    },
-};
-
-export function findProductsByIds(ids: string[]): Product[] {
+export function findProductsByIds(ids: string[], products: Product[]): Product[] {
     // Convert the products object to an array of products
     const productArray = Object.values(products);
 
@@ -790,7 +575,7 @@ export function findProductsByIds(ids: string[]): Product[] {
     return matchingProducts;
 }
 
-export function findProductsByCategoryIds(categoryIds: number[]): Product[] {
+export function findProductsByCategoryIds(categoryIds: number[], products: Product[]): Product[] {
     // Convert the products object to an array of products
     const productArray = Object.values(products);
 
@@ -802,11 +587,11 @@ export function findProductsByCategoryIds(categoryIds: number[]): Product[] {
     return matchingProducts;
 }
 
-export function findProductByHref(hrefParam: string): Product | undefined {
+export function findProductByHref(hrefParam: string, products: Product[]): Product | undefined {
     return Object.values(products).find((product) => product.href === hrefParam);
 }
 
-export function findSimilarProducts(product: Product, count: number): Product[] {
+export function findSimilarProducts(product: Product, count: number, products: Product[]): Product[] {
     // Convert products object to an array and filter out the original product
     const otherProducts = Object.values(products).filter(
         (p) =>
@@ -822,9 +607,9 @@ export function findSimilarProducts(product: Product, count: number): Product[] 
     return shuffledProducts.slice(0, count);
 }
 
-export function findProductsByHrefs(hrefs: string[]): Product[] {
+export function findProductsByHrefs(hrefs: string[], products: Product[]): Product[] {
     let categoryIds = getCategoryIdsFromHrefs(hrefs);
-    return findProductsByCategoryIds(categoryIds);
+    return findProductsByCategoryIds(categoryIds, products);
 }
 // #endregion
 
@@ -976,8 +761,6 @@ export function calculateAverageRating(reviews: Review[]): string | undefined {
 // #endregion
 
 // #region Cart
-export let deliveryFee = 8.18;
-
 export type DenormalizedCartItem = {
     productId: string,
     sizeId?: number,
@@ -990,11 +773,11 @@ export type DenormalizedCartItem = {
     href: string,
 }
 
-export function denormalizeCartItems(cartItems: CartItem[]): DenormalizedCartItem[] {
+export function denormalizeCartItems(cartItems: CartItem[], products: Product[]): DenormalizedCartItem[] {
     return cartItems.map((item) => {
         const product = Object.values(products).find(product => product.id === item.productId);
         if (!product) {
-            throw new Error(`Product with ID ${item.productId} not found`);
+            return null;
         }
         const itemPrice = parseFloat(product.price.replace(/[^0-9.-]+/g, ""));
         const totalItemPrice = itemPrice * item.quantity;
@@ -1015,7 +798,7 @@ export function denormalizeCartItems(cartItems: CartItem[]): DenormalizedCartIte
             totalItemPrice: totalItemPrice,
             href: product.href
         };
-    });
+    }).filter(item => item !== null);
 }
 
 export function addToCart(productId: string, quantity: number, sizeId?: number, name?: string): void {
@@ -1075,15 +858,15 @@ export function getCartItemFromIDs(cartItemsStore: CartItem[], productId: string
 }
 // #endregion
 
-// #region Our Work
-export type craftItem = {
+// #region Portfolio
+export type PortfolioItem = {
     src: string;
     alt?: translatableContent;
     title?: translatableContent;
     description?: translatableContent;
 }
 
-export let crafts: craftItem[] = [
+export let portfolio: PortfolioItem[] = [
     // {
     //     src: `demo/woman-small.webp`,
     //     alt: { en: 'Cyclist wearing our high-performance jersey', es: 'Ciclista usando nuestra camiseta de alto rendimiento' },
@@ -1289,4 +1072,32 @@ export let crafts: craftItem[] = [
         src: 'custom/56.webp'
     },
 ];
+// #endregion
+
+// #region Orders
+export type Order = {
+    id?: string;
+    userId: string;
+    productId: number;
+    arrivalDate: string;
+    quantity: number;
+    sizeId: number;
+    trackingNumber: string;
+    trackingUrl: string;
+};
+// #endregion
+
+// #region Messages
+export type Message = {
+    id?: string;
+    userId: string;
+    firstName: string;
+    lastName: string;
+    teamName: string;
+    email: string;
+    phone: string;
+    teamSize: string;
+    messageContent: string;
+    contactMethod: string;
+};
 // #endregion

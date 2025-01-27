@@ -2,15 +2,18 @@ import { auth } from "$lib/firebase/rada";
 import { linkWithCredential, signInAnonymously, EmailAuthProvider, signOut, signInWithEmailAndPassword } from "firebase/auth";
 import { anErrorOccurred } from "./functions";
 import { goto } from "$app/navigation";
-import { baseRoute, userEmail, userID } from "./stores";
+import { baseRoute, user as UserStore } from "./stores";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "$lib/firebase/rada";
 
 async function upgradeAnonymousUser(credential: any) {
     if (auth.currentUser) {
         await linkWithCredential(auth.currentUser, credential)
-            .then((usercred) => {
+            .then(async (usercred) => {
                 const user = usercred.user;
-                userID.set(user.uid);
-                userEmail.set(user.email);
+                const userDocRef = doc(db, 'user', user.uid);
+                await setDoc(userDocRef, { email: user.email }, { merge: true });
+                UserStore.set(user);
 
                 goto(`${baseRoute}/my-account`);
             })

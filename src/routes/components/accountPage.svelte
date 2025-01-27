@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
-	import { dictionary, userEmail, language, type Language } from '../stores';
+	import { dictionary, user, language, type Language, isAdmin } from '../stores';
 	import { authHandlers } from '../auth';
-	import { baseRoute } from '../stores';
 
 	export let authenticating: boolean;
 
@@ -22,9 +21,15 @@
 	<div class="account-details">
 		<div class="email-section">
 			<h2>{$dictionary.email}</h2>
-			<p>{$userEmail}</p>
+			<p>{$user?.email}</p>
 		</div>
 		<div class="actions">
+			{#if $isAdmin}
+				<a href="/admin" class="button">
+					<span>{$dictionary.admin}</span>
+					<ion-icon name="settings-outline" />
+				</a>
+			{/if}
 			<button class="logOutButton button" on:click={logOut} disabled={authenticating}>
 				<span>{$dictionary.logOut}</span>
 				<ion-icon name="log-out-outline" />
@@ -85,6 +90,7 @@
 
 	.actions {
 		display: flex;
+		gap: 1rem;
 		justify-content: center;
 		align-items: center;
 	}

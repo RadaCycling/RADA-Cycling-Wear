@@ -6,17 +6,15 @@
 		denormalizeCategories,
 		findProductsByHrefs,
 	} from './mockDb';
-	import { baseImageRoute, baseRoute, dictionary } from './stores';
+	import { baseImageRoute, baseRoute, dictionary, productsStore } from './stores';
 	import Landing from './components/landing.svelte';
-	import Reveal from './components/reveal.svelte';
 	import Category from './components/category.svelte';
 	import Products from './components/products.svelte';
-	import LandingForm from './components/landingForm.svelte';
 
 	const categories = denormalizeCategories(featuredCategories);
 
-	let popular: Product[] = findProductsByHrefs(['men']);
-	let latest: Product[] = findProductsByHrefs(['women']);
+	let popular: Product[] = findProductsByHrefs(['men'], $productsStore);
+	let latest: Product[] = findProductsByHrefs(['women'], $productsStore);
 </script>
 
 <svelte:head>

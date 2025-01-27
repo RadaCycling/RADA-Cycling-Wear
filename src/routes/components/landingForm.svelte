@@ -2,7 +2,7 @@
 	import { fade } from 'svelte/transition';
 	import { db } from '$lib/firebase/rada';
 	import { doc, setDoc, getDoc } from 'firebase/firestore';
-	import { baseRoute, dictionary, userID } from '../stores';
+	import { baseRoute, dictionary, user } from '../stores';
 	import { anErrorOccurred } from '../functions';
 	import { onMount } from 'svelte';
 
@@ -20,12 +20,12 @@
 	}
 
 	async function checkIfFormFilled() {
-		if (!$userID) {
+		if (!$user) {
 			return;
 		}
 
 		// Create a reference to the Firestore document
-		const userInfoDocumentReference = doc(db, 'user', $userID, 'info', 'discountForm');
+		const userInfoDocumentReference = doc(db, 'user', $user.uid, 'info', 'discountForm');
 
 		try {
 			const docSnapshot = await getDoc(userInfoDocumentReference);
@@ -41,7 +41,7 @@
 	}
 
 	async function saveFormData() {
-		if (!$userID) {
+		if (!$user) {
 			anErrorOccurred();
 			return;
 		} else if (!termsAccepted) {
@@ -50,7 +50,7 @@
 		}
 
 		// Create a reference to the Firestore document
-		const userInfoDocumentReference = doc(db, 'user', $userID, 'info', 'discountForm');
+		const userInfoDocumentReference = doc(db, 'user', $user.uid, 'info', 'discountForm');
 
 		// Create an object with the form data
 		const formData = {
@@ -70,7 +70,7 @@
 		}
 	}
 
-	$: $userID, checkIfFormFilled();
+	$: $user, checkIfFormFilled();
 
 	onMount(() => {
 		checkIfFormFilled();
@@ -140,7 +140,7 @@
 					<div class="terms">
 						<label for="terms">
 							<span>{$dictionary.iAcceptThe}</span>
-							<a href={baseRoute}>{$dictionary.dataPolicy}</a>
+							<a href="{baseRoute}/">{$dictionary.dataPolicy}</a>
 						</label>
 						<input
 							bind:checked={termsAccepted}

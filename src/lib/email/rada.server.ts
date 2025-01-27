@@ -2,7 +2,7 @@ import nodemailer from 'nodemailer';
 import { EMAIL, EMAIL_PASSWORD } from "$env/static/private";
 
 const transporter = nodemailer.createTransport({
-    host: 'gtxm1140.siteground.biz', // SiteGround's mail server
+    host: 'gtxm1198.siteground.biz', // SiteGround's mail server
     port: 465, // SMTP Port for secure connections
     secure: true, // Use SSL/TLS
     auth: {

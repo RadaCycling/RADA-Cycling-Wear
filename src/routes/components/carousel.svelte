@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import CarrouselController from './carrouselController.svelte';
-	import { baseImageRoute, dictionary } from '../stores';
+	import { dictionary } from '../stores';
 	import { handleSwipe } from '../functions';
 
 	export let style: string = '';
@@ -74,11 +74,11 @@
 			{#if smallImages}
 				<source
 					media="(max-width: {smallImagesBreakpoint})"
-					srcset="{baseImageRoute}/{smallImages[currentFileIndex]}"
+					srcset={smallImages[currentFileIndex]}
 				/>
 			{/if}
 			<img
-				src="{baseImageRoute}/{images[currentFileIndex]}"
+				src={images[currentFileIndex]}
 				alt={imageDescriptions
 					? imageDescriptions[currentFileIndex]
 					: imagesCommonDescription}

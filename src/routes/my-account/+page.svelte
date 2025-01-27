@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
-	import { baseRoute, dictionary, userEmail } from '../stores';
+	import { baseRoute, dictionary, user } from '../stores';
 	import { anErrorOccurred } from '../functions';
 	import Preloader from '../components/preloader.svelte';
 	import { authHandlers } from '../auth';
@@ -27,8 +27,8 @@
 	</Preloader>
 {/if}
 
-{#key $userEmail}
-	{#if $userEmail}
+{#key $user}
+	{#if !$user?.isAnonymous}
 		<AccountPage bind:authenticating />
 	{:else}
 		<div class="logIn" in:fade>

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { slide } from 'svelte/transition';
-	import { baseRoute, dictionary, activeSNavMenu } from '../stores';
+	import { baseRoute, dictionary, activeSNavMenu, user, isAdmin } from '../stores';
 	import Base from './base.svelte';
 	import { sleep } from '../functions';
 	import { goto } from '$app/navigation';
@@ -71,6 +71,16 @@
 		</div>
 
 		<div>
+			{#if $isAdmin}
+				<a
+					class="link adminLink"
+					class:active={$page.url.pathname.includes(`${baseRoute}/admin`)}
+					href="{baseRoute}/admin"
+				>
+					<ion-icon name="hammer-outline" />
+					{$dictionary.admin}</a
+				>
+			{/if}
 			<section>
 				<a
 					href="https://www.instagram.com/rada_cyclingwear/"
@@ -188,6 +198,12 @@
 
 	a {
 		user-select: none;
+	}
+
+	.adminLink {
+		margin: auto;
+		display: flex;
+		gap: 0.5ch;
 	}
 
 	section {

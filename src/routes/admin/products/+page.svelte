@@ -1,14 +1,13 @@
 <script lang="ts">
-	import { fade, slide } from 'svelte/transition';
-	import { db } from '$lib/firebase/rada';
-	import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
+	import { fade } from 'svelte/transition';
 	import { denormalizeCategories, type Product, type Category } from '../../mockDb';
-	import { onMount } from 'svelte';
-	import { baseImageRoute, baseRoute } from '../../stores';
+	import { baseImageRoute, baseRoute, allProductsStore } from '../../stores';
 	import { goto } from '$app/navigation';
 	import toast from 'svelte-french-toast';
+	import { doc, updateDoc } from 'firebase/firestore';
+	import { db } from '$lib/firebase/rada';
+	import { onMount } from 'svelte';
 
-	let products: Product[] = [];
 	let filteredProducts: Product[] = [];
 	let categories: Category[] = [];
 	let searchQuery = '';
@@ -17,10 +16,10 @@
 
 	async function fetchProducts() {
 		try {
-			const querySnapshot = await getDocs(collection(db, 'products'));
-			products = querySnapshot.docs.map((doc) => doc.data() as Product);
 			filteredProducts = filterProducts();
-			categories = denormalizeCategories(products.flatMap((product) => product.categoryIds));
+			categories = denormalizeCategories(
+				$allProductsStore.flatMap((product) => product.categoryIds),
+			);
 		} catch (error) {
 			console.error('Error fetching products:', error);
 		}
@@ -31,7 +30,7 @@
 	});
 
 	function filterProducts() {
-		return products.filter(
+		return $allProductsStore.filter(
 			(product) =>
 				searchQuery === '' ||
 				product.name.en.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -41,8 +40,8 @@
 
 	async function toggleStatus(productId: string, newStatus: boolean) {
 		// Update the product status in the local state
-		products = products.map((product) =>
-			product.id === productId ? { ...product, status: !newStatus } : product,
+		$allProductsStore = $allProductsStore.map((product) =>
+			product.id === productId ? { ...product, status: newStatus } : product,
 		);
 
 		// Update the filtered products
@@ -74,7 +73,7 @@
 	<main>
 		<div class="header">
 			<div class="action-buttons">
-				<button class="add-button">
+				<a class="add-button" href="{baseRoute}/admin/products/new">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						viewBox="0 0 24 24"
@@ -86,7 +85,7 @@
 						/>
 					</svg>
 					Add Product
-				</button>
+				</a>
 			</div>
 			<input
 				type="text"
@@ -96,7 +95,7 @@
 			/>
 		</div>
 		<div in:fade class="products">
-			{#if products.length > 0}
+			{#if $allProductsStore.length > 0}
 				{#if filteredProducts.length > 0}
 					<table>
 						<thead>
@@ -125,10 +124,12 @@
 							{#each filteredProducts as product}
 								<tr>
 									<td>
-										<img
-											src="{baseImageRoute}/{product.imageSources[0]}"
-											alt={product.imageAlt.en}
-										/>
+										<a href={`${baseRoute}/catalog/products/${product.href}`}>
+											<img
+												src={product.imageSources[0]}
+												alt={product.imageAlt.en}
+											/>
+										</a>
 									</td>
 									<td class="ellipsis">{product.name.en}</td>
 									<td>{product.price}</td>

@@ -1,7 +1,8 @@
 // Import the functions from the SDKs
-import { getApps, initializeApp, type FirebaseApp } from "firebase/app";
+import { deleteApp, getApps, initializeApp, type FirebaseApp } from "firebase/app";
 import { getFirestore } from 'firebase/firestore'
 import { getAuth } from 'firebase/auth'
+import { getStorage } from "firebase/storage";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -14,10 +15,13 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-let firebaseApp: FirebaseApp = getApps().find(app => app.name === 'rada') || initializeApp(firebaseConfig, 'rada');
+let firebaseApp: FirebaseApp = initializeApp(firebaseConfig, 'rada');
 
 // Export Database
 export const db = getFirestore(firebaseApp)
 
 // Export Authentication System
 export const auth = getAuth(firebaseApp)
+
+// Export Storage
+export const storage = getStorage(firebaseApp);

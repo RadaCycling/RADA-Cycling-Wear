@@ -3,7 +3,19 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import { baseImageRoute, baseRoute, userID, userEmail, language, dataReady } from './stores';
+	import {
+		baseImageRoute,
+		baseRoute,
+		user,
+		language,
+		dataReady,
+		categoriesStore,
+		portfolioStore,
+		ordersStore,
+		messagesStore,
+		allProductsStore,
+		isAdmin,
+	} from './stores';
 	import { sleep } from './functions';
 
 	import Nav from './components/nav.svelte';
@@ -12,6 +24,12 @@
 	import { Toaster } from 'svelte-french-toast';
 	import { auth } from '$lib/firebase/rada';
 	import { authHandlers } from './auth';
+	import type { Product, Category, PortfolioItem, Message, Order } from './mockDb';
+
+	export let data;
+	allProductsStore.set(data.products as Product[]);
+	categoriesStore.set(data.categories as Category[]);
+	portfolioStore.set(data.portfolio as PortfolioItem[]);
 
 	let disappearAndAppear: boolean = false;
 
@@ -42,7 +60,7 @@
 				mainContent.scrollTop = 0;
 			}
 
-			if ($userEmail && newUrl === `${baseRoute}/sign-in`) {
+			if ($user?.email && newUrl === `${baseRoute}/sign-in`) {
 				goto(`${baseRoute}/my-account`);
 			}
 		};
@@ -55,10 +73,19 @@
 					goto(`${baseRoute}/my-account`);
 				}
 
-				$userID = user.uid;
-				$userEmail = user.email;
+				$user = user;
+				const token = await user.getIdToken();
+				const response = await fetch('/api/user-data', {
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				});
+				const userData = await response.json();
+				isAdmin.set(userData.isAdmin);
+				ordersStore.set(userData.orders as Order[]);
+				messagesStore.set(userData.messages as Message[]);
 			} else {
-				$userEmail = null;
+				$user = null;
 				if (!currentlyCreatingAnonymousAccount) {
 					currentlyCreatingAnonymousAccount = true;
 					await authHandlers.signInAnonymously().then(() => {

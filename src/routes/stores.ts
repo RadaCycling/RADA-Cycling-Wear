@@ -1,103 +1,91 @@
 import { derived, get, writable, type Writable } from 'svelte/store';
 import { translator } from './translator';
 import { browser } from "$app/environment";
-import type { MenuItem } from './mockDb';
+import type { MenuItem, Order, Product, Category, PortfolioItem, Message } from './mockDb';
 import { db } from '$lib/firebase/rada';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, setDoc, getDocs, addDoc, deleteDoc } from 'firebase/firestore';
+import type { User } from 'firebase/auth';
 
 export const activeSNavMenu: Writable<MenuItem[]> = writable();
 
 // Database
-export const dataReady: Writable<boolean> = writable(false)
-export const userID: Writable<string> = writable("")
-export const userEmail: Writable<string | null> = writable(null)
+export const dataReady: Writable<boolean> = writable(false);
+export const user: Writable<User | null> = writable(null);
+export const isAdmin: Writable<boolean> = writable(false);
 
-userID.subscribe(async (value) => {
+export const allProductsStore: Writable<Product[]> = writable([]);
+export const productsStore = derived(allProductsStore, ($allProductsStore) =>
+    $allProductsStore.filter(product => product.status)
+);
+export const categoriesStore: Writable<Category[]> = writable([]);
+export const portfolioStore: Writable<PortfolioItem[]> = writable([]);
+export const ordersStore: Writable<Order[]> = writable([]);
+export const messagesStore: Writable<Message[]> = writable([]);
+
+user.subscribe(async (value) => {
     if (value) {
-        let userData: any;
-        const userDocumentReference = doc(db, 'user', value);
+        const userDocumentReference = doc(db, 'user', value.uid);
         const docSnap = await getDoc(userDocumentReference);
 
         if (!docSnap.exists()) {
             const newUserData = {
-                cartItems: [],
-                purchases: [],
+                name: value.displayName || "",
+                email: value.email || "",
+                phone: "",
+                address: "",
+                city: "",
+                state: "",
+                zip: "",
+                country: "",
             };
 
             await setDoc(userDocumentReference, newUserData, { merge: true });
-            userData = newUserData;
-        } else {
-            userData = docSnap.data();
         }
 
-        dataReady.set(true)
+        const cartItemsSnapshot = await getDocs(collection(db, `user/${value.uid}/cartItems`));
+        cartItems.set(cartItemsSnapshot.docs.map(doc => ({ id: doc.id, productId: doc.data().productId, quantity: doc.data().quantity, sizeId: doc.data().sizeId })));
 
-        cartItems.set(userData["cartItems"])
-        purchases.set(userData["purchases"])
+        dataReady.set(true);
     }
-})
+});
 
 export type CartItem = {
-    productId: string,
-    quantity: number,
-    sizeId: number,
-}
-export const cartItems: Writable<CartItem[]> = writable([])
+    id?: string;
+    productId: string;
+    quantity: number;
+    sizeId: number;
+};
+
+export const cartItems: Writable<CartItem[]> = writable([]);
 cartItems.subscribe(async (value) => {
-    let uid = get(userID)
-    if (uid) {
-        const userDocumentReference = doc(db, 'user', uid);
-        const docSnap = await getDoc(userDocumentReference);
+    let uid = get(user)?.uid;
+    if (uid && get(dataReady)) {
+        const cartItemsCollection = collection(db, `user/${uid}/cartItems`);
+        const existingDocs = await getDocs(cartItemsCollection);
 
-        if (docSnap.exists()) {
-            try {
-                await setDoc(
-                    userDocumentReference,
-                    {
-                        cartItems: value
-                    },
-                    { merge: true }
-                )
-            } catch (error) {
-                console.error("Error while saving cart items: ", error);
+        // Delete removed items
+        const existingIds = existingDocs.docs.map(doc => doc.id);
+        const newIds = value.map(item => item.id);
+        const toDelete = existingIds.filter(id => !newIds.includes(id));
+        for (const id of toDelete) {
+            await deleteDoc(doc(cartItemsCollection, id));
+        }
+
+        // Add or update items
+        for (const item of value) {
+            if (item.id) {
+                await setDoc(doc(cartItemsCollection, item.id), item, { merge: true });
+            } else {
+                const newDocRef = await addDoc(cartItemsCollection, item);
+                item.id = newDocRef.id;
             }
         }
     }
-})
-
-
-export type Purchase = {
-    productId: number,
-    arrivalDate: string,
-}
-export const purchases: Writable<Purchase[]> = writable([])
-purchases.subscribe(async (value) => {
-    let uid = get(userID)
-    if (uid) {
-        const userDocumentReference = doc(db, 'user', uid);
-        const docSnap = await getDoc(userDocumentReference);
-
-        if (docSnap.exists()) {
-            try {
-                await setDoc(
-                    userDocumentReference,
-                    {
-                        purchases: value
-                    },
-                    { merge: true }
-                )
-            } catch (error) {
-                console.error("Error while saving purchases data: ", error);
-            }
-        }
-    }
-})
-
+});
 
 // Base Routes
 export const baseImageRoute = '/images/radacycling';
 export const baseRoute = '';
-
 
 // Language Management
 export type Language = 'en' | 'es';
@@ -134,7 +122,7 @@ function getCookie(name: string): string | null {
 let navigatorLanguage;
 let storedLanguage;
 if (browser) {
-    const languageCookie = getCookie('lang')
+    const languageCookie = getCookie('lang');
     if (isLanguage(languageCookie)) {
         storedLanguage = languageCookie;
     }
@@ -151,12 +139,10 @@ if (browser) {
     language.subscribe((value) => {
         document.documentElement.lang = value || 'en';
         setCookie('lang', value, 1000);
-    })
+    });
 }
 
 export const dictionary = derived(language, (language) => translator[language]);
-
-
 
 // Theme Management
 export type Theme = 'dark' | 'light';
@@ -170,14 +156,12 @@ function isTheme(value: any) {
 
 let storedTheme: Theme | undefined;
 if (browser) {
-    const themeCookie = getCookie('theme')
+    const themeCookie = getCookie('theme');
     if (isTheme(themeCookie)) {
         storedTheme = themeCookie as Theme;
-    }
-    else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
         storedTheme = 'dark';
-    }
-    else if (window.matchMedia("(prefers-color-scheme: light)").matches) {
+    } else if (window.matchMedia("(prefers-color-scheme: light)").matches) {
         storedTheme = 'light';
     }
 }
@@ -188,14 +172,14 @@ if (browser) {
     window.matchMedia('(prefers-color-scheme: dark)')
         .addEventListener('change', ({ matches }) => {
             if (matches) {
-                theme.set('dark')
+                theme.set('dark');
             } else {
-                theme.set('light')
+                theme.set('light');
             }
-        })
+        });
 
     theme.subscribe((value) => {
         document.documentElement.setAttribute("data-theme", value);
         setCookie('theme', value, 1000);
-    })
+    });
 }

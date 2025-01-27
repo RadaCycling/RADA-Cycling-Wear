@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
-	import { baseImageRoute, dictionary } from '../stores';
+	import { baseImageRoute, dictionary, productsStore } from '../stores';
 	import { findProductsByHrefs } from '../mockDb';
 	import Products from '../components/products.svelte';
 </script>
@@ -21,11 +21,14 @@
 	</header>
 
 	<section>
-		<Products title={$dictionary.men} products={findProductsByHrefs(['men'])} />
+		<Products title={$dictionary.men} products={findProductsByHrefs(['men'], $productsStore)} />
 	</section>
 
 	<section>
-		<Products title={$dictionary.women} products={findProductsByHrefs(['women'])} />
+		<Products
+			title={$dictionary.women}
+			products={findProductsByHrefs(['women'], $productsStore)}
+		/>
 	</section>
 </div>
 

@@ -1,16 +1,16 @@
 <script lang="ts">
-	import { crafts, type craftItem } from '../mockDb';
+	import { portfolio, type PortfolioItem } from '../mockDb';
 	import { baseImageRoute, dictionary, language } from '../stores';
 	import WorkPost from './workPost.svelte';
 
 	export let style: string = '';
 
-	// Get only the first three elements from crafts
-	let images = crafts.slice(0, 3);
+	// Get only the first three elements from the portfolio
+	let images = portfolio.slice(0, 3);
 
-	let selectedImage: craftItem | null = null;
+	let selectedImage: PortfolioItem | null = null;
 
-	function selectImage(image: craftItem | null): void {
+	function selectImage(image: PortfolioItem | null): void {
 		selectedImage = image;
 	}
 </script>

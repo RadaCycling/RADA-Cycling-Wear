@@ -10,7 +10,7 @@
 		getCategoryNamesFromIds,
 		getCategoryHrefsFromIds,
 	} from '../../mockDb';
-	import { baseImageRoute, baseRoute, dictionary, language } from '../../stores';
+	import { baseImageRoute, baseRoute, dictionary, language, productsStore } from '../../stores';
 	import Product from '../../components/product.svelte';
 	import Filter from '../../components/filter.svelte';
 	import { goto } from '$app/navigation';
@@ -32,7 +32,7 @@
 
 		categoryNames = getCategoryNamesFromIds(categoryIds);
 
-		matchingProducts = findProductsByCategoryIds(categoryIds);
+		matchingProducts = findProductsByCategoryIds(categoryIds, $productsStore);
 
 		// Reset selected indices
 		selectedSizeIndex = 0;

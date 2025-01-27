@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { fade, slide } from 'svelte/transition';
-	import { baseImageRoute, baseRoute, cartItems, dictionary } from '../stores';
+	import { baseRoute, cartItems, dictionary, productsStore } from '../stores';
 	import {
-		deliveryFee,
 		denormalizeCartItems,
 		type DenormalizedCartItem,
 		removeFromCart,
@@ -16,7 +15,7 @@
 
 	function getCartItems() {
 		try {
-			denormalizedData = denormalizeCartItems($cartItems);
+			denormalizedData = denormalizeCartItems($cartItems, $productsStore);
 		} catch (error) {
 			console.error(error);
 		}
@@ -26,10 +25,6 @@
 		let subtotal = denormalizedData.reduce((total, item) => total + item.totalItemPrice, 0);
 		return subtotal;
 	}
-
-	const calculateTotal = () => {
-		return calculateSubtotal() + deliveryFee;
-	};
 
 	onMount(() => {
 		getCartItems();
@@ -51,7 +46,7 @@
 							: ''}"
 						class="imageLink"
 					>
-						<img src="{baseImageRoute}/{item.imageSrc}" alt={item.name} />
+						<img src={item.imageSrc} alt={item.name} />
 					</a>
 					<div class="item-details">
 						<a

@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { baseRoute, dictionary } from '../stores';
+	import { baseImageRoute, dictionary } from '../stores';
 	import Carousel from './carousel.svelte';
 
-	let imageSources = ['landing.webp'];
+	let imageSources = [`${baseImageRoute}/landing.webp`];
 
 	let smallImagesSources = ['landing-small.webp'];
 </script>

@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { baseImageRoute } from '../stores';
-
 	export let icon: string | undefined = undefined;
 	export let imageSrc: string | undefined = undefined;
 	export let imageAlt: string | undefined = undefined;
@@ -9,7 +7,7 @@
 
 <button>
 	{#if imageSrc}
-		<img src="{baseImageRoute}/{imageSrc}" alt={imageAlt} />
+		<img src={imageSrc} alt={imageAlt} />
 	{:else if icon}
 		<ion-icon name={icon} />
 	{/if}

@@ -240,5 +240,5 @@ import { dictionary } from "./stores"
 import { get } from 'svelte/store';
 let storedDictionary = get(dictionary)
 export function anErrorOccurred(error: string = storedDictionary.anErrorHasOccurred) {
-    toast.error(error, { position: 'bottom-center' });
+    toast.error(error);
 }

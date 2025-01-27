@@ -176,6 +176,7 @@ export const translator = {
         returnToHome: "Return to Home",
         cartItemPurchased: "Cart item purchased",
         orderPlacedTitle: "Order Placed!",
+        admin: 'Admin',
     },
     es: {
         comingSoon: 'Próximamente',
@@ -354,5 +355,6 @@ export const translator = {
         returnToHome: "Volver a Inicio",
         cartItemPurchased: "Artículo del carrito comprado",
         orderPlacedTitle: "¡Pedido Realizado!",
+        admin: 'Administrador',
     },
 };

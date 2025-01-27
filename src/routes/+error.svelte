@@ -33,12 +33,11 @@
 		min-height: 100vh;
 		min-height: 100dvh;
 
-		color: rgb(245, 245, 255);
-		background: rgb(24, 26, 32);
+		color: rgb(24, 26, 32);
 	}
 
 	h1 {
-		margin-top: 5rem;
+		margin-top: 8rem;
 		font-size: 5rem;
 	}
 
@@ -57,13 +56,13 @@
 		text-decoration: none;
 
 		transition: 0.2s all;
-		border: 1px solid rgb(65, 10, 216);
-		background-color: rgba(65, 10, 216, 0.7);
+		border: 1px solid red;
+		background-color: rgba(255, 0, 0, 0.1);
 		color: inherit;
 	}
 
 	a:hover,
 	a:focus-visible {
-		background-color: rgb(65, 10, 216);
+		background-color: rgba(255, 0, 0, 0.25);
 	}
 </style>
