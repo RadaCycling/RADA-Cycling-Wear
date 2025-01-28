@@ -18,50 +18,55 @@ const sendEmail = async (message: Options) => {
 };
 
 const sendWhatsApp = async (phone: string, firstName: string, lastName: string, teamName: string, teamSize: string, message: string) => {
-    const response = await axios({
-        url: WHATSAPP_ENDPOINT,
-        method: 'post',
-        headers: {
-            'Authorization': `Bearer ${WHATSAPP_TOKEN}`,
-            'Content-Type': 'application/json',
-        },
-        data: JSON.stringify({
-            "messaging_product": "whatsapp",
-            "to": "16672730029",
-            // "to": phone,
-            "type": "template",
-            "template": {
-                "name": "gear_request",
-                "language": { "code": "en_US" },
-                "components": {
-                    "type": "body",
-                    "parameters": [
-                        {
-                            "type": "text",
-                            "text": firstName
-                        },
-                        {
-                            "type": "text",
-                            "text": lastName
-                        },
-                        {
-                            "type": "text",
-                            "text": teamName
-                        },
-                        {
-                            "type": "text",
-                            "text": teamSize
-                        },
-                        {
-                            "type": "text",
-                            "text": message
-                        },
-                    ]
+    try {
+        const response = await axios({
+            url: WHATSAPP_ENDPOINT,
+            method: 'post',
+            headers: {
+                'Authorization': `Bearer ${WHATSAPP_TOKEN}`,
+                'Content-Type': 'application/json',
+            },
+            data: JSON.stringify({
+                "messaging_product": "whatsapp",
+                "to": "16672730029",
+                // "to": phone,
+                "type": "template",
+                "template": {
+                    "name": "gear_request",
+                    "language": { "code": "en_US" },
+                    "components": {
+                        "type": "body",
+                        "parameters": [
+                            {
+                                "type": "text",
+                                "text": firstName
+                            },
+                            {
+                                "type": "text",
+                                "text": lastName
+                            },
+                            {
+                                "type": "text",
+                                "text": teamName
+                            },
+                            {
+                                "type": "text",
+                                "text": teamSize
+                            },
+                            {
+                                "type": "text",
+                                "text": message
+                            },
+                        ]
+                    }
                 }
-            }
-        })
-    })
-}
+            })
+        });
+        console.log('WhatsApp message sent:', response.data);
+    } catch (error) {
+        throw new Error("Error sending WhatsApp message: " + (error as Error).message);
+    }
+};
 
 export const actions = {
     default: async ({ request }) => {
@@ -123,7 +128,7 @@ export const actions = {
                 await sendEmail(message);
             } else {
                 // Send WhatsApp Message
-                sendWhatsApp(phone, firstName, lastName, teamName, teamSize, messageContent);
+                await sendWhatsApp(phone, firstName, lastName, teamName, teamSize, messageContent);
             }
 
             return {

@@ -15,7 +15,7 @@
 	function feedbackMessage() {
 		if (form?.success) {
 			toast.success($dictionary.thankYouForYourMessage, { style: 'font-size: 1.2em;' });
-		} else if (form?.error && isSubmitting) {
+		} else if (form?.error) {
 			toast.error($dictionary.anErrorHasOccurred, {
 				style: 'font-size: 1.2em;',
 			});

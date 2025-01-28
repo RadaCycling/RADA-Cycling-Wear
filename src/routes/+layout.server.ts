@@ -13,23 +13,27 @@ async function fetchCollection(collectionName: string): Promise<DocumentData> {
         if (collectionName === 'products') {
             const products = snapshot.docs.map((doc) => doc.data() as Product);
             for (const product of products) {
-                product.dbImageSources = product.imageSources;
+                if (!product.dbImageSources) {
+                    product.dbImageSources = product.imageSources;
+                }
                 product.imageSources = await Promise.all(product.dbImageSources.map(async (imageSource) => {
                     try {
                         const imageRef = ref(storage, `products/${imageSource}`);
                         return await getDownloadURL(imageRef);
                     } catch (e) {
-                        console.error((e as Error).message);
+                        console.error("Error on layout.server.ts fetching image source: ", (e as Error).message);
                         return imageSource;
                     }
                 }));
                 if (product.imageHoverSource) {
-                    product.dbImageHoverSource = product.imageHoverSource;
+                    if (!product.dbImageHoverSource) {
+                        product.dbImageHoverSource = product.imageHoverSource;
+                    }
                     try {
                         const imageRef = ref(storage, `products/${product.dbImageHoverSource}`);
                         product.imageHoverSource = await getDownloadURL(imageRef);
                     } catch (e) {
-                        console.error((e as Error).message);
+                        console.error("Error on layout.server.ts fetching hover image source: ", (e as Error).message);
                     }
                 }
             }
