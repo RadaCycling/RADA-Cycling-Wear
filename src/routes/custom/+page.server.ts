@@ -87,37 +87,19 @@ export const actions = {
             // Building the email HTML content
             let html = `
                 <div style="font-family: Arial, sans-serif; color: #333; font-size: 1rem; line-height: 1.6;">
-                    <h1 style="font-size: 1.3rem; color: #f27931;">
-                        RADA Custom Cycling Apparel
-                    </h1>
-                    <p style="font-size: inherit; color: inherit;">
-                        <strong>First Name:</strong> ${firstName}
-                    </p>
-                    <p style="font-size: inherit; color: inherit;">
-                        <strong>Last Name:</strong> ${lastName}
-                    </p>
-                    <p style="font-size: inherit; color: inherit;">
-                        <strong>Team Name:</strong> ${teamName}
-                    </p>
-                    <p style="font-size: inherit; color: inherit;">
-                        <strong>Email:</strong> ${email}
-                    </p>
-                    <p style="font-size: inherit; color: inherit;">
-                        <strong>Phone:</strong> ${phone}
-                    </p>
-                    <p style="font-size: inherit; color: inherit;">
-                        <strong>Team Size:</strong> ${teamSize}
-                    </p>
-                    <p style="font-size: inherit; color: inherit;">
-                        <strong>Message:</strong><br/> ${messageContent || '<i style="display: inline-block;"> No message was added. </i>'}
-                    </p>
+                    <p>Hello ${firstName} ${lastName},</p>
+                    <p>Thank you for reaching out to RADA and expressing interest in our custom design services for ${teamName}. We are thrilled to collaborate with you and create something unique for your team of ${teamSize} people. We have received your request and the following message from you:</p>
+                    <p>“${messageContent || 'No message was added.'}”</p>
+                    <p>Our design team will review this and be in touch shortly to guide you through the next steps and discuss any specific details you’d like to include.</p>
+                    <p>If you have any questions or would like to share more ideas in the meantime, please feel free to reply to this message. We appreciate your patience and look forward to creating something special together!</p>
+                    <p>Best regards,<br/>The RADA Team</p>
                 </div>
             `;
 
             const message = {
                 from: EMAIL,
                 to: email,
-                bcc: RECEIVER_EMAIL,
+                bcc: [RECEIVER_EMAIL, EMAIL],
                 subject: subject,
                 html: html,
             };
