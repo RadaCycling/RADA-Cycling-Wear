@@ -4,7 +4,7 @@
 
 	let imageSources = [`${baseImageRoute}/landing.webp`];
 
-	let smallImagesSources = ['landing-small.webp'];
+	let smallImagesSources = [`${baseImageRoute}/landing-small.webp`];
 </script>
 
 <section class="landing">
