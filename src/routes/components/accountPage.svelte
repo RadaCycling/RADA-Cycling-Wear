@@ -61,6 +61,7 @@
 		color: var(--content);
 		margin-bottom: 20px;
 		font-size: 2rem;
+		font-weight: 500;
 	}
 
 	.account-details {
@@ -102,6 +103,7 @@
 		text-decoration: none;
 		border-radius: 5px;
 		font-size: 1rem;
+		font-weight: 500;
 		cursor: pointer;
 	}
 

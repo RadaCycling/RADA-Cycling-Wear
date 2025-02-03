@@ -66,10 +66,8 @@
 	<title>Admin | Products</title>
 </svelte:head>
 
-<div class="products-page">
-	<header>
-		<h1>Product List</h1>
-	</header>
+<div in:fade class="products-page">
+	<h1>Product List</h1>
 	<main>
 		<div class="header">
 			<div class="action-buttons">
@@ -131,8 +129,8 @@
 											/>
 										</a>
 									</td>
-									<td class="ellipsis">{product.name.en}</td>
-									<td>{product.price}</td>
+									<td class="ellipsis allow-select">{product.name.en}</td>
+									<td class="allow-select">{product.price}</td>
 									<td class="center-align">
 										<label class="switch">
 											<input
@@ -146,9 +144,11 @@
 									</td>
 									<td class="ellipsis">
 										{#each product.categoryIds as id}
-											<span class="badge"
+											<a
+												class="badge"
+												href={`${baseRoute}/admin/categories/${id}`}
 												>{categories.find((category) => category.id === id)
-													?.name.en}</span
+													?.name.en}</a
 											>
 										{/each}
 									</td>
@@ -188,6 +188,8 @@
 		padding: 1rem;
 		display: grid;
 		align-items: center;
+		justify-items: center;
+		min-width: 800px;
 	}
 
 	main {
@@ -195,22 +197,26 @@
 		margin: 0 auto;
 		border: #00000010 solid 3px;
 		border-radius: 20px;
+		box-shadow: 0 0 10px #00000010;
 		overflow: hidden;
 		overflow: clip;
 		background-color: #fff;
-		padding: 1.5rem 2rem;
+		padding: 2rem 2rem 1.5rem;
 		display: grid;
 		align-items: center;
 		gap: 1rem;
 	}
 
 	h1 {
-		margin-bottom: 1rem;
-		font-size: 2rem;
+		margin-bottom: 1.5rem;
+		font-size: 2.25rem;
+		font-weight: 500;
+		border-radius: 15px;
 	}
 
 	.header {
 		display: flex;
+		gap: 2rem;
 		justify-content: space-between;
 		align-items: center;
 		margin-bottom: 1rem;
@@ -222,11 +228,12 @@
 		gap: 0.75ch;
 		border: solid 1px var(--interactive-5);
 		background-color: var(--interactive-1);
-		box-shadow: 1px 1px 5px #00000010;
+		box-shadow: 1px 1px 5px #ff000030;
 		color: var(--interactive);
 		padding: 0.5rem 0.75rem;
 		border-radius: 10px;
 		cursor: pointer;
+		transition: all 0.3s;
 	}
 
 	.add-button svg {
@@ -235,12 +242,21 @@
 
 	.add-button:hover {
 		filter: brightness(120%);
+		transform: scale(1.02);
 	}
 
 	.search-bar {
 		padding: 0.75rem 1rem;
 		border: 1px solid #ddd;
+		box-shadow: 1px 1px 5px var(--content-1);
 		border-radius: 10px;
+		transition: all 0.3s;
+	}
+
+	.search-bar:hover,
+	.search-bar:focus {
+		box-shadow: 1px 1px 5px var(--content-2);
+		transform: scale(1.025);
 	}
 
 	table {
@@ -249,7 +265,13 @@
 	}
 
 	tbody tr:not(:last-of-type) {
-		border-bottom: 3px solid #00000010;
+		border-bottom: 2px solid #00000020;
+	}
+
+	.allow-select {
+		user-select: text;
+		-webkit-user-select: text;
+		cursor: text;
 	}
 
 	th,
@@ -275,14 +297,23 @@
 	.th_content {
 		border-radius: 5px;
 		background-color: #00000010;
-		padding: 0.5rem 1rem;
+		padding: 0.65rem 1rem;
+		margin-bottom: 0.5rem;
 	}
 
 	td img {
-		width: 60px;
-		height: 60px;
-		object-fit: contain;
+		width: 55px;
+		height: 55px;
+		margin: 5px 0;
+		object-position: top;
+		object-fit: cover;
 		border-radius: 10px;
+		transition: all 0.3s;
+	}
+
+	td img:hover {
+		filter: brightness(110%);
+		transform: scale(1.05);
 	}
 
 	.ellipsis {
@@ -298,12 +329,17 @@
 		display: inline-block;
 		width: 34px;
 		height: 20px;
+		transition: all 0.3s;
 	}
 
 	.switch input {
 		opacity: 0;
 		width: 0;
 		height: 0;
+	}
+
+	.switch:hover {
+		filter: brightness(120%);
 	}
 
 	.slider {
@@ -346,6 +382,13 @@
 		background-color: #007bff;
 		color: white;
 		font-size: 0.75rem;
+		transition: all 0.3s;
+		cursor: pointer;
+	}
+
+	.badge:hover {
+		filter: brightness(130%);
+		transform: scale(1.025);
 	}
 
 	.action-button {
@@ -361,6 +404,7 @@
 		align-items: center;
 		transition: all 0.1s;
 		margin: auto;
+		transition: all 0.2s;
 	}
 
 	.action-button svg {
@@ -369,5 +413,7 @@
 
 	.edit-button:hover {
 		background-color: #00000010;
+		filter: brightness(120%);
+		transform: scale(1.05);
 	}
 </style>

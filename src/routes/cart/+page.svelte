@@ -140,6 +140,7 @@
 
 	h1 {
 		font-size: clamp(1.5rem, 3.5vw, 1.75rem);
+		font-weight: 600;
 	}
 
 	.cart-item {

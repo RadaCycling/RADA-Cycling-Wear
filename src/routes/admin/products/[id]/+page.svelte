@@ -4,11 +4,13 @@
 	import { ref, uploadBytes, deleteObject, getDownloadURL } from 'firebase/storage';
 	import { page } from '$app/stores';
 	import { db, storage } from '$lib/firebase/rada';
-	import { allProductsStore, baseRoute, language } from '../../../stores';
+	import { allProductsStore, baseRoute, dataReady, language } from '../../../stores';
 	import toast from 'svelte-french-toast';
-	import { autoResizeTextarea } from '../../../functions';
+	import { autoResizeTextarea, randomizeFileName } from '../../../functions';
 	import type { Product } from '../../../mockDb';
 	import { goto } from '$app/navigation';
+	import { fade } from 'svelte/transition';
+	import Texteditor from '../../../components/texteditor.svelte';
 
 	let form: HTMLFormElement;
 
@@ -47,6 +49,18 @@
 		if (product?.unitsInStock === 0) {
 			product.status = false;
 			toast('Product status deactivated because units in stock is 0.');
+		}
+	}
+
+	function checkHREF() {
+		if (!product) return;
+
+		product.href = product.href.replace(/[^a-zA-Z0-9-]/g, '');
+		if (product.href === '') {
+			product.href = product.name.en
+				.toLowerCase()
+				.replace(' ', '-')
+				.replace(/[^a-zA-Z0-9-]/g, '');
 		}
 	}
 
@@ -99,7 +113,7 @@
 		}
 	}
 
-	async function fetchImageUrls(type: 'main' | 'hover' | 'all' = 'all') {
+	async function setImageUrlsFromStorage(type: 'main' | 'hover' | 'all' = 'all') {
 		if (!product) return;
 
 		if (type === 'main' || type === 'all') {
@@ -122,68 +136,150 @@
 
 	async function handleImageUpload(event: Event) {
 		const target = event.target as HTMLInputElement;
-		if (target.files) {
+		if (target.files && product) {
 			imageFiles = Array.from(target.files);
-			for (const file of imageFiles) {
-				const storageRef = ref(storage, `products/${file.name}`);
-				await uploadBytes(storageRef, file);
-				product?.dbImageSources.push(file.name);
+			for (let file of imageFiles) {
+				file = randomizeFileName(file);
+
+				imagesAddedLocally.push(file);
+
+				product.dbImageSources = [...product.dbImageSources, file.name];
+				product.imageSources = [...product.imageSources, URL.createObjectURL(file)];
 			}
-			await fetchImageUrls('main');
 		}
+
+		// Reset Input Element
+		target.value = '';
 	}
 
-	async function handleImageDelete(imageSource?: string | null) {
+	async function handleImageDelete(imageSource: string, storageURL: string) {
 		if (!product || !imageSource) return;
 
-		const imageRef = ref(storage, `products/${imageSource}`);
-		await deleteObject(imageRef);
-		product!.dbImageSources = product!.dbImageSources.filter((src) => src !== imageSource);
-		await fetchImageUrls('main');
+		imagesDeletedLocally.push(imageSource);
+
+		// Only delete one instance of the imageSource
+		const index = product!.dbImageSources.indexOf(imageSource);
+		if (index !== -1) {
+			product!.dbImageSources.splice(index, 1);
+		}
+		product!.imageSources = product!.imageSources.filter((src) => src !== storageURL);
 	}
 
 	async function handleHoverImageUpload(event: Event) {
 		const target = event.target as HTMLInputElement;
 		if (target.files) {
 			imageFiles = Array.from(target.files);
-			for (const file of imageFiles) {
-				const storageRef = ref(storage, `products/${file.name}`);
-				await uploadBytes(storageRef, file);
-				if (product) product.dbImageHoverSource = file.name;
+			if (imageFiles.length > 1) {
+				toast('Warning: Only the one file will be uploaded as the hover image.');
 			}
-			await fetchImageUrls('hover');
+			for (let file of imageFiles) {
+				if (product) {
+					file = randomizeFileName(file);
+
+					imagesAddedLocally.push(file);
+
+					product.dbImageHoverSource = file.name;
+					product.imageHoverSource = URL.createObjectURL(file);
+				}
+			}
 		}
+
+		// Reset Input Element
+		target.value = '';
 	}
 
-	async function handleHoverImageDelete(imageSource?: string | null) {
+	async function handleHoverImageDelete(imageSource: string) {
 		if (!product || !imageSource) return;
 
+		imagesDeletedLocally.push(imageSource);
+
+		product.dbImageHoverSource = null;
+		product.imageHoverSource = '';
+	}
+
+	const imagesAddedLocally: File[] = [];
+	async function addImageToStorage(imageFile: File) {
+		const imageRef = ref(storage, `products/${imageFile.name}`);
+		await uploadBytes(imageRef, imageFile);
+	}
+
+	const imagesDeletedLocally: string[] = [];
+	async function deleteImageFromStorage(imageSource: string) {
 		const imageRef = ref(storage, `products/${imageSource}`);
 		await deleteObject(imageRef);
-		if (product) product.dbImageHoverSource = null;
-		await fetchImageUrls('hover');
+	}
+
+	function syncImageLists(): void {
+		const deleteCount: Record<string, number> = {};
+		const addCount: Record<string, number> = {};
+
+		// Count occurrences in imagesDeletedLocally
+		for (const name of imagesDeletedLocally) {
+			deleteCount[name] = (deleteCount[name] || 0) + 1;
+		}
+
+		// Count occurrences in imagesAddedLocally (store original File objects)
+		const originalFiles: Record<string, File> = {};
+		for (const file of imagesAddedLocally) {
+			addCount[file.name] = (addCount[file.name] || 0) + 1;
+			if (!originalFiles[file.name]) {
+				originalFiles[file.name] = file;
+			}
+		}
+
+		// Adjust counts: Remove common elements
+		for (const name in deleteCount) {
+			if (addCount[name]) {
+				const minCount = Math.min(deleteCount[name], addCount[name]);
+				deleteCount[name] -= minCount;
+				addCount[name] -= minCount;
+			}
+		}
+
+		// Reconstruct imagesDeletedLocally without duplicates
+		imagesDeletedLocally.length = 0;
+		for (const name in deleteCount) {
+			if (deleteCount[name] > 0) {
+				for (let i = 0; i < deleteCount[name]; i++) {
+					imagesDeletedLocally.push(name);
+				}
+			}
+		}
+
+		// Reconstruct imagesAddedLocally using original File objects
+		imagesAddedLocally.length = 0;
+		for (const name in addCount) {
+			if (addCount[name] > 0) {
+				imagesAddedLocally.push(originalFiles[name]);
+			}
+		}
 	}
 
 	onMount(async () => {
 		id = $page.params.id;
 		isNewProduct = id === newProductParameter;
-		product = isNewProduct ? emptyProduct : $allProductsStore.find((p) => p.id === id);
+		product = isNewProduct
+			? emptyProduct
+			: structuredClone($allProductsStore.find((p) => p.id === id));
 
 		if (product) {
 			categoryIds = product.categoryIds ? product.categoryIds.join(', ') : '';
 			versionsIds = product.versionsIds ? product.versionsIds.join(', ') : '';
 			detailsString = JSON.stringify(product.details, null, 2);
-			await fetchImageUrls();
+			await setImageUrlsFromStorage();
 		} else if (!isNewProduct) {
 			toast.error('Invalid product ID');
+			goto(baseRoute + '/admin/products');
+			return;
 		}
 	});
 
 	async function saveProduct() {
-		if (!product) return;
-
-		// Check if required fields are filled
-		if (
+		// Validate the product
+		if (!product) {
+			toast.error('Product not found');
+			return;
+		} else if (
 			!product.name.en ||
 			!product.name.es ||
 			!product.price ||
@@ -192,29 +288,47 @@
 		) {
 			toast.error('Please fill in all required fields.');
 			return;
-		}
-
-		if (product.price === '$0.00') {
+		} else if (product.price === '$0.00') {
 			toast.error('$0.00 is not a valid price.');
 			return;
-		}
-
-		if (!validDetails) {
+		} else if (!validDetails) {
 			toast.error('Invalid details JSON format');
 			return;
-		} else if (id === newProductParameter) {
+		}
+		$dataReady = false;
+
+		// Update Images
+		syncImageLists();
+		for (let i = 0; i < imagesDeletedLocally.length; i++) {
+			const element = imagesDeletedLocally[i];
+			await deleteImageFromStorage(element);
+		}
+		for (let i = 0; i < imagesAddedLocally.length; i++) {
+			const element = imagesAddedLocally[i];
+			await addImageToStorage(element);
+		}
+		await setImageUrlsFromStorage();
+
+		// Save the product
+		if (id === newProductParameter) {
+			// Update Product in Database
 			const newDocRef = doc(collection(db, 'products'));
 			product.id = newDocRef.id;
 			await setDoc(newDocRef, product);
+
+			// Update Product Locally
 			allProductsStore.update((products) => {
 				if (!product) return products;
 				return [...products, product];
 			});
+
 			toast.success('New product created successfully!');
-			goto(baseRoute + '/admin/products');
 		} else {
+			// Update Product in Database
 			const docRef = doc(db, 'products', id);
 			await updateDoc(docRef, product);
+
+			// Update Product Locally
 			allProductsStore.update((products) => {
 				const index = products.findIndex((p) => p.id === id);
 				if (index !== -1 && product) {
@@ -222,9 +336,12 @@
 				}
 				return products;
 			});
+
 			toast.success('Product saved successfully!');
-			goto(baseRoute + '/admin/products');
 		}
+
+		$dataReady = true;
+		goto(baseRoute + '/admin/products');
 	}
 
 	async function deleteProduct() {
@@ -237,168 +354,242 @@
 	}
 </script>
 
-<head>
+<svelte:head>
 	<title>Admin | {isNewProduct ? 'Create New Product' : 'Edit Product'} - {$page.params.id}</title
 	>
-</head>
-
+</svelte:head>
 {#if product}
-	<form bind:this={form} class="edit-product-page">
-		<h1>{isNewProduct ? 'Create New Product' : 'Edit Product'}</h1>
-		<div class="form-group">
-			<label>
-				Name (EN):
-				<input type="text" required bind:value={product.name.en} />
-			</label>
-		</div>
-		<div class="form-group">
-			<label>
-				Name (ES):
-				<input type="text" required bind:value={product.name.es} />
-			</label>
-		</div>
-		<div class="form-group">
-			<h2>Images</h2>
-			<div class="image-gallery">
-				<label class="image-item add-image">
-					<ion-icon name="add" />
-					<input type="file" multiple on:change={handleImageUpload} />
-				</label>
-				{#each product.imageSources as url, index}
-					<div class="image-item">
-						<img src={url} alt={product?.imageAlt[$language]} />
-						<div class="image-actions">
-							<a href={url} target="_blank" class="download-button">View</a>
-							<button
-								on:click={() => handleImageDelete(product?.dbImageSources[index])}
-								class="delete-button">Delete</button
-							>
-						</div>
-					</div>
-				{/each}
+	<form in:fade bind:this={form} class="edit-product-page">
+		<header>
+			<a href="{baseRoute}/admin/products">
+				<ion-icon name="close" />
+			</a>
+			<h1>{isNewProduct ? 'Create New Product' : 'Edit Product'}</h1>
+			<p>{product.id}</p>
+		</header>
+
+		<!-- GENERAL INFORMATION -->
+		<section>
+			<h2>General Information</h2>
+			<div class="section-content">
+				<p>Provide basic details about the product.</p>
+				<div class="form-group">
+					<label for="name-en">Name (English):</label>
+					<input
+						id="name-en"
+						type="text"
+						required
+						bind:value={product.name.en}
+						on:change={checkHREF}
+					/>
+				</div>
+				<div class="form-group">
+					<label for="name-es">Name (Spanish):</label>
+					<input id="name-es" type="text" required bind:value={product.name.es} />
+				</div>
+				<div class="form-group">
+					<label for="description-en">Description (English):</label>
+					<Texteditor bind:content={product.description.en} />
+				</div>
+				<div class="form-group">
+					<label for="description-es">Description (Spanish):</label>
+					<Texteditor bind:content={product.description.es} />
+				</div>
+				<p>
+					Enter a short, <b>unique</b> link for this product.
+				</p>
+				<div class="form-group">
+					<label for="href">Product URL (HREF):</label>
+					<input
+						id="href"
+						type="text"
+						required
+						bind:value={product.href}
+						on:change={checkHREF}
+					/>
+				</div>
 			</div>
-		</div>
-		<div class="form-group">
-			<h2>Hover Image</h2>
-			<div class="image-gallery">
-				{#if product && product.imageHoverSource}
-					<div class="image-item">
-						<img src={product.imageHoverSource} alt={product?.imageAlt[$language]} />
-						<div class="image-actions">
-							<a
-								href={product.imageHoverSource}
-								target="_blank"
-								class="download-button">View</a
-							>
-							<button
-								on:click={() => handleHoverImageDelete(product?.dbImageHoverSource)}
-								class="delete-button">Delete</button
-							>
-						</div>
-					</div>
-				{:else}
-					<label class="image-item add-image">
-						<ion-icon name="add" />
-						<input type="file" multiple on:change={handleHoverImageUpload} />
+		</section>
+
+		<!-- PRICING & STOCK -->
+		<section>
+			<h2>Pricing & Stock</h2>
+			<div class="section-content">
+				<p>Set the price and stock details for the product.</p>
+				<div class="form-group">
+					<label for="price">Price:</label>
+					<input
+						id="price"
+						type="text"
+						required
+						bind:value={product.price}
+						on:input={handlePriceInput}
+						on:blur={checkPriceInput}
+					/>
+				</div>
+				<div class="form-group">
+					<label for="old-price">Old Price (optional):</label>
+					<input
+						id="old-price"
+						type="text"
+						bind:value={product.oldPrice}
+						on:input={handlePriceInput}
+						on:blur={checkPriceInput}
+					/>
+				</div>
+				<div class="form-group">
+					<label for="units-in-stock">Units in Stock:</label>
+					<input
+						id="units-in-stock"
+						type="number"
+						required
+						bind:value={product.unitsInStock}
+					/>
+				</div>
+				<div class="form-group">
+					<label for="main-version"> Main Version </label>
+					<label class="switch">
+						<input
+							id="main-version"
+							type="checkbox"
+							bind:checked={product.mainVersion}
+						/>
+						<span class="slider" />
 					</label>
-				{/if}
+					<span
+						>"{product.name['en']}" <b>{product.mainVersion ? 'is' : 'is not'}</b> the main
+						version.</span
+					>
+				</div>
+				<div class="form-group">
+					<label for="status"> Product Status </label>
+					<label class="switch">
+						<input id="status" type="checkbox" bind:checked={product.status} />
+						<span class="slider" />
+					</label>
+					<span
+						>"{product.name['en']}" is
+						<b>{product.status ? 'visible' : 'hidden'}</b>.</span
+					>
+				</div>
 			</div>
-		</div>
-		<div class="form-group">
-			<label>
-				Description (EN):
-				<textarea use:autoResizeTextarea bind:value={product.description.en} />
-			</label>
-		</div>
-		<div class="form-group">
-			<label>
-				Description (ES):
-				<textarea use:autoResizeTextarea bind:value={product.description.es} />
-			</label>
-		</div>
-		<div class="form-group">
-			<label>
-				Price:
-				<input
-					required
-					type="text"
-					bind:value={product.price}
-					on:input={handlePriceInput}
-					on:blur={checkPriceInput}
-				/>
-			</label>
-		</div>
-		<div class="form-group">
-			<label>
-				Old Price:
-				<input
-					type="text"
-					bind:value={product.oldPrice}
-					on:input={handlePriceInput}
-					on:blur={checkPriceInput}
-				/>
-			</label>
-		</div>
-		<div class="form-group">
-			<label>
-				Units in Stock:
-				<input required type="number" bind:value={product.unitsInStock} />
-			</label>
-		</div>
-		<div class="form-group">
-			<label>
-				Main Version:
-				<input type="checkbox" bind:checked={product.mainVersion} />
-			</label>
-		</div>
-		<div class="form-group">
-			<label>
-				Status:
-				<input type="checkbox" bind:checked={product.status} />
-			</label>
-		</div>
-		<div class="form-group">
-			<label>
-				Image Alt (EN):
-				<input type="text" bind:value={product.imageAlt.en} />
-			</label>
-		</div>
-		<div class="form-group">
-			<label>
-				Image Alt (ES):
-				<input type="text" bind:value={product.imageAlt.es} />
-			</label>
-		</div>
-		<div class="form-group">
-			<label>
-				HREF:
-				<input required type="text" bind:value={product.href} />
-			</label>
-		</div>
-		<div class="form-group">
-			<label>
-				Version IDs (comma separated):
-				<input type="text" bind:value={versionsIds} on:input={handleVersionsIdsInput} />
-			</label>
-		</div>
-		<div class="form-group">
-			<label>
-				Category IDs (comma separated):
-				<input type="text" bind:value={categoryIds} on:input={handleCategoryIdsInput} />
-			</label>
-		</div>
-		<div class="form-group">
-			<label>
-				Details (JSON format):
-				<textarea
-					use:autoResizeTextarea
-					bind:value={detailsString}
-					on:blur={handleDetailsInput}
-					class:invalid={!validDetails}
-				/>
-			</label>
-		</div>
-		<div class="button-group">
+		</section>
+
+		<!-- CATEGORIES & VERSIONS -->
+		<section>
+			<h2>Categories & Versions</h2>
+			<div class="section-content">
+				<p>Specify the categories and versions for this product.</p>
+				<div class="form-group">
+					<label for="category-ids">Category IDs (comma separated):</label>
+					<input
+						id="category-ids"
+						type="text"
+						bind:value={categoryIds}
+						on:input={handleCategoryIdsInput}
+					/>
+				</div>
+				<div class="form-group">
+					<label for="version-ids">Version IDs (comma separated):</label>
+					<input
+						id="version-ids"
+						type="text"
+						bind:value={versionsIds}
+						on:input={handleVersionsIdsInput}
+					/>
+				</div>
+			</div>
+		</section>
+
+		<!-- IMAGES -->
+		<section>
+			<h2>Images</h2>
+			<div class="section-content">
+				<p>Upload product images and set an optional hover image.</p>
+				<div class="form-group">
+					<h3>Main Images</h3>
+					<div class="image-gallery">
+						<label class="image-item add-image">
+							<ion-icon name="add" />
+							<input type="file" multiple on:change={handleImageUpload} />
+						</label>
+						{#each product.imageSources as url, index}
+							<div class="image-item">
+								<img src={url} alt={product?.imageAlt[$language]} />
+								<div class="image-actions">
+									<a href={url} target="_blank" class="download-button">View</a>
+									<button
+										on:click={() => {
+											if (product) {
+												handleImageDelete(
+													product.dbImageSources[index],
+													url,
+												);
+											}
+										}}
+										class="delete-button">Delete</button
+									>
+								</div>
+							</div>
+						{/each}
+					</div>
+				</div>
+				<div class="form-group">
+					<h3>Hover Image</h3>
+					<div class="image-gallery">
+						{#if product.imageHoverSource}
+							<div class="image-item">
+								<img
+									src={product.imageHoverSource}
+									alt={product?.imageAlt[$language]}
+								/>
+								<div class="image-actions">
+									<a
+										href={product.imageHoverSource}
+										target="_blank"
+										class="download-button">View</a
+									>
+									<button
+										on:click={() => {
+											if (product?.dbImageHoverSource) {
+												handleHoverImageDelete(product.dbImageHoverSource);
+											}
+										}}
+										class="delete-button">Delete</button
+									>
+								</div>
+							</div>
+						{:else}
+							<label class="image-item add-image">
+								<ion-icon name="add" />
+								<input type="file" multiple on:change={handleHoverImageUpload} />
+							</label>
+						{/if}
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- ADDITIONAL DETAILS -->
+		<section>
+			<h2>Additional Details</h2>
+			<div class="section-content">
+				<p>Add structured details about the product in JSON format.</p>
+				<div class="form-group">
+					<label for="details">Details (JSON format):</label>
+					<textarea
+						id="details"
+						use:autoResizeTextarea
+						bind:value={detailsString}
+						on:blur={handleDetailsInput}
+						class:invalid={!validDetails}
+					/>
+				</div>
+			</div>
+		</section>
+
+		<!-- ACTIONS -->
+		<section class="button-group">
 			<button type="submit" class="button save-button" on:click={saveProduct}>
 				{isNewProduct ? 'Create' : 'Save'}
 			</button>
@@ -407,7 +598,7 @@
 					>Delete</button
 				>
 			{/if}
-		</div>
+		</section>
 	</form>
 {/if}
 
@@ -418,48 +609,121 @@
 		align-items: center;
 		justify-content: center;
 		padding: 2rem;
-		background-color: var(--main);
+		background-color: #ffffffaa;
+		border-radius: 20px;
 		color: var(--content);
 		width: 100%;
 		max-width: 1500px;
 		margin: auto;
 	}
 
-	h1 {
+	header {
+		max-width: 600px;
+		width: 100%;
+		position: relative;
+
+		display: grid;
+		justify-items: center;
+		align-items: center;
+		margin-top: -0.5rem;
 		margin-bottom: 2rem;
+	}
+
+	header a {
+		position: absolute;
+		right: 0;
+		top: -1rem;
+
+		display: flex;
+		align-items: center;
+		text-decoration: none;
+		color: var(--content-5);
+		font-size: 1.2rem;
+		border-radius: 50%;
+		padding: 0.25rem;
+
+		transition: all 0.3s;
+	}
+
+	header a:hover {
+		color: var(--content-8);
+		background-color: #ffffff;
+		box-shadow: 0 0 10px #fff;
+		transform: scale(1.1);
+	}
+
+	header p {
+		color: var(--content-5);
+		font-weight: bold;
+	}
+
+	h1 {
 		font-size: 2.5rem;
-		color: var(--interactive);
+		font-weight: normal;
 	}
 
 	h2 {
 		margin-bottom: 1rem;
 		font-size: 1.5rem;
-		color: var(--interactive);
+		font-weight: 500;
+	}
+
+	section {
+		width: 100%;
+		max-width: 700px;
+		margin-bottom: 2rem;
+
+		border: #00000010 solid 3px;
+		border-radius: 20px;
+		box-shadow: 0 0 10px #00000010;
+		background-color: #fff;
+		padding: 2rem 2rem 1.5rem;
+	}
+
+	.section-content {
+		padding-left: 1.5rem;
+		padding-bottom: 0.5rem;
+		border-left: 2px solid var(--content-2);
+	}
+
+	section p {
+		margin-bottom: 1.25rem;
+		font-size: 1em;
+		color: var(--content-7);
 	}
 
 	.form-group {
+		position: relative;
+
 		margin-bottom: 1.5rem;
 		width: 100%;
 		max-width: 600px;
+		border: 1px solid var(--content-5);
+		border-radius: 5px;
 	}
 
-	label {
+	label:not(.switch):not(.add-image),
+	h3 {
+		position: absolute;
+		top: 0;
+		transform: translateY(-60%);
+		left: 0.5rem;
+
 		display: flex;
 		flex-direction: column;
-		font-size: 1.2rem;
-		color: var(--content);
+		font-size: 0.95rem;
+		color: var(--content-5);
+		background-color: #ffffff;
+		padding: 0.25em 0.5em;
 	}
 
 	input[type='text'],
 	input[type='number'],
 	textarea {
-		margin-top: 0.5rem;
-		padding: 0.75rem;
-		font-size: 1rem;
-		border: 1px solid var(--content-5);
-		border-radius: 5px;
-		background-color: var(--main-8);
-		color: var (--content);
+		width: 100%;
+		font-size: 1.1rem;
+		padding: 1rem 1rem 0.75rem;
+		color: var(--content);
 	}
 
 	textarea.invalid {
@@ -471,11 +735,63 @@
 		min-height: 100px;
 	}
 
+	.switch {
+		position: relative;
+		display: inline-block;
+		width: 34px;
+		height: 20px;
+		transition: all 0.3s;
+		margin: 1rem;
+	}
+
+	.switch input {
+		opacity: 0;
+		width: 0;
+		height: 0;
+	}
+
+	.switch:hover {
+		filter: brightness(120%);
+	}
+
+	.slider {
+		position: absolute;
+		cursor: pointer;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background-color: #ccc;
+		transition: 0.4s;
+		border-radius: 34px;
+	}
+
+	.slider:before {
+		position: absolute;
+		content: '';
+		height: 14px;
+		width: 14px;
+		left: 3px;
+		bottom: 3px;
+		background-color: white;
+		transition: 0.4s;
+		border-radius: 50%;
+	}
+
+	input:checked + .slider {
+		background-color: #4caf50;
+	}
+
+	input:checked + .slider:before {
+		transform: translateX(14px);
+	}
+
 	.image-gallery {
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
 		gap: 1rem;
 		margin-bottom: 1.5rem;
+		padding: 1.5rem 1rem 0;
 	}
 
 	.image-item {
@@ -547,8 +863,9 @@
 	.button-group {
 		display: flex;
 		gap: 1rem;
-		margin-top: 2rem;
+		padding: 1rem;
 		align-items: center;
+		justify-content: center;
 	}
 
 	.button {
@@ -572,7 +889,7 @@
 
 	.delete-button {
 		background-color: var(--content-5);
-		color: var(--main);
+		color: var (--main);
 	}
 
 	.delete-button:hover {
@@ -582,21 +899,5 @@
 
 	input[type='file'] {
 		display: none;
-	}
-
-	@media (max-width: 768px) {
-		h1 {
-			font-size: 2rem;
-		}
-
-		.form-group {
-			width: 100%;
-			padding: 0 1rem;
-		}
-
-		.button {
-			width: 100%;
-			text-align: center;
-		}
 	}
 </style>

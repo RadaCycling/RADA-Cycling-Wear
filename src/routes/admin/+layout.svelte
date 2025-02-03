@@ -5,12 +5,12 @@
 </script>
 
 <div class="admin-layout">
-	<aside class="sidebar hide">
+	<aside class="sidebar">
 		<nav>
 			<ul>
 				<li>
 					<a
-						class="link"
+						class="link hide"
 						class:active={$page.url.pathname === `${baseRoute}/admin`}
 						href="{baseRoute}/admin">Dashboard</a
 					>
@@ -18,35 +18,35 @@
 				<li>
 					<a
 						class="link"
-						class:active={$page.url.pathname === `${baseRoute}/admin/products`}
+						class:active={$page.url.pathname.includes(`${baseRoute}/admin/products`)}
 						href="{baseRoute}/admin/products">Products</a
 					>
 				</li>
 				<li>
 					<a
 						class="link"
-						class:active={$page.url.pathname === `${baseRoute}/admin/categories`}
+						class:active={$page.url.pathname.includes(`${baseRoute}/admin/categories`)}
 						href="{baseRoute}/admin/categories">Categories</a
 					>
 				</li>
 				<li>
 					<a
 						class="link"
-						class:active={$page.url.pathname === `${baseRoute}/admin/portfolio`}
+						class:active={$page.url.pathname.includes(`${baseRoute}/admin/portfolio`)}
 						href="{baseRoute}/admin/portfolio">Portfolio</a
 					>
 				</li>
 				<li>
 					<a
 						class="link"
-						class:active={$page.url.pathname === `${baseRoute}/admin/orders`}
+						class:active={$page.url.pathname.includes(`${baseRoute}/admin/orders`)}
 						href="{baseRoute}/admin/orders">Orders</a
 					>
 				</li>
 				<li>
 					<a
 						class="link"
-						class:active={$page.url.pathname === `${baseRoute}/admin/messages`}
+						class:active={$page.url.pathname.includes(`${baseRoute}/admin/messages`)}
 						href="{baseRoute}/admin/messages">Messages</a
 					>
 				</li>
@@ -73,7 +73,7 @@
 		top: 5rem;
 		left: 0;
 
-		background-color: var(--main-5);
+		background-color: #ffffff90;
 		color: var(--content);
 		backdrop-filter: blur(8px);
 		-webkit-backdrop-filter: blur(8px);
@@ -105,7 +105,17 @@
 	}
 
 	.content {
-		/* margin-top: 3rem; */
+		margin-top: 3rem;
 		padding: 2rem 2rem 4rem;
+	}
+
+	@media screen and (max-width: 750px) {
+		.admin-layout {
+			margin-top: 4rem;
+		}
+
+		.sidebar {
+			top: 4rem;
+		}
 	}
 </style>

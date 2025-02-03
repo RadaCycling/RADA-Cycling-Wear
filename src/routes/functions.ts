@@ -80,10 +80,6 @@ export function convertDataUrlToUrl(dataUrl: string): string {
 export function autoResizeTextarea(element: HTMLTextAreaElement): void {
     const minHeight = element.offsetHeight;
 
-    const paddingTop = parseInt(window.getComputedStyle(element, null).getPropertyValue("padding-top"));
-    const paddingRight = parseInt(window.getComputedStyle(element, null).getPropertyValue("padding-right"));
-    const paddingBottom = parseInt(window.getComputedStyle(element, null).getPropertyValue("padding-bottom"));
-    const paddingLeft = parseInt(window.getComputedStyle(element, null).getPropertyValue("padding-left"));
     const border = parseInt(window.getComputedStyle(element, null).getPropertyValue("border"));
 
     const resize = () => {
@@ -103,7 +99,6 @@ export function autoResizeTextarea(element: HTMLTextAreaElement): void {
 
     element.style.overflow = "hidden";
     element.style.boxSizing = "border-box";
-    element.style.padding = `${paddingTop}px ${paddingRight}px ${paddingBottom}px ${paddingLeft}px`;
 
     resize();
 }
@@ -241,4 +236,11 @@ import { get } from 'svelte/store';
 let storedDictionary = get(dictionary)
 export function anErrorOccurred(error: string = storedDictionary.anErrorHasOccurred) {
     toast.error(error);
+}
+
+export function randomizeFileName(file: File): File {
+    const randomFileName =
+        window.crypto.randomUUID() + '.' + file.name.split('.').pop(); // Generate random name with original extension
+
+    return new File([file], randomFileName, { type: file.type });
 }
