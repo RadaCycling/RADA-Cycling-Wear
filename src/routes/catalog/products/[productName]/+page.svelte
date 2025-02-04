@@ -339,7 +339,11 @@
 		</div>
 	{/key}
 {:else}
-	<h1>{$dictionary.productNotFound}</h1>
+	<h1
+		style="position:absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); font-size: 1.2rem; font-weight: 500;"
+	>
+		{$dictionary.productNotFound}
+	</h1>
 {/if}
 
 <svelte:head>

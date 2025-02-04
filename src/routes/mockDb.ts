@@ -1,9 +1,6 @@
 import toast from "svelte-french-toast";
-import { activeSNavMenu, baseRoute, type CartItem, cartItems, dictionary, language } from "./stores"
+import { activeSNavMenu, baseRoute, type CartItem, cartItems, dictionary, type Language, language } from "./stores"
 import { get } from 'svelte/store';
-
-let storedDictionary = get(dictionary)
-let storedLanguage = get(language)
 
 export type translatableContent = { en: string; es: string; }
 
@@ -321,7 +318,7 @@ export function findCatalogSectionByName(sectionName: string): CatalogSection | 
     const allSections: CatalogSection[] = categoryMenus.flatMap(category => category.sections);
 
     // Find the first section that matches the sectionName
-    const matchingSection = allSections.find(section => section.name[storedLanguage] === sectionName);
+    const matchingSection = allSections.find(section => section.name[get(language) as Language] === sectionName);
 
     return matchingSection;
 }
@@ -360,7 +357,7 @@ export function getCategoryNamesFromIds(ids: number[]): string[] {
         if (!category) {
             throw new Error(`Category not found for id: ${id}`);
         }
-        return category.name[storedLanguage];
+        return category.name[get(language) as Language];
     });
 }
 // #endregion
@@ -378,39 +375,39 @@ export type MenuItem = {
 
 export const mainMenu: MenuItem[] = [
     {
-        name: storedDictionary.home,
+        name: get(dictionary).home,
         classname: 'baseButton extraSpaceLink',
         icon: 'home',
         href: `${baseRoute}/`,
     },
     {
-        name: storedDictionary.men,
+        name: get(dictionary).men,
         classname: 'baseButton extraSpaceLink',
         icon: 'man',
         iconStyle: 'font-size: 2em; margin-left: -8px;',
         callback: () => generateSectionsMenu(0),
     },
     {
-        name: storedDictionary.women,
+        name: get(dictionary).women,
         classname: 'baseButton extraSpaceLink',
         icon: 'woman',
         iconStyle: 'font-size: 2em; margin-left: -8px;',
         callback: () => generateSectionsMenu(1),
     },
     {
-        name: storedDictionary.custom,
+        name: get(dictionary).custom,
         classname: 'baseButton extraSpaceLink',
         icon: 'mail',
         href: `${baseRoute}/custom`,
     },
     // {
-    //     name: storedDictionary.ourWork,
+    //     name: get(dictionary).ourWork,
     //     classname: 'baseButton extraSpaceLink',
     //     icon: 'people',
     //     href: `${baseRoute}/our-work`,
     // },
     {
-        name: storedDictionary.myAccount,
+        name: get(dictionary).myAccount,
         classname: 'baseButton extraSpaceLink',
         icon: 'person-circle',
         href: `${baseRoute}/my-account`,
@@ -482,13 +479,13 @@ export function generateSectionsMenu(catalogCategoryID: number): void {
 
     const sectionsMenu: MenuItem[] = [
         {
-            name: catalogCategory.name[storedLanguage],
+            name: catalogCategory.name[get(language) as Language],
             classname: "baseButton backButton",
             callback: () => renderMenu(mainMenu),
         },
         ...catalogCategory.sections.map(section => ({
-            name: section.name[storedLanguage],
-            callback: () => generateCategoryMenu(section.name[storedLanguage], catalogCategoryID),
+            name: section.name[get(language) as Language],
+            callback: () => generateCategoryMenu(section.name[get(language) as Language], catalogCategoryID),
         })),
     ];
 
@@ -507,7 +504,7 @@ export function generateCategoryMenu(sectionName: string, catalogCategoryID: num
     const denormalizedCatalogCategory = denormalizeCatalogCategory(catalogCategory);
 
     // Find the section within the catalog category
-    const section = denormalizedCatalogCategory.sections.find(s => s.name[storedLanguage] === sectionName);
+    const section = denormalizedCatalogCategory.sections.find(s => s.name[get(language) as Language] === sectionName);
     if (!section || !section.categories) {
         console.error(`Section ${sectionName} not found in catalog category ${catalogCategoryID}`);
         return;
@@ -521,7 +518,7 @@ export function generateCategoryMenu(sectionName: string, catalogCategoryID: num
             callback: () => generateSectionsMenu(catalogCategoryID),
         },
         ...section.categories.map(category => ({
-            name: category.name[storedLanguage],
+            name: category.name[get(language) as Language],
             href: `${baseRoute}/catalog/${category.href}/${category.genderSpecific
                 ? catalogCategory.href
                 : ''}`,
@@ -784,16 +781,16 @@ export function denormalizeCartItems(cartItems: CartItem[], products: Product[])
 
         let productSize;
         if (item.sizeId) {
-            productSize = findCategoryById(item.sizeId)?.name[storedLanguage];
+            productSize = findCategoryById(item.sizeId)?.name[get(language) as Language];
         }
 
         return {
             productId: item.productId,
             sizeId: item.sizeId,
             quantity: item.quantity,
-            name: `${product.name[storedLanguage]}${productSize ? " - " + storedDictionary.size + ' ' + productSize : ""}`,
+            name: `${product.name[get(language) as Language]}${productSize ? " - " + get(dictionary).size + ' ' + productSize : ""}`,
             imageSrc: product.imageSources[0],
-            description: product.description[storedLanguage],
+            description: product.description[get(language) as Language],
             price: product.price,
             totalItemPrice: totalItemPrice,
             href: product.href
@@ -815,7 +812,7 @@ export function addToCart(productId: string, quantity: number, sizeId?: number, 
                 quantity,
             };
             if (name) {
-                toast.success(storedDictionary.quantityUpdated,
+                toast.success(get(dictionary).quantityUpdated,
                     {
                         style:
                             "max-width: 60%; text-align: center; box-shadow: 2px 2px 20px var(--content-5)",
@@ -826,7 +823,7 @@ export function addToCart(productId: string, quantity: number, sizeId?: number, 
         } else {
             // Add new item to the cart
             if (name) {
-                toast.success(`"${name}" ${storedDictionary.hasBeenAddedToTheCart}`,
+                toast.success(`"${name}" ${get(dictionary).hasBeenAddedToTheCart}`,
                     {
                         style:
                             "max-width: 60%; text-align: center; box-shadow: 2px 2px 20px var(--content-5)",
@@ -843,7 +840,7 @@ export function removeFromCart(productId: string, name: string, sizeId?: number)
 
     cartItems.update(items => items.filter(item => item.productId !== productId || item.sizeId !== sizeId));
 
-    toast.success(`"${name}" ${storedDictionary.hasBeenRemovedFromTheCart}`,
+    toast.success(`"${name}" ${get(dictionary).hasBeenRemovedFromTheCart}`,
         {
             style:
                 "max-width: 60%; text-align: center; box-shadow: 2px 2px 20px var(--content-5)",

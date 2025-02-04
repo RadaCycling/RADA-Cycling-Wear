@@ -345,11 +345,33 @@
 	}
 
 	async function deleteProduct() {
-		const docRef = doc(db, 'products', id);
-		await deleteDoc(docRef);
-		allProductsStore.update((products) => products.filter((p) => p.id !== id));
+		// Delete Product from Firestore
+		try {
+			const docRef = doc(db, 'products', id);
+			await deleteDoc(docRef);
 
-		toast.success('Product deleted successfully!');
+			allProductsStore.update((products) => products.filter((p) => p.id !== id));
+
+			toast.success('Product deleted successfully!');
+		} catch (error) {
+			toast.error('Product could not be deleted.');
+		}
+
+		// Delete Product's Images from Storage
+		try {
+			if (product) {
+				for (let index = 0; index < product.dbImageSources.length; index++) {
+					const element = product.dbImageSources[index];
+					await deleteImageFromStorage(element);
+				}
+				if (product.dbImageHoverSource) {
+					await deleteImageFromStorage(product.dbImageHoverSource);
+				}
+			}
+		} catch (error) {
+			toast('Warning: Product images could not be deleted from storage.');
+		}
+
 		goto(baseRoute + '/admin/products');
 	}
 </script>

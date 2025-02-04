@@ -164,6 +164,24 @@ export function escapeHTML(input: string): string {
     return input.replace(/[&<>"'`=\/]/g, (s) => entityMap[s]);
 }
 
+// Markdown conversion
+export function convertMarkdown(text: string): string {
+    const boldPattern = /\*\*((?:(?!<br>)[^*])*)\*\*/g; // **text**
+    const italicPattern = /__((?:(?!<br>)[^_])*)__/g; // __text__
+    const crossedPattern = /~~((?:(?!<br>)[^~])*)~~/g; // ~~text~~
+    const unorderedListPattern = /(?<=^|\>)(?:&nbsp;)*(?:-\s)(.*?)(?:<br>|$)/gm; // - text
+
+    // Perform markdown conversion
+    text = text.replace(boldPattern, '<strong>$1</strong>')
+        .replace(italicPattern, '<em>$1</em>')
+        .replace(crossedPattern, '<s>$1</s>')
+        .replace(unorderedListPattern, (match, content) => {
+            return `<li>${content}</li>`;
+        })
+
+    return text;
+}
+
 import toast from "svelte-french-toast";
 import type { Action } from "svelte/action";
 
