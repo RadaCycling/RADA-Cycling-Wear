@@ -159,10 +159,7 @@
 		range.insertNode(markerEl);
 
 		// Get current HTML (which now contains the marker) and convert it
-		let htmlContent = editor.innerHTML;
-		let transformedHTML = convertMarkdown(htmlContent);
-		console.log('Before: ');
-		console.log(transformedHTML);
+		editor.innerHTML = convertMarkdown(editor.innerHTML);
 
 		// Cleanup unwanted empty styling wrappers
 		removeEmptyTagsWithinEditor();
@@ -181,6 +178,9 @@
 			// Remove the marker element
 			newMarkerEl.parentNode?.removeChild(newMarkerEl);
 		}
+
+		// Sync the content of the editor with the content variable
+		content = editor.innerHTML;
 	}
 </script>
 

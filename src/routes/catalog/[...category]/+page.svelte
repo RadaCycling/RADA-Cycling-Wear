@@ -9,6 +9,10 @@
 		findProductsByCategoryIds,
 		getCategoryNamesFromIds,
 		getCategoryHrefsFromIds,
+		genderCategoryIds,
+		genderOptions as genderGuide,
+		sizeCategoryIds,
+		sizeOptions as sizeGuide,
 	} from '../../mockDb';
 	import { baseImageRoute, baseRoute, dictionary, language, productsStore } from '../../stores';
 	import Product from '../../components/product.svelte';
@@ -16,6 +20,9 @@
 	import { goto } from '$app/navigation';
 
 	let parameters: string[];
+
+	let sizeOptions = [{ id: -1, name: $dictionary.size }, ...sizeGuide];
+	let genderOptions = [{ id: -1, name: $dictionary.gender }, ...genderGuide];
 
 	let mainCategory: Category | undefined;
 	let categoryIds: number[];
@@ -66,30 +73,8 @@
 	$: $page.params.category, setup();
 
 	// FILTER SECTION
-
 	let selectedSizeIndex = 0;
-	const sizeOptions = [
-		{ id: -1, name: $dictionary.size },
-		{ id: 16, name: 'XS' },
-		{ id: 17, name: 'S' },
-		{ id: 18, name: 'M' },
-		{ id: 19, name: 'L' },
-		{ id: 20, name: 'XL' },
-		{ id: 21, name: 'XXL' },
-	];
-	const sizeCategoryIds = sizeOptions.map((option) => {
-		return option.id;
-	});
-
 	let selectedGenderIndex = 0;
-	const genderOptions = [
-		{ id: -1, name: $dictionary.gender },
-		{ id: 7, name: $dictionary.men },
-		{ id: 15, name: $dictionary.women },
-	];
-	const genderCategoryIds = genderOptions.map((option) => {
-		return option.id;
-	});
 
 	let selectedSortIndex = 0;
 	$: selectedSortIndex, sortByPrice();

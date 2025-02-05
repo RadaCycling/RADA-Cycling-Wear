@@ -262,6 +262,26 @@ export let categories: Category[] = [
     }
 ];
 
+export const sizeOptions = [
+    { id: 16, name: 'XS' },
+    { id: 17, name: 'S' },
+    { id: 18, name: 'M' },
+    { id: 19, name: 'L' },
+    { id: 20, name: 'XL' },
+    { id: 21, name: 'XXL' },
+];
+export const sizeCategoryIds = sizeOptions.map((option) => {
+    return option.id;
+});
+
+export const genderOptions = [
+    { id: 7, name: get(dictionary).men },
+    { id: 15, name: get(dictionary).women },
+];
+export const genderCategoryIds = genderOptions.map((option) => {
+    return option.id;
+});
+
 
 export function denormalizeCatalogCategory(catalogCategory: CatalogCategory): CatalogCategory {
     // Denormalize each section by mapping the category IDs to their full data
@@ -552,7 +572,13 @@ export type Product = {
     versionsIds: string[] | null,
     href: string,
     categoryIds: number[]
-    unitsInStock: number
+    unitsInStock: UnitsInStock[] | number
+}
+
+export type UnitsInStock = {
+    id: number;
+    name: string;
+    units: number;
 }
 
 type TableEntry = {

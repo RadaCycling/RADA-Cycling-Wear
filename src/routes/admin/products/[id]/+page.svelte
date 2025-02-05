@@ -4,10 +4,10 @@
 	import { ref, uploadBytes, deleteObject, getDownloadURL } from 'firebase/storage';
 	import { page } from '$app/stores';
 	import { db, storage } from '$lib/firebase/rada';
-	import { allProductsStore, baseRoute, dataReady, language } from '../../../stores';
+	import { allProductsStore, baseRoute, dataReady, dictionary, language } from '../../../stores';
 	import toast from 'svelte-french-toast';
 	import { autoResizeTextarea, randomizeFileName } from '../../../functions';
-	import type { Product } from '../../../mockDb';
+	import { sizeOptions, type Product, type UnitsInStock } from '../../../mockDb';
 	import { goto } from '$app/navigation';
 	import { fade } from 'svelte/transition';
 	import Texteditor from '../../../components/texteditor.svelte';
@@ -19,7 +19,9 @@
 	let isNewProduct = false;
 	const emptyProduct: Product = {
 		id: '',
-		unitsInStock: 1,
+		unitsInStock: sizeOptions.map((option) => {
+			return { id: option.id, name: option.name, units: 1 } as UnitsInStock;
+		}),
 		name: { en: '', es: '' },
 		description: { en: '', es: '' },
 		price: '$0.00',
@@ -41,14 +43,50 @@
 	let categoryIds: string = '';
 	let versionsIds: string = '';
 	let detailsString: string = '';
+	let isSingleSize: boolean;
+	let singleSizeChangerMemory: UnitsInStock[] | number;
 	let validDetails: boolean = true;
 	let imageFiles: File[] = [];
 
 	$: product?.unitsInStock, checkStatus();
 	function checkStatus() {
-		if (product?.unitsInStock === 0) {
+		if (!product) return;
+
+		let noStock: boolean = true;
+		if (typeof product?.unitsInStock === 'number') {
+			noStock = product.unitsInStock === 0;
+		} else {
+			for (let index = 0; index < product.unitsInStock.length; index++) {
+				const element = product.unitsInStock[index];
+				if (element.units > 0) {
+					noStock = false;
+				}
+			}
+		}
+
+		if (noStock) {
 			product.status = false;
-			toast('Product status deactivated because units in stock is 0.');
+			toast('Product status was deactivated because there are no units in stock.');
+		}
+	}
+
+	function handleSingleSizeChange() {
+		if (!product) return;
+		let localMemory;
+		if (singleSizeChangerMemory) {
+			localMemory = singleSizeChangerMemory;
+		} else if (isSingleSize) {
+			localMemory = 1;
+		} else {
+			localMemory = emptyProduct.unitsInStock;
+		}
+
+		if (isSingleSize) {
+			singleSizeChangerMemory = product.unitsInStock;
+			product.unitsInStock = localMemory;
+		} else {
+			singleSizeChangerMemory = product.unitsInStock;
+			product.unitsInStock = localMemory;
 		}
 	}
 
@@ -266,6 +304,7 @@
 			categoryIds = product.categoryIds ? product.categoryIds.join(', ') : '';
 			versionsIds = product.versionsIds ? product.versionsIds.join(', ') : '';
 			detailsString = JSON.stringify(product.details, null, 2);
+			isSingleSize = typeof product?.unitsInStock === 'number';
 			await setImageUrlsFromStorage();
 		} else if (!isNewProduct) {
 			toast.error('Invalid product ID');
@@ -396,7 +435,7 @@
 			<div class="section-content">
 				<p>Provide basic details about the product.</p>
 				<div class="form-group">
-					<label for="name-en">Name (English):</label>
+					<label class="form-group-label" for="name-en">Name (English):</label>
 					<input
 						id="name-en"
 						type="text"
@@ -406,22 +445,26 @@
 					/>
 				</div>
 				<div class="form-group">
-					<label for="name-es">Name (Spanish):</label>
+					<label class="form-group-label" for="name-es">Name (Spanish):</label>
 					<input id="name-es" type="text" required bind:value={product.name.es} />
 				</div>
 				<div class="form-group">
-					<label for="description-en">Description (English):</label>
+					<label class="form-group-label" for="description-en"
+						>Description (English):</label
+					>
 					<Texteditor bind:content={product.description.en} />
 				</div>
 				<div class="form-group">
-					<label for="description-es">Description (Spanish):</label>
+					<label class="form-group-label" for="description-es"
+						>Description (Spanish):</label
+					>
 					<Texteditor bind:content={product.description.es} />
 				</div>
 				<p>
 					Enter a short, <b>unique</b> link for this product.
 				</p>
 				<div class="form-group">
-					<label for="href">Product URL (HREF):</label>
+					<label class="form-group-label" for="href">Product URL (HREF):</label>
 					<input
 						id="href"
 						type="text"
@@ -439,7 +482,7 @@
 			<div class="section-content">
 				<p>Set the price and stock details for the product.</p>
 				<div class="form-group">
-					<label for="price">Price:</label>
+					<label class="form-group-label" for="price">Price:</label>
 					<input
 						id="price"
 						type="text"
@@ -450,7 +493,7 @@
 					/>
 				</div>
 				<div class="form-group">
-					<label for="old-price">Old Price (optional):</label>
+					<label class="form-group-label" for="old-price">Old Price (optional):</label>
 					<input
 						id="old-price"
 						type="text"
@@ -460,16 +503,50 @@
 					/>
 				</div>
 				<div class="form-group">
-					<label for="units-in-stock">Units in Stock:</label>
-					<input
-						id="units-in-stock"
-						type="number"
-						required
-						bind:value={product.unitsInStock}
-					/>
+					<label class="form-group-label" for="status">Single Size</label>
+					<label class="switch">
+						<input
+							id="isSingleSize"
+							type="checkbox"
+							bind:checked={isSingleSize}
+							on:change={handleSingleSizeChange}
+						/>
+						<span class="slider" />
+					</label>
+					<span
+						>"{product.name['en'] || '...'}" has
+						<b>{isSingleSize ? 'only one size' : 'multiple sizes'}</b>.</span
+					>
 				</div>
 				<div class="form-group">
-					<label for="main-version"> Main Version </label>
+					<label class="form-group-label" for="units-in-stock">Units in Stock:</label>
+					<div class="size-stock">
+						{#if typeof product.unitsInStock === 'number'}
+							<input
+								id="units-in-stock"
+								type="number"
+								required
+								bind:value={product.unitsInStock}
+							/>
+						{:else}
+							{#each product.unitsInStock as size}
+								<div class="size-stock-group">
+									<label class="size-stock-label" for="units-in-stock-{size.id}"
+										>{$dictionary.size} {size.name}:</label
+									>
+									<input
+										id="units-in-stock-{size.id}"
+										type="number"
+										required
+										bind:value={size.units}
+									/>
+								</div>
+							{/each}
+						{/if}
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="form-group-label" for="main-version"> Main Version </label>
 					<label class="switch">
 						<input
 							id="main-version"
@@ -479,18 +556,18 @@
 						<span class="slider" />
 					</label>
 					<span
-						>"{product.name['en']}" <b>{product.mainVersion ? 'is' : 'is not'}</b> the main
-						version.</span
+						>"{product.name['en'] || '...'}"
+						<b>{product.mainVersion ? 'is' : 'is not'}</b> the main version.</span
 					>
 				</div>
 				<div class="form-group">
-					<label for="status"> Product Status </label>
+					<label class="form-group-label" for="status"> Product Status </label>
 					<label class="switch">
 						<input id="status" type="checkbox" bind:checked={product.status} />
 						<span class="slider" />
 					</label>
 					<span
-						>"{product.name['en']}" is
+						>"{product.name['en'] || '...'}" is
 						<b>{product.status ? 'visible' : 'hidden'}</b>.</span
 					>
 				</div>
@@ -503,7 +580,9 @@
 			<div class="section-content">
 				<p>Specify the categories and versions for this product.</p>
 				<div class="form-group">
-					<label for="category-ids">Category IDs (comma separated):</label>
+					<label class="form-group-label" for="category-ids"
+						>Category IDs (comma separated):</label
+					>
 					<input
 						id="category-ids"
 						type="text"
@@ -512,7 +591,9 @@
 					/>
 				</div>
 				<div class="form-group">
-					<label for="version-ids">Version IDs (comma separated):</label>
+					<label class="form-group-label" for="version-ids"
+						>Version IDs (comma separated):</label
+					>
 					<input
 						id="version-ids"
 						type="text"
@@ -529,7 +610,7 @@
 			<div class="section-content">
 				<p>Upload product images and set an optional hover image.</p>
 				<div class="form-group">
-					<h3>Main Images</h3>
+					<h3 class="form-group-label">Main Images</h3>
 					<div class="image-gallery">
 						<label class="image-item add-image">
 							<ion-icon name="add" />
@@ -557,7 +638,7 @@
 					</div>
 				</div>
 				<div class="form-group">
-					<h3>Hover Image</h3>
+					<h3 class="form-group-label">Hover Image</h3>
 					<div class="image-gallery">
 						{#if product.imageHoverSource}
 							<div class="image-item">
@@ -598,7 +679,7 @@
 			<div class="section-content">
 				<p>Add structured details about the product in JSON format.</p>
 				<div class="form-group">
-					<label for="details">Details (JSON format):</label>
+					<label class="form-group-label" for="details">Details (JSON format):</label>
 					<textarea
 						id="details"
 						use:autoResizeTextarea
@@ -724,8 +805,7 @@
 		border-radius: 5px;
 	}
 
-	label:not(.switch):not(.add-image),
-	h3 {
+	.form-group-label {
 		position: absolute;
 		top: 0;
 		transform: translateY(-60%);
@@ -734,6 +814,7 @@
 		display: flex;
 		flex-direction: column;
 		font-size: 0.95rem;
+		font-weight: 500;
 		color: var(--content-5);
 		background-color: #ffffff;
 		padding: 0.25em 0.5em;
@@ -741,7 +822,8 @@
 
 	input[type='text'],
 	input[type='number'],
-	textarea {
+	textarea,
+	.size-stock-group {
 		width: 100%;
 		font-size: 1.1rem;
 		padding: 1rem 1rem 0.75rem;
@@ -806,6 +888,26 @@
 
 	input:checked + .slider:before {
 		transform: translateX(14px);
+	}
+
+	.size-stock {
+		display: grid;
+	}
+
+	.size-stock-group {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		justify-content: flex-start;
+		align-items: center;
+		padding: 0.5rem 1rem 0.5rem;
+	}
+
+	.size-stock-group:not(:last-child) {
+		border-bottom: 1px solid var(--content-2);
+	}
+
+	.size-stock-label {
+		margin-top: 2.8px;
 	}
 
 	.image-gallery {

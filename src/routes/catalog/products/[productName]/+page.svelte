@@ -14,6 +14,7 @@
 		findReviewsByProductId,
 		findSimilarProducts,
 		findProductsByIds,
+		sizeOptions as allSizeOptions,
 	} from '../../../mockDb';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
@@ -28,14 +29,6 @@
 
 	let productReviews: ReviewType[];
 
-	let allSizeOptions = [
-		{ id: 16, name: 'XS' },
-		{ id: 17, name: 'S' },
-		{ id: 18, name: 'M' },
-		{ id: 19, name: 'L' },
-		{ id: 20, name: 'XL' },
-		{ id: 21, name: 'XXL' },
-	];
 	let sizeOptions: { id: number; name: string }[];
 
 	function getSizeNameById(id: number): string | undefined {
