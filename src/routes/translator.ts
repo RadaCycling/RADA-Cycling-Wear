@@ -177,6 +177,11 @@ export const translator = {
         cartItemPurchased: "Cart item purchased",
         orderPlacedTitle: "Order Placed!",
         admin: 'Admin',
+        soldOut: 'Sold Out',
+        thereAre: 'There are',
+        thereIs: 'There is',
+        unitsLeft: 'units left in stock',
+        unitLeft: 'unit left in stock',
     },
     es: {
         comingSoon: 'Próximamente',
@@ -356,5 +361,10 @@ export const translator = {
         cartItemPurchased: "Artículo del carrito comprado",
         orderPlacedTitle: "¡Pedido Realizado!",
         admin: 'Administrador',
+        soldOut: 'Agotado',
+        thereAre: 'Quedan',
+        thereIs: 'Queda',
+        unitsLeft: 'unidades disponibles',
+        unitLeft: 'unidad disponible',
     },
 };

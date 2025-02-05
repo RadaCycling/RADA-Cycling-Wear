@@ -7,7 +7,7 @@
 	import { allProductsStore, baseRoute, dataReady, dictionary, language } from '../../../stores';
 	import toast from 'svelte-french-toast';
 	import { autoResizeTextarea, randomizeFileName } from '../../../functions';
-	import { sizeOptions, type Product, type UnitsInStock } from '../../../mockDb';
+	import { sizeCategoryIds, sizeOptions, type Product, type UnitsInStock } from '../../../mockDb';
 	import { goto } from '$app/navigation';
 	import { fade } from 'svelte/transition';
 	import Texteditor from '../../../components/texteditor.svelte';
@@ -34,7 +34,7 @@
 		dbImageHoverSource: '',
 		imageAlt: { en: '', es: '' },
 		href: '',
-		categoryIds: [],
+		categoryIds: sizeCategoryIds,
 		versionsIds: [],
 		details: [{ label: { en: '', es: '' }, value: { en: '', es: '' } }],
 	};
@@ -48,25 +48,58 @@
 	let validDetails: boolean = true;
 	let imageFiles: File[] = [];
 
-	$: product?.unitsInStock, checkStatus();
-	function checkStatus() {
+	function handleStockInput(e: Event, size?: UnitsInStock) {
 		if (!product) return;
 
 		let noStock: boolean = true;
-		if (typeof product?.unitsInStock === 'number') {
-			noStock = product.unitsInStock === 0;
-		} else {
-			for (let index = 0; index < product.unitsInStock.length; index++) {
-				const element = product.unitsInStock[index];
-				if (element.units > 0) {
-					noStock = false;
-				}
+		let newValue: string | number = (e.target as HTMLInputElement).value;
+
+		if (/^[+-]?\d+$/.test(newValue)) {
+			newValue = Number(newValue);
+			if (newValue < 0) {
+				newValue = 0;
+				(e.target as HTMLInputElement).value = '0';
 			}
+			if (typeof product.unitsInStock === 'object') {
+				const match = product.unitsInStock.find((option) => option === size);
+				if (match) {
+					match.units = newValue;
+				}
+
+				for (let index = 0; index < product.unitsInStock.length; index++) {
+					const element = product.unitsInStock[index];
+
+					if (element.units > 0) {
+						noStock = false;
+					}
+				}
+			} else {
+				product.unitsInStock = newValue;
+				noStock = product.unitsInStock < 1;
+			}
+		} else {
+			noStock = false;
 		}
 
-		if (noStock) {
+		if (noStock && product.status) {
 			product.status = false;
 			toast('Product status was deactivated because there are no units in stock.');
+		}
+	}
+
+	function handleStockInputBlur(e: Event, size?: UnitsInStock) {
+		if (!product) return;
+
+		const newValue: string | number = (e.target as HTMLInputElement).value;
+		if (!/^[+-]?\d+$/.test(newValue)) {
+			if (typeof product.unitsInStock === 'object') {
+				const match = product.unitsInStock.find((option) => option === size);
+				if (match) {
+					(e.target as HTMLInputElement).value = match.units.toString();
+				}
+			} else {
+				(e.target as HTMLInputElement).value = product.unitsInStock.toString();
+			}
 		}
 	}
 
@@ -84,10 +117,21 @@
 		if (isSingleSize) {
 			singleSizeChangerMemory = product.unitsInStock;
 			product.unitsInStock = localMemory;
+
+			// Remove elements that are in sizeCategoryIds
+			product.categoryIds = product.categoryIds.filter((id) => !sizeCategoryIds.includes(id));
 		} else {
 			singleSizeChangerMemory = product.unitsInStock;
 			product.unitsInStock = localMemory;
+
+			// Add only missing elements from sizeCategoryIds
+			product.categoryIds = [
+				...product.categoryIds,
+				...sizeCategoryIds.filter((id) => !product?.categoryIds.includes(id)),
+			];
 		}
+
+		categoryIds = product.categoryIds ? product.categoryIds.join(', ') : ''; // Temporal
 	}
 
 	function checkHREF() {
@@ -97,7 +141,7 @@
 		if (product.href === '') {
 			product.href = product.name.en
 				.toLowerCase()
-				.replace(' ', '-')
+				.replaceAll(' ', '-')
 				.replace(/[^a-zA-Z0-9-]/g, '');
 		}
 	}
@@ -318,13 +362,7 @@
 		if (!product) {
 			toast.error('Product not found');
 			return;
-		} else if (
-			!product.name.en ||
-			!product.name.es ||
-			!product.price ||
-			!product.unitsInStock ||
-			!product.href
-		) {
+		} else if (!product.name.en || !product.name.es || !product.price || !product.href) {
 			toast.error('Please fill in all required fields.');
 			return;
 		} else if (product.price === '$0.00') {
@@ -521,14 +559,7 @@
 				<div class="form-group">
 					<label class="form-group-label" for="units-in-stock">Units in Stock:</label>
 					<div class="size-stock">
-						{#if typeof product.unitsInStock === 'number'}
-							<input
-								id="units-in-stock"
-								type="number"
-								required
-								bind:value={product.unitsInStock}
-							/>
-						{:else}
+						{#if typeof product.unitsInStock === 'object'}
 							{#each product.unitsInStock as size}
 								<div class="size-stock-group">
 									<label class="size-stock-label" for="units-in-stock-{size.id}"
@@ -538,10 +569,21 @@
 										id="units-in-stock-{size.id}"
 										type="number"
 										required
-										bind:value={size.units}
+										value={size.units}
+										on:input={(e) => handleStockInput(e, size)}
+										on:blur={(e) => handleStockInputBlur(e, size)}
 									/>
 								</div>
 							{/each}
+						{:else}
+							<input
+								id="units-in-stock"
+								type="number"
+								required
+								value={product.unitsInStock}
+								on:input={(e) => handleStockInput(e)}
+								on:blur={(e) => handleStockInputBlur(e)}
+							/>
 						{/if}
 					</div>
 				</div>

@@ -634,6 +634,20 @@ export function findProductsByHrefs(hrefs: string[], products: Product[]): Produ
     let categoryIds = getCategoryIdsFromHrefs(hrefs);
     return findProductsByCategoryIds(categoryIds, products);
 }
+
+export function getUnitsAvailable(product: Product, sizeId: number | undefined): number {
+    let units = 0;
+    if (typeof product.unitsInStock === 'number') {
+        units = product.unitsInStock;
+    } else {
+        const optionToCheckStock = product.unitsInStock.find((option) => option.id === sizeId);
+        if (optionToCheckStock) {
+            units = optionToCheckStock.units;
+        }
+    }
+
+    return units;
+}
 // #endregion
 
 // #region Reviews
@@ -802,19 +816,31 @@ export function denormalizeCartItems(cartItems: CartItem[], products: Product[])
         if (!product) {
             return null;
         }
-        const itemPrice = parseFloat(product.price.replace(/[^0-9.-]+/g, ""));
-        const totalItemPrice = itemPrice * item.quantity;
+
+        const unitsAvailable = getUnitsAvailable(product, item.sizeId);
+        if (!unitsAvailable) {
+            return null;
+        }
 
         let productSize;
         if (item.sizeId) {
             productSize = findCategoryById(item.sizeId)?.name[get(language) as Language];
         }
+        let name = `${product.name[get(language) as Language]}${productSize ? " - " + get(dictionary).size + ' ' + productSize : ""}`
+
+        if (item.quantity > unitsAvailable) {
+            item.quantity = unitsAvailable;
+            toast(`${unitsAvailable === 1 ? get(dictionary).thereIs : get(dictionary).thereAre} ${unitsAvailable} ${unitsAvailable === 1 ? get(dictionary).unitLeft : get(dictionary).unitsLeft}: ${name}`)
+        }
+
+        const itemPrice = parseFloat(product.price.replace(/[^0-9.-]+/g, ""));
+        const totalItemPrice = itemPrice * item.quantity;
 
         return {
             productId: item.productId,
             sizeId: item.sizeId,
             quantity: item.quantity,
-            name: `${product.name[get(language) as Language]}${productSize ? " - " + get(dictionary).size + ' ' + productSize : ""}`,
+            name: name,
             imageSrc: product.imageSources[0],
             description: product.description[get(language) as Language],
             price: product.price,

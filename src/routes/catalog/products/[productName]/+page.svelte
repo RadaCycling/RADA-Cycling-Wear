@@ -15,6 +15,7 @@
 		findSimilarProducts,
 		findProductsByIds,
 		sizeOptions as allSizeOptions,
+		getUnitsAvailable,
 	} from '../../../mockDb';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
@@ -38,12 +39,13 @@
 
 	let sizeId: number | undefined;
 	let sizeName: string | undefined;
+	let unitsAvailable: number;
 
 	let quantity: number = productInCart?.quantity || 1;
 	$: quantity, updateCartQuantity();
 
 	function incrementQuantity() {
-		quantity += 1;
+		quantity = Math.min(unitsAvailable, quantity + 1);
 	}
 
 	function decrementQuantity() {
@@ -140,6 +142,21 @@
 		currentTab = newTab;
 	}
 
+	let sizeState: 'no selection' | 'no stock' | 'available' = 'no selection';
+	function chechSizeState(product: Product | undefined) {
+		if (!product) return;
+
+		if (sizeOptions.length !== 0 && !sizeId) {
+			sizeState = 'no selection';
+		} else {
+			unitsAvailable = getUnitsAvailable(product, sizeId);
+			if (unitsAvailable) {
+				sizeState = 'available';
+			} else {
+				sizeState = 'no stock';
+			}
+		}
+	}
 	function handleSizeChange(id: number) {
 		if (sizeId !== id) {
 			sizeId = id;
@@ -149,6 +166,7 @@
 			sizeName = undefined;
 		}
 
+		chechSizeState(product);
 		checkIfProductIsInCart();
 	}
 
@@ -278,7 +296,7 @@
 					</div>
 				{/if}
 
-				{#if sizeOptions.length === 0 || sizeId}
+				{#if sizeState === 'available'}
 					<div class="quantity-selector">
 						<button
 							on:click={decrementQuantity}
@@ -297,6 +315,13 @@
 						</button>
 					</div>
 
+					<p class="unitsLeft">
+						{#if unitsAvailable < 20}
+							{unitsAvailable}
+							{unitsAvailable === 1 ? $dictionary.unitLeft : $dictionary.unitsLeft}
+						{/if}
+					</p>
+
 					<div class="actions">
 						<button in:scale on:click={toggleProduct} class="add-to-cart-btn">
 							{#if productInCart || productAdded}
@@ -314,10 +339,15 @@
 							{/if}
 						</button>
 					</div>
-				{:else}
+				{:else if sizeState === 'no selection'}
 					<p in:scale class="noSize">
 						<ion-icon name="alert-circle-outline" />
 						<span>{$dictionary.pleaseSelectASize}</span>
+					</p>
+				{:else}
+					<p in:scale class="noSize">
+						<ion-icon name="alert-circle-outline" />
+						<span>{$dictionary.soldOut}</span>
 					</p>
 				{/if}
 			</div>
@@ -555,7 +585,7 @@
 	.quantity-selector {
 		display: flex;
 
-		margin: 1rem auto;
+		margin: 1rem auto 0;
 		border: solid 3px var(--interactive);
 		border-radius: 3px;
 		width: fit-content;
@@ -590,6 +620,15 @@
 		margin: 0 15px;
 		font-size: 1.15rem;
 		font-weight: bold;
+	}
+
+	.unitsLeft {
+		margin: auto;
+		text-align: center;
+		margin-bottom: 1rem;
+		font-size: 0.8em;
+		font-weight: normal;
+		color: red;
 	}
 
 	.actions {
