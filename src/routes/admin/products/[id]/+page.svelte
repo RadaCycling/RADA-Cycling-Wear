@@ -13,7 +13,7 @@
 		language,
 	} from '../../../stores';
 	import toast from 'svelte-french-toast';
-	import { autoResizeTextarea, randomizeFileName } from '../../../functions';
+	import { autoResizeTextarea, randomizeFileName, repositionElement } from '../../../functions';
 	import {
 		denormalizeCategories,
 		sizeCategoryIds,
@@ -27,7 +27,8 @@
 	import { goto } from '$app/navigation';
 	import { fade } from 'svelte/transition';
 	import Texteditor from '../../components/texteditor.svelte';
-	import ArrayInput from '../../components/ArrayInput.svelte';
+	import ArrayInput from '../../components/arrayInput.svelte';
+	import Image from '../../components/image.svelte';
 
 	let form: HTMLFormElement;
 
@@ -216,6 +217,8 @@
 		if (!product) return;
 
 		product.versionsIds = versions.map((item) => item.id);
+
+		// Maintain product's id
 		if (versions.length > 0) {
 			product.versionsIds.push(product.id);
 		}
@@ -697,23 +700,28 @@
 							<input type="file" multiple on:change={handleImageUpload} />
 						</label>
 						{#each product.imageSources as url, index}
-							<div class="image-item">
-								<img src={url} alt={product?.imageAlt[$language]} />
-								<div class="image-actions">
-									<a href={url} target="_blank" class="download-button">View</a>
-									<button
-										on:click={() => {
-											if (product) {
-												handleImageDelete(
-													product.dbImageSources[index],
-													url,
-												);
-											}
-										}}
-										class="delete-button">Delete</button
-									>
-								</div>
-							</div>
+							<Image
+								image={{ source: url, alt: product?.imageAlt, position: index }}
+								on:delete={() => {
+									if (product) {
+										handleImageDelete(product.dbImageSources[index], url);
+									}
+								}}
+								on:reposition={(event) => {
+									if (product) {
+										product.dbImageSources = repositionElement(
+											product.dbImageSources,
+											product.dbImageSources[index],
+											event.detail,
+										);
+										product.imageSources = repositionElement(
+											product?.imageSources,
+											url,
+											event.detail,
+										);
+									}
+								}}
+							/>
 						{/each}
 					</div>
 				</div>
@@ -721,27 +729,14 @@
 					<h3 class="form-group-label">Hover Image</h3>
 					<div class="image-gallery">
 						{#if product.imageHoverSource}
-							<div class="image-item">
-								<img
-									src={product.imageHoverSource}
-									alt={product?.imageAlt[$language]}
-								/>
-								<div class="image-actions">
-									<a
-										href={product.imageHoverSource}
-										target="_blank"
-										class="download-button">View</a
-									>
-									<button
-										on:click={() => {
-											if (product?.dbImageHoverSource) {
-												handleHoverImageDelete(product.dbImageHoverSource);
-											}
-										}}
-										class="delete-button">Delete</button
-									>
-								</div>
-							</div>
+							<Image
+								image={{ source: product.imageHoverSource, alt: product?.imageAlt }}
+								on:delete={() => {
+									if (product?.dbImageHoverSource) {
+										handleHoverImageDelete(product.dbImageHoverSource);
+									}
+								}}
+							/>
 						{:else}
 							<label class="image-item add-image">
 								<ion-icon name="add" />
@@ -1019,51 +1014,6 @@
 		background-color: var(--content-2);
 	}
 
-	.image-item img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		border-radius: 10px;
-	}
-
-	.image-actions {
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		background: rgba(0, 0, 0, 0.5);
-		opacity: 0;
-		transition: opacity 0.3s;
-		border-radius: 10px;
-	}
-
-	.image-item:hover .image-actions {
-		opacity: 1;
-	}
-
-	.download-button,
-	.delete-button {
-		background: var(--interactive-9);
-		color: var(--main);
-		border: none;
-		padding: 0.5rem 1rem;
-		margin: 0.5rem;
-		border-radius: 5px;
-		cursor: pointer;
-		transition: all 0.3s;
-	}
-
-	.download-button:hover,
-	.delete-button:hover {
-		background: var(--interactive);
-		transform: scale(1.05);
-	}
-
 	.button-group {
 		display: flex;
 		gap: 1rem;
@@ -1086,18 +1036,14 @@
 		color: var(--main);
 	}
 
-	.save-button:hover {
-		background-color: var(--interactive-7);
-		transform: scale(1.05);
-	}
-
 	.delete-button {
-		background-color: var(--content-5);
-		color: var (--main);
+		background-color: var(--content-7);
+		color: var(--main);
 	}
 
+	.save-button:hover,
 	.delete-button:hover {
-		background-color: var(--content-7);
+		filter: brightness(120%);
 		transform: scale(1.05);
 	}
 

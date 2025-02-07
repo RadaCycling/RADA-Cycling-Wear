@@ -262,3 +262,22 @@ export function randomizeFileName(file: File): File {
 
     return new File([file], randomFileName, { type: file.type });
 }
+
+export function repositionElement(arr: Array<any> | undefined, element: any, newIndex: number): Array<any> {
+    if (!arr) return [];
+
+    // Check if the element exists in the array
+    const currentIndex = arr.indexOf(element);
+    if (currentIndex === -1) {
+        console.log("Element not found in array");
+        return arr;
+    }
+
+    // Remove the element from its current position
+    arr.splice(currentIndex, 1);
+
+    // Insert the element at the new index
+    arr.splice(newIndex, 0, element);
+
+    return arr;
+}
