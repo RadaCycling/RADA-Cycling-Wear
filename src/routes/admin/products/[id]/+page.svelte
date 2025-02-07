@@ -701,7 +701,11 @@
 						</label>
 						{#each product.imageSources as url, index}
 							<Image
-								image={{ source: url, alt: product?.imageAlt, position: index }}
+								image={{
+									source: url,
+									alt: product.dbImageSources[index],
+									position: product.imageSources.length > 1 ? index : undefined,
+								}}
 								on:delete={() => {
 									if (product) {
 										handleImageDelete(product.dbImageSources[index], url);
@@ -730,7 +734,10 @@
 					<div class="image-gallery">
 						{#if product.imageHoverSource}
 							<Image
-								image={{ source: product.imageHoverSource, alt: product?.imageAlt }}
+								image={{
+									source: product.imageHoverSource,
+									alt: product.dbImageHoverSource || '',
+								}}
 								on:delete={() => {
 									if (product?.dbImageHoverSource) {
 										handleHoverImageDelete(product.dbImageHoverSource);

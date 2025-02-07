@@ -1,13 +1,11 @@
 <script lang="ts">
-	import type { translatableContent } from '../../mockDb';
-	import { language } from '../../stores';
 	import { createEventDispatcher } from 'svelte';
 
 	const dispatch = createEventDispatcher();
 
 	type Image = {
 		source: string;
-		alt: translatableContent;
+		alt: string;
 		position?: number;
 	};
 	export let image: Image;
@@ -38,7 +36,7 @@
 </script>
 
 <div class="image-item">
-	<img src={image.source} alt={image.alt[$language]} />
+	<img src={image.source} alt={image.alt} />
 	<div class="image-actions">
 		<a
 			href={image.source}
@@ -70,10 +68,10 @@
 			</form>
 		{:else}
 			<a
-				style="font-size: 0.9em; color: var(--main-9)"
+				style="font-size: 0.9em; color: var(--main-9); direction: rtl;"
 				class="ellipsis"
 				href={image.source}
-				target="_blank">{image.source}</a
+				target="_blank">{image.alt}</a
 			>
 		{/if}
 	</div>
