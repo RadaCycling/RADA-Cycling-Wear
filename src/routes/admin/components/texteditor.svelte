@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { convertMarkdown } from '../functions';
+	import { convertMarkdown } from '../../functions';
 
 	export let content: string;
 	let editor: HTMLDivElement;

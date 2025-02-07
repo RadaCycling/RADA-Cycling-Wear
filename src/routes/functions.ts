@@ -125,7 +125,7 @@ export function letterToAvatarUrl(letter: string): string {
         return ''
     }
 
-    context.fillStyle = '#D44508';
+    context.fillStyle = '#666';
     context.fillRect(0, 0, canvas.width, canvas.height);
     context.font = 'bold 50px Outfit';
     context.fillStyle = '#F7F7FF';

@@ -4,13 +4,30 @@
 	import { ref, uploadBytes, deleteObject, getDownloadURL } from 'firebase/storage';
 	import { page } from '$app/stores';
 	import { db, storage } from '$lib/firebase/rada';
-	import { allProductsStore, baseRoute, dataReady, dictionary, language } from '../../../stores';
+	import {
+		allProductsStore,
+		baseImageRoute,
+		baseRoute,
+		dataReady,
+		dictionary,
+		language,
+	} from '../../../stores';
 	import toast from 'svelte-french-toast';
 	import { autoResizeTextarea, randomizeFileName } from '../../../functions';
-	import { sizeCategoryIds, sizeOptions, type Product, type UnitsInStock } from '../../../mockDb';
+	import {
+		denormalizeCategories,
+		sizeCategoryIds,
+		sizeOptions,
+		type Category,
+		type Product,
+		type UnitsInStock,
+		categories as allCategoriesStore,
+		findProductsByIds,
+	} from '../../../mockDb';
 	import { goto } from '$app/navigation';
 	import { fade } from 'svelte/transition';
-	import Texteditor from '../../../components/texteditor.svelte';
+	import Texteditor from '../../components/texteditor.svelte';
+	import ArrayInput from '../../components/ArrayInput.svelte';
 
 	let form: HTMLFormElement;
 
@@ -40,8 +57,10 @@
 	};
 
 	let id: string = '';
-	let categoryIds: string = '';
-	let versionsIds: string = '';
+	let categories: Category[] = [];
+	$: product?.categoryIds, getCategories();
+	let versions: Product[] = [];
+	$: product?.versionsIds, getVersions();
 	let detailsString: string = '';
 	let isSingleSize: boolean;
 	let singleSizeChangerMemory: UnitsInStock[] | number;
@@ -130,8 +149,6 @@
 				...sizeCategoryIds.filter((id) => !product?.categoryIds.includes(id)),
 			];
 		}
-
-		categoryIds = product.categoryIds ? product.categoryIds.join(', ') : ''; // Temporal
 	}
 
 	function checkHREF() {
@@ -167,18 +184,33 @@
 		}
 	}
 
-	function handleCategoryIdsInput(e: Event) {
+	function getCategories() {
 		if (!product) return;
 
-		const target = e.target as HTMLInputElement;
-		product.categoryIds = target.value.split(',').map((id) => parseInt(id.trim()));
+		let visibleCategories = product.categoryIds.filter((id) => !sizeCategoryIds.includes(id));
+		categories = denormalizeCategories(visibleCategories);
 	}
 
-	function handleVersionsIdsInput(e: Event) {
+	function syncCategories() {
 		if (!product) return;
 
-		const target = e.target as HTMLInputElement;
-		product.versionsIds = target.value.split(',').map((src) => src.trim());
+		product.categoryIds = categories.map((item) => item.id);
+	}
+
+	function getVersions() {
+		if (!product || !product.versionsIds) return;
+
+		let visibleVersions = product.versionsIds.filter((id) => product?.id !== id);
+		versions = findProductsByIds(visibleVersions, $allProductsStore);
+	}
+
+	function syncVersions() {
+		if (!product) return;
+
+		product.versionsIds = versions.map((item) => item.id);
+		if (versions.length > 0) {
+			product.versionsIds.push(product.id);
+		}
 	}
 
 	function handleDetailsInput(e: Event) {
@@ -345,10 +377,10 @@
 			: structuredClone($allProductsStore.find((p) => p.id === id));
 
 		if (product) {
-			categoryIds = product.categoryIds ? product.categoryIds.join(', ') : '';
-			versionsIds = product.versionsIds ? product.versionsIds.join(', ') : '';
-			detailsString = JSON.stringify(product.details, null, 2);
 			isSingleSize = typeof product?.unitsInStock === 'number';
+			getCategories();
+			getVersions();
+			detailsString = JSON.stringify(product.details, null, 2);
 			await setImageUrlsFromStorage();
 		} else if (!isNewProduct) {
 			toast.error('Invalid product ID');
@@ -588,21 +620,6 @@
 					</div>
 				</div>
 				<div class="form-group">
-					<label class="form-group-label" for="main-version"> Main Version </label>
-					<label class="switch">
-						<input
-							id="main-version"
-							type="checkbox"
-							bind:checked={product.mainVersion}
-						/>
-						<span class="slider" />
-					</label>
-					<span
-						>"{product.name['en'] || '...'}"
-						<b>{product.mainVersion ? 'is' : 'is not'}</b> the main version.</span
-					>
-				</div>
-				<div class="form-group">
 					<label class="form-group-label" for="status"> Product Status </label>
 					<label class="switch">
 						<input id="status" type="checkbox" bind:checked={product.status} />
@@ -622,25 +639,38 @@
 			<div class="section-content">
 				<p>Specify the categories and versions for this product.</p>
 				<div class="form-group">
-					<label class="form-group-label" for="category-ids"
-						>Category IDs (comma separated):</label
+					<label class="form-group-label" for="main-version"> Main Version </label>
+					<label class="switch">
+						<input
+							id="main-version"
+							type="checkbox"
+							bind:checked={product.mainVersion}
+						/>
+						<span class="slider" />
+					</label>
+					<span
+						>"{product.name['en'] || '...'}"
+						<b>{product.mainVersion ? 'is' : 'is not'}</b> the main version.</span
 					>
-					<input
-						id="category-ids"
-						type="text"
-						bind:value={categoryIds}
-						on:input={handleCategoryIdsInput}
+				</div>
+				<div class="form-group">
+					<label class="form-group-label" for="new-category">Categories:</label>
+					<ArrayInput
+						bind:selectedElements={categories}
+						array={allCategoriesStore}
+						impossibleOptionsIds={sizeCategoryIds}
+						placeholder="Add a new category..."
+						on:change={syncCategories}
 					/>
 				</div>
 				<div class="form-group">
-					<label class="form-group-label" for="version-ids"
-						>Version IDs (comma separated):</label
-					>
-					<input
-						id="version-ids"
-						type="text"
-						bind:value={versionsIds}
-						on:input={handleVersionsIdsInput}
+					<label class="form-group-label" for="version-ids">Versions (optional):</label>
+					<ArrayInput
+						bind:selectedElements={versions}
+						array={$allProductsStore}
+						impossibleOptionsIds={[product.id]}
+						placeholder="Add a new version..."
+						on:change={syncVersions}
 					/>
 				</div>
 			</div>

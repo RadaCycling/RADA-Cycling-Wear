@@ -1,12 +1,18 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
-	import { denormalizeCategories, type Product, type Category } from '../../mockDb';
+	import {
+		denormalizeCategories,
+		type Product,
+		type Category,
+		sizeCategoryIds,
+	} from '../../mockDb';
 	import { baseImageRoute, baseRoute, allProductsStore } from '../../stores';
 	import { goto } from '$app/navigation';
 	import toast from 'svelte-french-toast';
 	import { doc, updateDoc } from 'firebase/firestore';
 	import { db } from '$lib/firebase/rada';
 	import { onMount } from 'svelte';
+	import { letterToAvatarUrl } from '../../functions';
 
 	let filteredProducts: Product[] = [];
 	let categories: Category[] = [];
@@ -124,7 +130,8 @@
 									<td>
 										<a href={`${baseRoute}/catalog/products/${product.href}`}>
 											<img
-												src={product.imageSources[0]}
+												src={product.imageSources[0] ||
+													letterToAvatarUrl(product.name.en.charAt(0))}
 												alt={product.imageAlt.en}
 											/>
 										</a>
@@ -143,12 +150,19 @@
 										</label>
 									</td>
 									<td class="ellipsis">
-										{#each product.categoryIds as id}
+										{#each product.categoryIds.filter((id) => !sizeCategoryIds.includes(id)) as id}
 											<a
 												class="badge"
 												href={`${baseRoute}/admin/categories/${id}`}
 												>{categories.find((category) => category.id === id)
 													?.name.en}</a
+											>
+										{:else}
+											<a
+												style="background-color: red;"
+												class="badge"
+												href={`${baseRoute}/admin/categories`}
+												>No categories</a
 											>
 										{/each}
 									</td>
