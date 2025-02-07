@@ -195,6 +195,14 @@
 		if (!product) return;
 
 		product.categoryIds = categories.map((item) => item.id);
+
+		// Maintain size's categories
+		if (!isSingleSize) {
+			product.categoryIds = [
+				...product.categoryIds,
+				...sizeCategoryIds.filter((id) => !product?.categoryIds.includes(id)),
+			];
+		}
 	}
 
 	function getVersions() {
