@@ -92,7 +92,7 @@
 		sizeId = undefined;
 		sizeName = undefined;
 
-		product = findProductByHref($page.params.productName, $productsStore);
+		product = structuredClone(findProductByHref($page.params.productName, $productsStore));
 
 		if (product) {
 			versions = product.versionsIds
@@ -103,6 +103,8 @@
 			);
 
 			handleSizeChange(Number($page.url.searchParams.get('sizeID')));
+
+			product.details = product.details.filter((el) => el.status);
 
 			productReviews = findReviewsByProductId(product.id);
 
@@ -233,7 +235,8 @@
 					>
 					<button
 						type="button"
-						class="product-nav-button hide"
+						class="product-nav-button"
+						class:hide={product.details.length < 1}
 						class:active={currentTab === 'details'}
 						on:click={() => changeTab('details')}>{$dictionary.details}</button
 					>
