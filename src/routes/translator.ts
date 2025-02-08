@@ -182,6 +182,8 @@ export const translator = {
         thereIs: 'There is',
         unitsLeft: 'units left in stock',
         unitLeft: 'unit left in stock',
+        addASpecification: 'Add a specification',
+        newSpecification: 'New specification',
     },
     es: {
         comingSoon: 'Próximamente',
@@ -366,5 +368,7 @@ export const translator = {
         thereIs: 'Queda',
         unitsLeft: 'unidades disponibles',
         unitLeft: 'unidad disponible',
+        addASpecification: 'Agregar una especificación',
+        newSpecification: 'Nueva especificación',
     },
 };

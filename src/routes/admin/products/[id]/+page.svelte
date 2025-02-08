@@ -13,7 +13,7 @@
 		language,
 	} from '../../../stores';
 	import toast from 'svelte-french-toast';
-	import { autoResizeTextarea, randomizeFileName, repositionElement } from '../../../functions';
+	import { randomizeFileName, repositionElement } from '../../../functions';
 	import {
 		denormalizeCategories,
 		sizeCategoryIds,
@@ -23,18 +23,27 @@
 		type UnitsInStock,
 		categories as allCategoriesStore,
 		findProductsByIds,
+		type TableEntry,
 	} from '../../../mockDb';
 	import { goto } from '$app/navigation';
 	import { fade } from 'svelte/transition';
 	import Texteditor from '../../components/texteditor.svelte';
 	import ArrayInput from '../../components/arrayInput.svelte';
 	import Image from '../../components/image.svelte';
+	import Specification from '../../components/specification.svelte';
+	import { flip } from 'svelte/animate';
 
 	let form: HTMLFormElement;
 
 	let product: Product | undefined;
 	const newProductParameter = 'new';
 	let isNewProduct = false;
+	const emptyDetail: TableEntry = {
+		id: '',
+		status: true,
+		label: { en: '', es: '' },
+		value: { en: '', es: '' },
+	};
 	const emptyProduct: Product = {
 		id: '',
 		unitsInStock: sizeOptions.map((option) => {
@@ -54,7 +63,7 @@
 		href: '',
 		categoryIds: sizeCategoryIds,
 		versionsIds: [],
-		details: [{ label: { en: '', es: '' }, value: { en: '', es: '' } }],
+		details: [],
 	};
 
 	let id: string = '';
@@ -62,7 +71,6 @@
 	$: product?.categoryIds, getCategories();
 	let versions: Product[] = [];
 	$: product?.versionsIds, getVersions();
-	let detailsString: string = '';
 	let isSingleSize: boolean;
 	let singleSizeChangerMemory: UnitsInStock[] | number;
 	let validDetails: boolean = true;
@@ -224,20 +232,6 @@
 		}
 	}
 
-	function handleDetailsInput(e: Event) {
-		if (!product) return;
-
-		const target = e.target as HTMLTextAreaElement;
-		detailsString = target.value;
-		try {
-			product.details = JSON.parse(detailsString);
-			validDetails = true;
-		} catch (error) {
-			toast.error('Invalid details JSON format');
-			validDetails = false;
-		}
-	}
-
 	async function setImageUrlsFromStorage(type: 'main' | 'hover' | 'all' = 'all') {
 		if (!product) return;
 
@@ -391,7 +385,10 @@
 			isSingleSize = typeof product?.unitsInStock === 'number';
 			getCategories();
 			getVersions();
-			detailsString = JSON.stringify(product.details, null, 2);
+			product.details = product.details.map((el) => {
+				if (!el.id) el.id = crypto.randomUUID();
+				return el;
+			});
 			await setImageUrlsFromStorage();
 		} else if (!isNewProduct) {
 			toast.error('Invalid product ID');
@@ -516,7 +513,10 @@
 			<div class="section-content">
 				<p>Provide basic details about the product.</p>
 				<div class="form-group">
-					<label class="form-group-label" for="name-en">Name (English):</label>
+					<label class="form-group-label" for="name-en"
+						><img src="{baseImageRoute}/usFlag.webp" alt="English" lang="en" />
+						<span>Name (English):</span></label
+					>
 					<input
 						id="name-en"
 						type="text"
@@ -526,18 +526,23 @@
 					/>
 				</div>
 				<div class="form-group">
-					<label class="form-group-label" for="name-es">Name (Spanish):</label>
+					<label class="form-group-label" for="name-es"
+						><img src="{baseImageRoute}/spainFlag.webp" alt="Español" lang="es" />
+						<span>Name (Spanish):</span></label
+					>
 					<input id="name-es" type="text" required bind:value={product.name.es} />
 				</div>
 				<div class="form-group">
 					<label class="form-group-label" for="description-en"
-						>Description (English):</label
+						><img src="{baseImageRoute}/usFlag.webp" alt="English" lang="en" />
+						<span>Description (English):</span></label
 					>
 					<Texteditor bind:content={product.description.en} />
 				</div>
 				<div class="form-group">
 					<label class="form-group-label" for="description-es"
-						>Description (Spanish):</label
+						><img src="{baseImageRoute}/spainFlag.webp" alt="Español" lang="es" />
+						<span>Description (Spanish):</span></label
 					>
 					<Texteditor bind:content={product.description.es} />
 				</div>
@@ -759,16 +764,54 @@
 		<section>
 			<h2>Additional Details</h2>
 			<div class="section-content">
-				<p>Add structured details about the product in JSON format.</p>
-				<div class="form-group">
-					<label class="form-group-label" for="details">Details (JSON format):</label>
-					<textarea
-						id="details"
-						use:autoResizeTextarea
-						bind:value={detailsString}
-						on:blur={handleDetailsInput}
-						class:invalid={!validDetails}
-					/>
+				<p>Specify details about the product.</p>
+				<div class="details">
+					{#each product.details as item, index (item.id)}
+						<div animate:flip={{ duration: 500 }}>
+							<Specification
+								content={item}
+								specificationIndex={index}
+								specificationsAmount={product.details.length}
+								on:delete={() => {
+									if (product) {
+										product.details = product.details.filter(
+											(detail) => detail !== item,
+										);
+									}
+								}}
+								on:moveUp={() => {
+									if (product) {
+										product.details = repositionElement(
+											product.details,
+											item,
+											index - 1,
+										);
+									}
+								}}
+								on:moveDown={() => {
+									if (product) {
+										product.details = repositionElement(
+											product.details,
+											item,
+											index + 1,
+										);
+									}
+								}}
+							/>
+						</div>
+					{/each}
+					<button
+						class="newSpecification"
+						type="button"
+						on:click={() => {
+							if (product) {
+								const newDetail = { ...emptyDetail, id: crypto.randomUUID() };
+								product.details = [...product.details, newDetail];
+							}
+						}}
+					>
+						<ion-icon name="add" /> {$dictionary.addASpecification}</button
+					>
 				</div>
 			</div>
 		</section>
@@ -894,7 +937,8 @@
 		left: 0.5rem;
 
 		display: flex;
-		flex-direction: column;
+		align-items: center;
+		column-gap: 0.75ch;
 		font-size: 0.95rem;
 		font-weight: 500;
 		color: var(--content-5);
@@ -902,23 +946,20 @@
 		padding: 0.25em 0.5em;
 	}
 
+	.form-group-label img {
+		height: 0.8em;
+		transform: translateY(0.5px);
+		width: auto;
+		border-radius: 3px;
+	}
+
 	input[type='text'],
 	input[type='number'],
-	textarea,
 	.size-stock-group {
 		width: 100%;
 		font-size: 1.1rem;
 		padding: 1rem 1rem 0.75rem;
 		color: var(--content);
-	}
-
-	textarea.invalid {
-		border-color: red;
-	}
-
-	textarea {
-		resize: vertical;
-		min-height: 100px;
 	}
 
 	.switch {
@@ -1019,6 +1060,31 @@
 
 	.image-item.add-image:hover {
 		background-color: var(--content-2);
+	}
+
+	.details {
+		display: grid;
+		row-gap: 1.5rem;
+	}
+
+	.newSpecification {
+		display: flex;
+		align-items: center;
+		column-gap: 1ch;
+
+		background-color: var(--main-5);
+		box-shadow: 5px 5px 10px #00000030;
+		padding: 1.5rem 1rem;
+		border-radius: 15px;
+	}
+
+	.newSpecification ion-icon {
+		color: green;
+	}
+
+	.newSpecification:hover,
+	.newSpecification:focus-visible {
+		background-color: #00000010;
 	}
 
 	.button-group {

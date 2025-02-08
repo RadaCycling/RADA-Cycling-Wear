@@ -581,9 +581,11 @@ export type UnitsInStock = {
     units: number;
 }
 
-type TableEntry = {
+export type TableEntry = {
+    id: string;
     label: translatableContent;
     value: translatableContent;
+    status: boolean;
 };
 
 export function findProductsByIds(ids: string[], products: Product[]): Product[] {

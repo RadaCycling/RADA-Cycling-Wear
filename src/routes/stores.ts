@@ -84,7 +84,7 @@ cartItems.subscribe(async (value) => {
 });
 
 // Base Routes
-export const baseImageRoute = '/images/radacycling';
+export const baseImageRoute = '/images';
 export const baseRoute = '';
 
 // Language Management
