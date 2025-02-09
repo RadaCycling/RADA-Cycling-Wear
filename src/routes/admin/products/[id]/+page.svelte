@@ -704,33 +704,36 @@
 							<ion-icon name="add" />
 							<input type="file" multiple on:change={handleImageUpload} />
 						</label>
-						{#each product.imageSources as url, index}
-							<Image
-								image={{
-									source: url,
-									alt: product.dbImageSources[index],
-									position: product.imageSources.length > 1 ? index : undefined,
-								}}
-								on:delete={() => {
-									if (product) {
-										handleImageDelete(product.dbImageSources[index], url);
-									}
-								}}
-								on:reposition={(event) => {
-									if (product) {
-										product.dbImageSources = repositionElement(
-											product.dbImageSources,
-											product.dbImageSources[index],
-											event.detail,
-										);
-										product.imageSources = repositionElement(
-											product?.imageSources,
-											url,
-											event.detail,
-										);
-									}
-								}}
-							/>
+						{#each product.imageSources as url, index (url)}
+							<div animate:flip={{ duration: 500 }}>
+								<Image
+									image={{
+										source: url,
+										alt: product.dbImageSources[index],
+										position:
+											product.imageSources.length > 1 ? index : undefined,
+									}}
+									on:delete={() => {
+										if (product) {
+											handleImageDelete(product.dbImageSources[index], url);
+										}
+									}}
+									on:reposition={(event) => {
+										if (product) {
+											product.dbImageSources = repositionElement(
+												product.dbImageSources,
+												product.dbImageSources[index],
+												event.detail,
+											);
+											product.imageSources = repositionElement(
+												product?.imageSources,
+												url,
+												event.detail,
+											);
+										}
+									}}
+								/>
+							</div>
 						{/each}
 					</div>
 				</div>
