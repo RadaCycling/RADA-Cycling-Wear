@@ -49,13 +49,8 @@
 		const currentPriceNum = extractNumber(currentPrice);
 
 		// Validating extracted numbers to prevent division by zero or negative values
-		if (
-			isNaN(oldPriceNum) ||
-			isNaN(currentPriceNum) ||
-			oldPriceNum <= 0 ||
-			currentPriceNum > oldPriceNum
-		) {
-			throw new Error('Invalid price input');
+		if (isNaN(oldPriceNum) || isNaN(currentPriceNum) || oldPriceNum <= 0) {
+			return '';
 		}
 
 		// Calculating discount percentage

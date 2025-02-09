@@ -808,7 +808,10 @@
 						type="button"
 						on:click={() => {
 							if (product) {
-								const newDetail = { ...emptyDetail, id: crypto.randomUUID() };
+								const newDetail = {
+									...structuredClone(emptyDetail),
+									id: crypto.randomUUID(),
+								};
 								product.details = [...product.details, newDetail];
 							}
 						}}
