@@ -822,12 +822,16 @@
 		<!-- ACTIONS -->
 		<section class="button-group">
 			<button type="submit" class="button save-button" on:click={saveProduct}>
-				{isNewProduct ? 'Create' : 'Save'}
+				<ion-icon name="checkmark-circle" />
+				<span>
+					{isNewProduct ? 'Create Product' : 'Save Changes'}
+				</span>
 			</button>
 			{#if !isNewProduct}
-				<button type="button" class="button delete-button" on:click={deleteProduct}
-					>Delete</button
-				>
+				<button type="button" class="button delete-button" on:click={deleteProduct}>
+					<ion-icon name="trash" />
+					<span>Delete Product</span>
+				</button>
 			{/if}
 		</section>
 	</form>
@@ -1091,36 +1095,56 @@
 	}
 
 	.button-group {
-		display: flex;
-		gap: 1rem;
-		padding: 1rem;
-		align-items: center;
-		justify-content: center;
+		display: grid;
+		margin-top: 1rem;
+		row-gap: 1.5rem;
+		padding: 0;
+		background-color: transparent;
+		box-shadow: none;
+		border: none;
 	}
 
 	.button {
-		padding: 0.75rem 1.5rem;
-		font-size: 1rem;
-		border: none;
-		border-radius: 5px;
-		cursor: pointer;
-		transition: background-color 0.3s, transform 0.2s;
+		display: flex;
+		align-items: center;
+		column-gap: 1ch;
+		width: 100%;
+
+		background-color: white;
+		box-shadow: 0 0 10px #00000030;
+		padding: 1.25rem 1rem;
+		border-radius: 15px;
+
+		font-size: 1.2rem;
+		font-weight: 500;
+
+		transition: all 0.2s ease-out;
 	}
 
-	.save-button {
+	.button:hover {
+		box-shadow: 0 0 15px #00000050;
 		background-color: var(--interactive);
 		color: var(--main);
 	}
 
-	.delete-button {
-		background-color: var(--content-7);
-		color: var(--main);
+	.button ion-icon {
+		font-size: 1.15em;
 	}
 
-	.save-button:hover,
+	.save-button {
+		color: green;
+	}
+
+	.delete-button {
+		color: rgb(196, 0, 0);
+	}
+
+	.save-button:hover {
+		background-color: green;
+	}
+
 	.delete-button:hover {
-		filter: brightness(120%);
-		transform: scale(1.05);
+		background-color: rgb(196, 0, 0);
 	}
 
 	input[type='file'] {
