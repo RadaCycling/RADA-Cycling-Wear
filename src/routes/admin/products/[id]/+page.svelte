@@ -496,7 +496,10 @@
 </script>
 
 <svelte:head>
-	<title>Admin | {isNewProduct ? 'Create New Product' : 'Edit Product'} - {$page.params.id}</title
+	<title
+		>Admin | {isNewProduct ? 'Create New Product' : 'Edit Product'} - {product?.name[
+			$language
+		] || 'Unnamed product'}</title
 	>
 </svelte:head>
 {#if product}
@@ -506,7 +509,7 @@
 				<ion-icon name="close" />
 			</a>
 			<h1>{isNewProduct ? 'Create New Product' : 'Edit Product'}</h1>
-			<p>{product.id}</p>
+			<p>{product.name[$language] || 'Unnamed product'}</p>
 		</header>
 
 		<!-- GENERAL INFORMATION -->
