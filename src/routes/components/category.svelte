@@ -9,11 +9,7 @@
 </script>
 
 <div class="category" {style}>
-	<img
-		src="{baseImageRoute}/{category.imageSrc}"
-		alt={category.imageAlt[$language]}
-		class="scrollAppear"
-	/>
+	<img src={category.imageSrc} alt={category.imageAlt[$language]} class="scrollAppear" />
 	<div class="text">
 		<h2>{category.name[$language]}</h2>
 		<a href="{baseRoute}/catalog/{category.href}" class="button">{buttonText}</a>

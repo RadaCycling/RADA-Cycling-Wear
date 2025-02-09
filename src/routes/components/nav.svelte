@@ -159,7 +159,7 @@
 							class="featuredSectionLink"
 						>
 							<img
-								src="{baseImageRoute}/{catalogMenu.featuredCategory?.imageSrc}"
+								src={catalogMenu.featuredCategory?.imageSrc}
 								alt={catalogMenu.featuredCategory?.imageAlt[$language]}
 							/>
 							<h2>{catalogMenu.featuredCategory?.name[$language]}</h2>

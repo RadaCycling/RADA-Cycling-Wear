@@ -1,5 +1,5 @@
 import toast from "svelte-french-toast";
-import { activeSNavMenu, baseRoute, type CartItem, cartItems, dictionary, type Language, language } from "./stores"
+import { activeSNavMenu, baseImageRoute, baseRoute, type CartItem, cartItems, dictionary, type Language, language } from "./stores"
 import { get } from 'svelte/store';
 
 export type translatableContent = { en: string; es: string; }
@@ -41,8 +41,8 @@ export let featuredCategories: number[] = [7, 15]
 export let categories: Category[] = [
     {
         id: 0,
-        imageSrc: "demo/amsterdam.webp",
-        smallImageSrc: "demo/amsterdam-small.webp",
+        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
+        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
         imageAlt: { en: "Cyclist wearing a short sleeve jersey", es: "Ciclista con camiseta de manga corta" },
         name: { en: "Short Sleeve Jerseys", es: "Camisetas de Manga Corta" },
         description: { en: "Experience unparalleled comfort and aerodynamic performance with our short sleeve jerseys. Designed for the heat of competition and the freedom of the open road.", es: "Experimenta un confort y rendimiento aerodinámico incomparables con nuestras camisetas de manga corta. Diseñadas para el calor de la competencia y la libertad de la carretera abierta." },
@@ -51,8 +51,8 @@ export let categories: Category[] = [
     },
     {
         id: 1,
-        imageSrc: "demo/amsterdam.webp",
-        smallImageSrc: "demo/amsterdam-small.webp",
+        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
+        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
         imageAlt: { en: "Cyclist wearing a long sleeve jersey", es: "Ciclista con camiseta de manga larga" },
         name: { en: "Jerseys", es: "Camisetas" },
         description: { en: "Gear up for cooler rides with our long sleeve jerseys. Offering extra protection without sacrificing breathability or comfort.", es: "Prepárate para rutas más frescas con nuestras camisetas de manga larga. Ofrecen protección adicional sin sacrificar la transpirabilidad o el confort." },
@@ -61,8 +61,8 @@ export let categories: Category[] = [
     },
     {
         id: 2,
-        imageSrc: "demo/amsterdam.webp",
-        smallImageSrc: "demo/amsterdam-small.webp",
+        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
+        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
         imageAlt: { en: "Cyclist with cycling bib shorts", es: "Ciclista con pantalones de ciclismo" },
         name: { en: "Bibs", es: "Pantalones" },
         description: { en: "Elevate your ride with our cycling bibs. Engineered for long-lasting comfort and support, ensuring you stay focused on the ride ahead.", es: "Eleva tu recorrido con nuestras mallas de ciclismo. Diseñadas para proporcionar confort y soporte duraderos, asegurando que te mantengas concentrado en el camino por delante." },
@@ -71,8 +71,8 @@ export let categories: Category[] = [
     },
     {
         id: 3,
-        imageSrc: "demo/amsterdam.webp",
-        smallImageSrc: "demo/amsterdam-small.webp",
+        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
+        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
         imageAlt: { en: "Casual shirt for cyclists", es: "Camisa casual para ciclistas" },
         name: { en: "Shirts", es: "Camisas" },
         description: { en: "Discover our range of casual cycling shirts, blending style and functionality. Perfect for the café stop or the commute.", es: "Descubre nuestra gama de camisas de ciclismo casual, que combinan estilo y funcionalidad. Perfectas para la parada en el café o el trayecto." },
@@ -81,8 +81,8 @@ export let categories: Category[] = [
     },
     {
         id: 4,
-        imageSrc: "demo/amsterdam.webp",
-        smallImageSrc: "demo/amsterdam-small.webp",
+        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
+        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
         imageAlt: { en: "Cyclist wearing cycling shorts", es: "Ciclista con shorts de ciclismo" },
         name: { en: "Shorts", es: "Shorts" },
         description: { en: "Find your perfect fit with our cycling shorts, designed for ultimate comfort and durability, mile after mile.", es: "Encuentra tu ajuste perfecto con nuestros shorts de ciclismo, diseñados para ofrecer la máxima comodidad y durabilidad, kilómetro tras kilómetro." },
@@ -91,8 +91,8 @@ export let categories: Category[] = [
     },
     {
         id: 5,
-        imageSrc: "demo/amsterdam.webp",
-        smallImageSrc: "demo/amsterdam-small.webp",
+        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
+        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
         imageAlt: { en: "Cyclist wearing a jacket", es: "Ciclista con chaqueta" },
         name: { en: "Jackets & Vests", es: "Chaquetas y Chalecos" },
         description: { en: "Brave the elements with our jackets and vests. From windproof to waterproof, layer up in style without compromising on performance.", es: "Enfréntate a los elementos con nuestras chaquetas y chalecos. Desde a prueba de viento hasta impermeables, vístete por capas con estilo sin comprometer el rendimiento." },
@@ -101,8 +101,8 @@ export let categories: Category[] = [
     },
     {
         id: 6,
-        imageSrc: "demo/amsterdam.webp",
-        smallImageSrc: "demo/amsterdam-small.webp",
+        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
+        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
         imageAlt: { en: "Cycling accessories", es: "Accesorios para ciclismo" },
         name: { en: "Accessories", es: "Accesorios" },
         description: { en: "Complete your kit with our cycling accessories. Everything you need from gloves to caps, ensuring every ride is a great one.", es: "Completa tu equipo con nuestros accesorios para ciclismo. Todo lo que necesitas desde guantes hasta gorras, asegurando que cada salida sea excepcional." },
@@ -111,8 +111,8 @@ export let categories: Category[] = [
     },
     {
         id: 7,
-        imageSrc: "Resources/category_man.webp",
-        smallImageSrc: "Resources/category_man.webp",
+        imageSrc: `${baseImageRoute}/Resources/category_man.webp`,
+        smallImageSrc: `${baseImageRoute}/Resources/category_man.webp`,
         imageAlt: { en: "Complete collection of men's cycling wear", es: "Colección completa de ropa de ciclismo para hombres" },
         name: { en: "Men", es: "Hombres" },
         description: { en: "Discover our comprehensive collection of men's cycling wear. Tailored for performance, comfort, and style.", es: "Descubre nuestra colección completa de ropa de ciclismo para hombres. Diseñada para rendimiento, confort y estilo." },
@@ -121,8 +121,8 @@ export let categories: Category[] = [
     },
     {
         id: 8,
-        imageSrc: "demo/amsterdam.webp",
-        smallImageSrc: "demo/amsterdam-small.webp",
+        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
+        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
         imageAlt: { en: "Cycling wear for hot conditions", es: "Ropa de ciclismo para condiciones cálidas" },
         name: { en: "Hot", es: "Calor" },
         description: { en: "Embrace summer with garments designed to keep you cool and comfortable when it’s scorching. Crafted with breathable fabrics for optimal ventilation, and that wick sweat away.", es: "Afronta el verano con prendas diseñadas para mantenerte fresco y cómodo cuando hace mucho calor. Confeccionadas con tejidos transpirables para una ventilación óptima que aleja el sudor." },
@@ -131,8 +131,8 @@ export let categories: Category[] = [
     },
     {
         id: 9,
-        imageSrc: "demo/amsterdam.webp",
-        smallImageSrc: "demo/amsterdam-small.webp",
+        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
+        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
         imageAlt: { en: "Cycling wear for cold conditions", es: "Ropa de ciclismo para condiciones frías" },
         name: { en: "Cold", es: "Frío" },
         description: { en: "Conquer the cold with our cycling wear designed for chilly rides. Stay warm without the bulk, thanks to innovative thermal technologies and layering solutions.", es: "Conquista el frío con nuestra ropa de ciclismo diseñada para paseos fríos. Mantente caliente sin volumen gracias a tecnologías térmicas innovadoras y soluciones de capas." },
@@ -141,8 +141,8 @@ export let categories: Category[] = [
     },
     {
         id: 10,
-        imageSrc: "demo/amsterdam.webp",
-        smallImageSrc: "demo/amsterdam-small.webp",
+        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
+        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
         imageAlt: { en: "Cycling wear for wet conditions", es: "Ropa de ciclismo para condiciones húmedas" },
         name: { en: "Wet", es: "Húmedo" },
         description: { en: "Don’t let rain stop your ride. Our wet conditions gear is waterproof and breathable, keeping you dry and comfortable in any downpour.", es: "No dejes que la lluvia detenga tu paseo. Nuestro equipo para condiciones húmedas es impermeable y transpirable, manteniéndote seco y cómodo en cualquier aguacero." },
@@ -151,8 +151,8 @@ export let categories: Category[] = [
     },
     {
         id: 11,
-        imageSrc: "demo/amsterdam.webp",
-        smallImageSrc: "demo/amsterdam-small.webp",
+        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
+        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
         imageAlt: { en: "Featured basics of cycling wear", es: "Básicos destacados de ropa de ciclismo" },
         name: { en: "Basics", es: "Básicos" },
         description: { en: "Get started with our essentials. Quality basics that every cyclist needs, from reliable jerseys to versatile shorts.", es: "Comienza con nuestros esenciales. Básicos de calidad que todo ciclista necesita, desde camisetas confiables hasta shorts versátiles." },
@@ -161,8 +161,8 @@ export let categories: Category[] = [
     },
     {
         id: 12,
-        imageSrc: "demo/amsterdam.webp",
-        smallImageSrc: "demo/amsterdam-small.webp",
+        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
+        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
         imageAlt: { en: "Featured 360-degree range of cycling wear", es: "Gama destacada de 360 grados de ropa de ciclismo" },
         name: { en: "360", es: "360" },
         description: { en: "Experience our 360-degree range, where innovation meets the open road. Cutting-edge materials and designs that move with you.", es: "Experimenta nuestra gama de 360 grados, donde la innovación se encuentra con la carretera abierta. Materiales y diseños de vanguardia que se mueven contigo." },
@@ -171,8 +171,8 @@ export let categories: Category[] = [
     },
     {
         id: 13,
-        imageSrc: "demo/amsterdam.webp",
-        smallImageSrc: "demo/amsterdam-small.webp",
+        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
+        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
         imageAlt: { en: "Featured pinnacle series of cycling wear", es: "Serie cumbre destacada de ropa de ciclismo" },
         name: { en: "Pinnacle", es: "Cumbre" },
         description: { en: "Reach the summit with Pinnacle. Our premium line features the best in performance, comfort, and style, for serious cyclists who demand the best.", es: "Alcanza la cima con Cumbre. Nuestra línea premium ofrece lo mejor en rendimiento, confort y estilo, para ciclistas serios que exigen lo mejor." },
@@ -181,8 +181,8 @@ export let categories: Category[] = [
     },
     {
         id: 14,
-        imageSrc: "demo/amsterdam.webp",
-        smallImageSrc: "demo/amsterdam-small.webp",
+        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
+        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
         imageAlt: { en: "Gift cards for cycling wear", es: "Tarjetas de regalo para ropa de ciclismo" },
         name: { en: "Gift Cards", es: "Tarjetas de Regalo" },
         description: { en: "The perfect gift for the cyclist in your life. Give them the choice with our gift cards, redeemable across our entire range.", es: "El regalo perfecto para el ciclista en tu vida. Dales la elección con nuestras tarjetas de regalo, canjeables en toda nuestra gama." },
@@ -192,8 +192,8 @@ export let categories: Category[] = [
     },
     {
         id: 15,
-        imageSrc: "Resources/category_woman.webp",
-        smallImageSrc: "Resources/category_woman.webp",
+        imageSrc: `${baseImageRoute}/Resources/category_woman.webp`,
+        smallImageSrc: `${baseImageRoute}/Resources/category_woman.webp`,
         imageAlt: { en: "Complete collection of women's cycling wear", es: "Colección completa de ropa de ciclismo para mujeres" },
         name: { en: "Women", es: "Mujeres" },
         description: { en: "Explore our full range of women's cycling wear, designed by women for women. Where comfort meets style, empowering your ride.", es: "Explora nuestra gama completa de ropa de ciclismo para mujeres, diseñada por mujeres para mujeres. Donde el confort se encuentra con el estilo, empoderando tu paseo." },
@@ -202,8 +202,8 @@ export let categories: Category[] = [
     },
     {
         id: 16,
-        imageSrc: "demo/amsterdam.webp",
-        smallImageSrc: "demo/amsterdam-small.webp",
+        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
+        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
         imageAlt: { en: "XS Size Cycling Gear", es: "Equipo de ciclismo talla XS" },
         name: { en: "XS", es: "XS" },
         description: { en: "Discover our selection of XS size cycling gear, perfectly tailored for those who prefer a snug fit. Ideal for maximizing performance and comfort.", es: "Descubre nuestra selección de equipo de ciclismo talla XS, perfectamente adaptado para aquellos que prefieren un ajuste ceñido. Ideal para maximizar rendimiento y comodidad." },
@@ -212,8 +212,8 @@ export let categories: Category[] = [
     },
     {
         id: 17,
-        imageSrc: "demo/amsterdam.webp",
-        smallImageSrc: "demo/amsterdam-small.webp",
+        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
+        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
         imageAlt: { en: "S Size Cycling Gear", es: "Equipo de ciclismo talla S" },
         name: { en: "S", es: "S" },
         description: { en: "Explore our range of S size cycling wear, designed for optimal movement and aerodynamics. Perfect for cyclists who value precision and fit.", es: "Explora nuestra gama de ropa de ciclismo talla S, diseñada para un movimiento óptimo y aerodinámica. Perfecto para ciclistas que valoran la precisión y el ajuste." },
@@ -222,8 +222,8 @@ export let categories: Category[] = [
     },
     {
         id: 18,
-        imageSrc: "demo/amsterdam.webp",
-        smallImageSrc: "demo/amsterdam-small.webp",
+        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
+        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
         imageAlt: { en: "M Size Cycling Gear", es: "Equipo de ciclismo talla M" },
         name: { en: "M", es: "M" },
         description: { en: "Browse our collection of M size cycling apparel, offering a balance of comfort and performance for the enthusiastic cyclist.", es: "Consulta nuestra colección de ropa de ciclismo talla M, que ofrece un equilibrio entre comodidad y rendimiento para el ciclista entusiasta." },
@@ -232,8 +232,8 @@ export let categories: Category[] = [
     },
     {
         id: 19,
-        imageSrc: "demo/amsterdam.webp",
-        smallImageSrc: "demo/amsterdam-small.webp",
+        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
+        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
         imageAlt: { en: "L Size Cycling Gear", es: "Equipo de ciclismo talla L" },
         name: { en: "L", es: "L" },
         description: { en: "Check out our selection of L size cycling clothing, engineered for durability and freedom of movement. Gear up for any challenge.", es: "Revisa nuestra selección de ropa de ciclismo talla L, diseñada para durabilidad y libertad de movimiento. Prepárate para cualquier desafío." },
@@ -242,8 +242,8 @@ export let categories: Category[] = [
     },
     {
         id: 20,
-        imageSrc: "demo/amsterdam.webp",
-        smallImageSrc: "demo/amsterdam-small.webp",
+        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
+        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
         imageAlt: { en: "XL Size Cycling Gear", es: "Equipo de ciclismo talla XL" },
         name: { en: "XL", es: "XL" },
         description: { en: "Find your perfect fit with our XL size cycling gear, designed for extra comfort without compromising on performance.", es: "Encuentra tu ajuste perfecto con nuestro equipo de ciclismo talla XL, diseñado para un confort extra sin comprometer el rendimiento." },
@@ -252,8 +252,8 @@ export let categories: Category[] = [
     },
     {
         id: 21,
-        imageSrc: "demo/amsterdam.webp",
-        smallImageSrc: "demo/amsterdam-small.webp",
+        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
+        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
         imageAlt: { en: "XXL Size Cycling Gear", es: "Equipo de ciclismo talla XXL" },
         name: { en: "XXL", es: "XXL" },
         description: { en: "Explore our XXL size cycling wear for superior comfort and style. Ideal for those who seek extra room and ease.", es: "Explora nuestra ropa de ciclismo talla XXL para un confort y estilo superiores. Ideal para aquellos que buscan espacio extra y facilidad." },

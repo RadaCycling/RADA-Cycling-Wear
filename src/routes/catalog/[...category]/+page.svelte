@@ -160,15 +160,9 @@
 		<header>
 			<picture>
 				{#if mainCategory?.smallImageSrc}
-					<source
-						srcset="{baseImageRoute}/{mainCategory?.smallImageSrc}"
-						media="(max-width: 650px)"
-					/>
+					<source srcset={mainCategory?.smallImageSrc} media="(max-width: 650px)" />
 				{/if}
-				<img
-					src="{baseImageRoute}/{mainCategory?.imageSrc}"
-					alt={mainCategory?.imageAlt[$language]}
-				/>
+				<img src={mainCategory?.imageSrc} alt={mainCategory?.imageAlt[$language]} />
 			</picture>
 			<h1>{mainCategory?.name[$language]}</h1>
 		</header>
