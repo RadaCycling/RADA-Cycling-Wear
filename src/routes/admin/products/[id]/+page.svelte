@@ -32,6 +32,7 @@
 	import Image from '../../components/image.svelte';
 	import Specification from '../../components/specification.svelte';
 	import { flip } from 'svelte/animate';
+	import Dialog from '../../components/dialog.svelte';
 
 	let form: HTMLFormElement;
 
@@ -461,6 +462,7 @@
 		goto(baseRoute + '/admin/products');
 	}
 
+	let dialogElement: HTMLDialogElement;
 	async function deleteProduct() {
 		// Delete Product from Firestore
 		try {
@@ -831,10 +833,24 @@
 				</span>
 			</button>
 			{#if !isNewProduct}
-				<button type="button" class="button delete-button" on:click={deleteProduct}>
+				<button
+					type="button"
+					class="button delete-button"
+					on:click={() => dialogElement.showModal()}
+				>
 					<ion-icon name="trash" />
 					<span>Delete Product</span>
 				</button>
+
+				<Dialog
+					bind:dialogElement
+					parameters={{
+						callback: deleteProduct,
+						title: `Delete ${product.name[$language]}?`,
+						text: `Are you sure that you want to delete the product called ${product.name[$language]}?`,
+						actionButtonText: 'Confirm',
+					}}
+				/>
 			{/if}
 		</section>
 	</form>

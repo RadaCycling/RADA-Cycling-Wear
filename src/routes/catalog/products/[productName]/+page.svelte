@@ -175,19 +175,28 @@
 	onMount(() => setup());
 	$: $page.params.productName, setup();
 	$: $cartItems, checkIfProductIsInCart();
+
+	let currentFileIndex: number = 0;
 </script>
 
 {#if product}
 	{#key product}
 		<div class="product-container" in:fade>
 			<div class="image-container">
+				<img
+					src={product.imageSources[currentFileIndex]}
+					tabindex="-1"
+					alt="{product.name[$language]} background"
+					class="image-container-bg"
+				/>
 				<Carousel
 					images={product.imageSources}
 					imagesCommonDescription={product.imageAlt[$language]}
 					hideController={true}
 					style="border-radius: 0; aspect-ratio: initial; width: 100%;"
-					imgStyle="max-height: max(50vh, 20rem); box-shadow: 0 0 1.5rem var(--content-1);"
+					imgStyle="max-height: max(calc(60vh - 5rem), 20rem); box-shadow: 0 0 1.5rem var(--content-1); width: 100%; object-fit: contain;"
 					automaticImageChangeTime={60000}
+					bind:currentFileIndex
 				/>
 
 				{#if versions}
@@ -393,27 +402,42 @@
 		display: flex;
 		justify-content: center;
 		z-index: 0;
-		padding: 5rem 0 1rem;
+		padding-top: 5rem;
+		height: max(60vh, 20rem);
 	}
 
 	@media screen and (max-width: 750px) {
 		.image-container {
 			padding-top: 4rem;
 		}
+
+		.image-container .image-container-bg {
+			top: 4rem;
+		}
 	}
 
 	.image-container img {
-		max-height: max(50vh, 20rem);
 		width: auto;
+	}
+
+	.image-container .image-container-bg {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		filter: blur(20px);
+		opacity: 0.5;
+		position: absolute;
+		top: 5rem;
 	}
 
 	.image-container .versions {
 		position: absolute;
-		right: 0.5rem;
-		top: 50%;
-		transform: translateY(-50%);
+		left: 50%;
+		bottom: 1.5rem;
+		transform: translateX(-50%);
 
 		display: grid;
+		grid-auto-flow: column;
 		gap: 0.5rem;
 	}
 
@@ -450,7 +474,7 @@
 	.product-content {
 		border-top-right-radius: 20px;
 		border-top-left-radius: 20px;
-		transform: translateY(-20px);
+		transform: translateY(-1rem);
 		background-color: var(--main);
 		z-index: 1;
 		padding: 2rem;
