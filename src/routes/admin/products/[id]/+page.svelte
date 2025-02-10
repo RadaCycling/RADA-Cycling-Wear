@@ -28,7 +28,7 @@
 	import { goto } from '$app/navigation';
 	import { fade } from 'svelte/transition';
 	import Texteditor from '../../components/texteditor.svelte';
-	import ArrayInput from '../../components/arrayInput.svelte';
+	import ArrayPicker from '../../components/arrayPicker.svelte';
 	import Image from '../../components/image.svelte';
 	import Specification from '../../components/specification.svelte';
 	import { flip } from 'svelte/animate';
@@ -676,7 +676,7 @@
 				</div>
 				<div class="form-group">
 					<label class="form-group-label" for="new-category">Categories:</label>
-					<ArrayInput
+					<ArrayPicker
 						bind:selectedElements={categories}
 						array={allCategoriesStore}
 						impossibleOptionsIds={sizeCategoryIds}
@@ -686,7 +686,7 @@
 				</div>
 				<div class="form-group">
 					<label class="form-group-label" for="version-ids">Versions (optional):</label>
-					<ArrayInput
+					<ArrayPicker
 						bind:selectedElements={versions}
 						array={$allProductsStore}
 						impossibleOptionsIds={[product.id]}

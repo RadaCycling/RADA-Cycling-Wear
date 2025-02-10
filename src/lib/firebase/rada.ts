@@ -1,5 +1,5 @@
 // Import the functions from the SDKs
-import { deleteApp, getApps, initializeApp, type FirebaseApp } from "firebase/app";
+import { initializeApp, type FirebaseApp } from "firebase/app";
 import { getFirestore } from 'firebase/firestore'
 import { getAuth } from 'firebase/auth'
 import { getStorage } from "firebase/storage";
