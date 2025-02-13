@@ -21,7 +21,7 @@
 		type Category,
 		type Product,
 		type UnitsInStock,
-		categories as allCategoriesStore,
+		categories as categoriesStore,
 		findProductsByIds,
 		type TableEntry,
 	} from '../../../mockDb';
@@ -678,7 +678,7 @@
 					<label class="form-group-label" for="new-category">Categories:</label>
 					<ArrayPicker
 						bind:selectedElements={categories}
-						array={allCategoriesStore}
+						array={categoriesStore}
 						impossibleOptionsIds={sizeCategoryIds}
 						placeholder="Add a new category..."
 						on:change={syncCategories}
