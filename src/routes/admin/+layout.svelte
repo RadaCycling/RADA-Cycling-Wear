@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
-	import { baseRoute } from '../stores';
+	import { baseRoute, dictionary } from '../stores';
 	import { page } from '$app/stores';
 </script>
 
@@ -12,42 +12,42 @@
 					<a
 						class="link hide"
 						class:active={$page.url.pathname === `${baseRoute}/admin`}
-						href="{baseRoute}/admin">Dashboard</a
+						href="{baseRoute}/admin">{$dictionary.dashboard}</a
 					>
 				</li>
 				<li>
 					<a
 						class="link"
 						class:active={$page.url.pathname.includes(`${baseRoute}/admin/products`)}
-						href="{baseRoute}/admin/products">Products</a
+						href="{baseRoute}/admin/products">{$dictionary.products}</a
 					>
 				</li>
 				<li>
 					<a
 						class="link"
 						class:active={$page.url.pathname.includes(`${baseRoute}/admin/categories`)}
-						href="{baseRoute}/admin/categories">Categories</a
+						href="{baseRoute}/admin/categories">{$dictionary.categories}</a
 					>
 				</li>
 				<li>
 					<a
 						class="link"
 						class:active={$page.url.pathname.includes(`${baseRoute}/admin/portfolio`)}
-						href="{baseRoute}/admin/portfolio">Portfolio</a
+						href="{baseRoute}/admin/portfolio">{$dictionary.portfolio}</a
 					>
 				</li>
 				<li>
 					<a
 						class="link"
 						class:active={$page.url.pathname.includes(`${baseRoute}/admin/orders`)}
-						href="{baseRoute}/admin/orders">Orders</a
+						href="{baseRoute}/admin/orders">{$dictionary.orders}</a
 					>
 				</li>
 				<li>
 					<a
 						class="link"
 						class:active={$page.url.pathname.includes(`${baseRoute}/admin/messages`)}
-						href="{baseRoute}/admin/messages">Messages</a
+						href="{baseRoute}/admin/messages">{$dictionary.messages}</a
 					>
 				</li>
 			</ul>

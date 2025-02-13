@@ -5,7 +5,7 @@
 <div in:fade class="not-available">This page is not available yet.</div>
 
 <svelte:head>
-	<title>Admin | Orders</title>
+	<title>Admin | Portfolio</title>
 </svelte:head>
 
 <style>

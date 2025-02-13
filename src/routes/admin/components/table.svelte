@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { slide } from 'svelte/transition';
 	import type { Head, Row } from '../types/table';
 	import Badge from './badge.svelte';
 	import Switch from './switch.svelte';
@@ -18,7 +19,7 @@
 		</tr>
 	</thead>
 	<tbody>
-		{#each body as row}
+		{#each body as row (row)}
 			<tr>
 				{#each row as cell}
 					{#if cell.type === 'image' && typeof cell.content === 'string'}

@@ -199,6 +199,11 @@ export const translator = {
         noProductsMatchYourSearchCriteria: 'No products match your search criteria.',
         loadingProducts: 'Loading products',
         productList: 'Product List',
+        dashboard: 'Dashboard',
+        products: 'Products',
+        portfolio: 'Portfolio',
+        orders: 'Orders',
+        messages: 'Messages',
     },
     es: {
         comingSoon: 'Próximamente',
@@ -400,5 +405,10 @@ export const translator = {
         noProductsMatchYourSearchCriteria: 'No hay productos que coincidan con tus criterios de búsqueda.',
         loadingProducts: 'Cargando productos',
         productList: 'Lista de Productos',
+        dashboard: 'General',
+        products: 'Productos',
+        portfolio: 'Portafolio',
+        orders: 'Pedidos',
+        messages: 'Mensajes',
     },
 };
