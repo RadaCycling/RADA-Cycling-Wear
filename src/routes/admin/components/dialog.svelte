@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { sleep } from '../../functions';
+	import { dictionary } from '../../stores';
 
 	type Dialog = {
 		title: string;
@@ -31,13 +32,15 @@
 		</header>
 		<main><p>{parameters.text}</p></main>
 		<footer>
-			<button type="button" on:click={close}>Cancel</button>
+			<button type="button" on:click={close}>{$dictionary.cancel}</button>
 			<button
 				type="submit"
 				style="background-color: {parameters.actionButtonColor
 					? parameters.actionButtonColor
 					: ''};"
-				>{parameters.actionButtonText ? parameters.actionButtonText : 'Continue'}</button
+				>{parameters.actionButtonText
+					? parameters.actionButtonText
+					: $dictionary.continue}</button
 			>
 		</footer>
 	</form>

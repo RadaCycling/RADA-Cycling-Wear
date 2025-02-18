@@ -26,15 +26,16 @@
 		type TableEntry,
 	} from '../../../mockDb';
 	import { goto } from '$app/navigation';
-	import { fade } from 'svelte/transition';
 	import Texteditor from '../../components/texteditor.svelte';
 	import ArrayPicker from '../../components/arrayPicker.svelte';
 	import Image from '../../components/image.svelte';
 	import Specification from '../../components/specification.svelte';
 	import { flip } from 'svelte/animate';
-	import Dialog from '../../components/dialog.svelte';
-
-	let form: HTMLFormElement;
+	import EditForm from '../../components/editForm.svelte';
+	import FormParagraph from '../../components/formParagraph.svelte';
+	import FormSection from '../../components/formSection.svelte';
+	import InputGroup from '../../components/inputGroup.svelte';
+	import Switch from '../../components/switch.svelte';
 
 	let product: Product | undefined;
 	const newProductParameter = 'new';
@@ -74,7 +75,6 @@
 	$: product?.versionsIds, getVersions();
 	let isSingleSize: boolean;
 	let singleSizeChangerMemory: UnitsInStock[] | number;
-	let validDetails: boolean = true;
 	let imageFiles: File[] = [];
 
 	function handleStockInput(e: Event, size?: UnitsInStock) {
@@ -112,7 +112,7 @@
 
 		if (noStock && product.status) {
 			product.status = false;
-			toast('Product status was deactivated because there are no units in stock.');
+			toast($dictionary.productStatusDeactivated);
 		}
 	}
 
@@ -290,7 +290,7 @@
 		if (target.files) {
 			imageFiles = Array.from(target.files);
 			if (imageFiles.length > 1) {
-				toast('Warning: Only the one file will be uploaded as the hover image.');
+				toast($dictionary.warningMoreThanOneFileUploadedForHoverImage);
 			}
 			for (let file of imageFiles) {
 				if (product) {
@@ -300,6 +300,7 @@
 
 					product.dbImageHoverSource = file.name;
 					product.imageHoverSource = URL.createObjectURL(file);
+					break;
 				}
 			}
 		}
@@ -392,7 +393,7 @@
 			});
 			await setImageUrlsFromStorage();
 		} else if (!isNewProduct) {
-			toast.error('Invalid product ID');
+			toast.error($dictionary.invalidProductId);
 			goto(baseRoute + '/admin/products');
 			return;
 		}
@@ -401,16 +402,13 @@
 	async function saveProduct() {
 		// Validate the product
 		if (!product) {
-			toast.error('Product not found');
+			toast.error($dictionary.productNotFound);
 			return;
 		} else if (!product.name.en || !product.name.es || !product.price || !product.href) {
-			toast.error('Please fill in all required fields.');
+			toast.error($dictionary.pleaseFillInAllRequiredFields);
 			return;
 		} else if (product.price === '$0.00') {
-			toast.error('$0.00 is not a valid price.');
-			return;
-		} else if (!validDetails) {
-			toast.error('Invalid details JSON format');
+			toast.error($dictionary.zeroPriceNotValid);
 			return;
 		}
 		$dataReady = false;
@@ -440,7 +438,7 @@
 				return [...products, product];
 			});
 
-			toast.success('New product created successfully!');
+			toast.success($dictionary.newProductCreatedSuccessfully);
 		} else {
 			// Update Product in Database
 			const docRef = doc(db, 'products', id);
@@ -455,14 +453,13 @@
 				return products;
 			});
 
-			toast.success('Product saved successfully!');
+			toast.success($dictionary.changesSavedSuccessfully);
 		}
 
 		$dataReady = true;
 		goto(baseRoute + '/admin/products');
 	}
 
-	let dialogElement: HTMLDialogElement;
 	async function deleteProduct() {
 		// Delete Product from Firestore
 		try {
@@ -471,9 +468,9 @@
 
 			allProductsStore.update((products) => products.filter((p) => p.id !== id));
 
-			toast.success('Product deleted successfully!');
+			toast.success($dictionary.productDeletedSuccessfully);
 		} catch (error) {
-			toast.error('Product could not be deleted.');
+			toast.error($dictionary.productCouldNotBeDeleted);
 		}
 
 		// Delete Product's Images from Storage
@@ -488,7 +485,7 @@
 				}
 			}
 		} catch (error) {
-			toast('Warning: Product images could not be deleted from storage.');
+			toast($dictionary.warningProductImagesCouldNotBeDeleted);
 		}
 
 		goto(baseRoute + '/admin/products');
@@ -497,491 +494,314 @@
 
 <svelte:head>
 	<title
-		>Admin | {isNewProduct ? 'Create New Product' : 'Edit Product'} - {product?.name[
-			$language
-		] || 'Unnamed product'}</title
+		>{isNewProduct ? $dictionary.createProduct : $dictionary.editProduct} -
+		{product?.name[$language] || $dictionary.unnamedProduct}</title
 	>
 </svelte:head>
-{#if product}
-	<form in:fade bind:this={form} class="edit-product-page">
-		<header>
-			<a href="{baseRoute}/admin/products">
-				<ion-icon name="close" />
-			</a>
-			<h1>{isNewProduct ? 'Create New Product' : 'Edit Product'}</h1>
-			<p>{product.name[$language] || 'Unnamed product'}</p>
-		</header>
 
+{#if product}
+	<EditForm
+		object={product}
+		saveFunction={saveProduct}
+		deleteFunction={deleteProduct}
+		staticText={{
+			createTitle: $dictionary.createProduct,
+			editTitle: $dictionary.editProduct,
+			unnamedSubtitle: $dictionary.unnamedProduct,
+			createButton: $dictionary.createNewProduct,
+			saveButton: $dictionary.saveChanges,
+			deleteButton: $dictionary.deleteProduct,
+			deleteDialogTitle: `${$dictionary.openQuestionMark}${$dictionary.delete} ${product.name[$language]}?`,
+			deleteDialogDescription: `${$dictionary.areYouSureThatYouWantToDeleteTheProductCalled} ${product.name[$language]}?`,
+			deleteDialogConfirmButton: $dictionary.confirm,
+		}}
+		backLink="{baseRoute}/admin/products"
+		isNew={isNewProduct}
+	>
 		<!-- GENERAL INFORMATION -->
-		<section>
-			<h2>General Information</h2>
-			<div class="section-content">
-				<p>Provide basic details about the product.</p>
-				<div class="form-group">
-					<label class="form-group-label" for="name-en"
-						><img src="{baseImageRoute}/usFlag.webp" alt="English" lang="en" />
-						<span>Name (English):</span></label
-					>
-					<input
-						id="name-en"
-						type="text"
-						required
-						bind:value={product.name.en}
-						on:change={checkHREF}
-					/>
-				</div>
-				<div class="form-group">
-					<label class="form-group-label" for="name-es"
-						><img src="{baseImageRoute}/spainFlag.webp" alt="Español" lang="es" />
-						<span>Name (Spanish):</span></label
-					>
-					<input id="name-es" type="text" required bind:value={product.name.es} />
-				</div>
-				<div class="form-group">
-					<label class="form-group-label" for="description-en"
-						><img src="{baseImageRoute}/usFlag.webp" alt="English" lang="en" />
-						<span>Description (English):</span></label
-					>
-					<Texteditor bind:content={product.description.en} />
-				</div>
-				<div class="form-group">
-					<label class="form-group-label" for="description-es"
-						><img src="{baseImageRoute}/spainFlag.webp" alt="Español" lang="es" />
-						<span>Description (Spanish):</span></label
-					>
-					<Texteditor bind:content={product.description.es} />
-				</div>
-				<p>
-					Enter a short, <b>unique</b> link for this product.
-				</p>
-				<div class="form-group">
-					<label class="form-group-label" for="href">Product URL (HREF):</label>
-					<input
-						id="href"
-						type="text"
-						required
-						bind:value={product.href}
-						on:change={checkHREF}
-					/>
-				</div>
-			</div>
-		</section>
+		<FormSection title={$dictionary.generalInformation}>
+			<FormParagraph content={$dictionary.provideBasicDetails} />
+			<InputGroup
+				label={`${$dictionary.name} (${$dictionary.english})`}
+				focusElementID="name-en"
+				image={`${baseImageRoute}/usFlag.webp`}
+			>
+				<input
+					id="name-en"
+					type="text"
+					required
+					bind:value={product.name.en}
+					on:change={checkHREF}
+				/>
+			</InputGroup>
+			<InputGroup
+				label={`${$dictionary.name} (${$dictionary.spanish})`}
+				focusElementID="name-es"
+				image={`${baseImageRoute}/spainFlag.webp`}
+			>
+				<input id="name-es" type="text" required bind:value={product.name.es} />
+			</InputGroup>
+			<InputGroup
+				label={`${$dictionary.description} (${$dictionary.english})`}
+				image={`${baseImageRoute}/usFlag.webp`}
+			>
+				<Texteditor bind:content={product.description.en} />
+			</InputGroup>
+			<InputGroup
+				label={`${$dictionary.description} (${$dictionary.spanish})`}
+				image={`${baseImageRoute}/spainFlag.webp`}
+			>
+				<Texteditor bind:content={product.description.es} />
+			</InputGroup>
+
+			<FormParagraph content={$dictionary.enterUniqueLink} />
+			<InputGroup label={`${$dictionary.productUrl}`} focusElementID="href">
+				<input
+					id="href"
+					type="text"
+					required
+					bind:value={product.href}
+					on:change={checkHREF}
+				/>
+			</InputGroup>
+		</FormSection>
 
 		<!-- PRICING & STOCK -->
-		<section>
-			<h2>Pricing & Stock</h2>
-			<div class="section-content">
-				<p>Set the price and stock details for the product.</p>
-				<div class="form-group">
-					<label class="form-group-label" for="price">Price:</label>
-					<input
-						id="price"
-						type="text"
-						required
-						bind:value={product.price}
-						on:input={handlePriceInput}
-						on:blur={checkPriceInput}
-					/>
-				</div>
-				<div class="form-group">
-					<label class="form-group-label" for="old-price">Old Price (optional):</label>
-					<input
-						id="old-price"
-						type="text"
-						bind:value={product.oldPrice}
-						on:input={handlePriceInput}
-						on:blur={checkPriceInput}
-					/>
-				</div>
-				<div class="form-group">
-					<label class="form-group-label" for="status">Single Size</label>
-					<label class="switch">
-						<input
-							id="isSingleSize"
-							type="checkbox"
-							bind:checked={isSingleSize}
-							on:change={handleSingleSizeChange}
-						/>
-						<span class="slider" />
-					</label>
-					<span
-						>"{product.name['en'] || '...'}" has
-						<b>{isSingleSize ? 'only one size' : 'multiple sizes'}</b>.</span
-					>
-				</div>
-				<div class="form-group">
-					<label class="form-group-label" for="units-in-stock">Units in Stock:</label>
-					<div class="size-stock">
-						{#if typeof product.unitsInStock === 'object'}
-							{#each product.unitsInStock as size}
-								<div class="size-stock-group">
-									<label class="size-stock-label" for="units-in-stock-{size.id}"
-										>{$dictionary.size} {size.name}:</label
-									>
-									<input
-										id="units-in-stock-{size.id}"
-										type="number"
-										required
-										value={size.units}
-										on:input={(e) => handleStockInput(e, size)}
-										on:blur={(e) => handleStockInputBlur(e, size)}
-									/>
-								</div>
-							{/each}
-						{:else}
-							<input
-								id="units-in-stock"
-								type="number"
-								required
-								value={product.unitsInStock}
-								on:input={(e) => handleStockInput(e)}
-								on:blur={(e) => handleStockInputBlur(e)}
-							/>
-						{/if}
-					</div>
-				</div>
-				<div class="form-group">
-					<label class="form-group-label" for="status"> Product Status </label>
-					<label class="switch">
-						<input id="status" type="checkbox" bind:checked={product.status} />
-						<span class="slider" />
-					</label>
-					<span
-						>"{product.name['en'] || '...'}" is
-						<b>{product.status ? 'visible' : 'hidden'}</b>.</span
-					>
-				</div>
-			</div>
-		</section>
-
-		<!-- CATEGORIES & VERSIONS -->
-		<section>
-			<h2>Categories & Versions</h2>
-			<div class="section-content">
-				<p>Specify the categories and versions for this product.</p>
-				<div class="form-group">
-					<label class="form-group-label" for="main-version"> Main Version </label>
-					<label class="switch">
-						<input
-							id="main-version"
-							type="checkbox"
-							bind:checked={product.mainVersion}
-						/>
-						<span class="slider" />
-					</label>
-					<span
-						>"{product.name['en'] || '...'}"
-						<b>{product.mainVersion ? 'is' : 'is not'}</b> the main version.</span
-					>
-				</div>
-				<div class="form-group">
-					<label class="form-group-label" for="new-category">Categories:</label>
-					<ArrayPicker
-						bind:selectedElements={categories}
-						array={categoriesStore}
-						impossibleOptionsIds={sizeCategoryIds}
-						placeholder="Add a new category..."
-						on:change={syncCategories}
-					/>
-				</div>
-				<div class="form-group">
-					<label class="form-group-label" for="version-ids">Versions (optional):</label>
-					<ArrayPicker
-						bind:selectedElements={versions}
-						array={$allProductsStore}
-						impossibleOptionsIds={[product.id]}
-						placeholder="Add a new version..."
-						on:change={syncVersions}
-					/>
-				</div>
-			</div>
-		</section>
-
-		<!-- IMAGES -->
-		<section>
-			<h2>Images</h2>
-			<div class="section-content">
-				<p>Upload product images and set an optional hover image.</p>
-				<div class="form-group">
-					<h3 class="form-group-label">Main Images</h3>
-					<div class="image-gallery">
-						<label class="image-item add-image">
-							<ion-icon name="add" />
-							<input type="file" multiple on:change={handleImageUpload} />
-						</label>
-						{#each product.imageSources as url, index (url)}
-							<div animate:flip={{ duration: 500 }}>
-								<Image
-									image={{
-										source: url,
-										alt: product.dbImageSources[index],
-										position:
-											product.imageSources.length > 1 ? index : undefined,
-									}}
-									on:delete={() => {
-										if (product) {
-											handleImageDelete(product.dbImageSources[index], url);
-										}
-									}}
-									on:reposition={(event) => {
-										if (product) {
-											product.dbImageSources = repositionElement(
-												product.dbImageSources,
-												product.dbImageSources[index],
-												event.detail,
-											);
-											product.imageSources = repositionElement(
-												product?.imageSources,
-												url,
-												event.detail,
-											);
-										}
-									}}
+		<FormSection title={$dictionary.pricingAndStock}>
+			<FormParagraph content={$dictionary.setPriceAndStock} />
+			<InputGroup label={`${$dictionary.price}`} focusElementID="price">
+				<input
+					id="price"
+					type="text"
+					required
+					bind:value={product.price}
+					on:input={handlePriceInput}
+					on:blur={checkPriceInput}
+				/>
+			</InputGroup>
+			<InputGroup
+				label={`${$dictionary.oldPrice} (${$dictionary.optional})`}
+				focusElementID="old-price"
+			>
+				<input
+					id="old-price"
+					type="text"
+					bind:value={product.oldPrice}
+					on:input={handlePriceInput}
+					on:blur={checkPriceInput}
+				/>
+			</InputGroup>
+			<InputGroup label={`${$dictionary.singleSize}`}>
+				<Switch
+					bind:state={isSingleSize}
+					callback={handleSingleSizeChange}
+					style="margin: 1rem;"
+				/>
+				<span
+					>"{product.name[$language] || '...'}" {$dictionary.has}
+					<b>{isSingleSize ? $dictionary.onlyOneSize : $dictionary.multipleSizes}</b
+					>.</span
+				>
+			</InputGroup>
+			<InputGroup label={`${$dictionary.unitsInStock}`} focusElementID="units-in-stock">
+				<div class="size-stock">
+					{#if typeof product.unitsInStock === 'object'}
+						{#each product.unitsInStock as size}
+							<div class="size-stock-group">
+								<label class="size-stock-label" for="units-in-stock-{size.id}"
+									>{$dictionary.size} {size.name}:</label
+								>
+								<input
+									id="units-in-stock-{size.id}"
+									type="number"
+									required
+									value={size.units}
+									on:input={(e) => handleStockInput(e, size)}
+									on:blur={(e) => handleStockInputBlur(e, size)}
 								/>
 							</div>
 						{/each}
-					</div>
+					{:else}
+						<input
+							id="units-in-stock"
+							type="number"
+							required
+							value={product.unitsInStock}
+							on:input={(e) => handleStockInput(e)}
+							on:blur={(e) => handleStockInputBlur(e)}
+						/>
+					{/if}
 				</div>
-				<div class="form-group">
-					<h3 class="form-group-label">Hover Image</h3>
-					<div class="image-gallery">
-						{#if product.imageHoverSource}
+			</InputGroup>
+			<InputGroup label={`${$dictionary.productStatus}`}>
+				<Switch bind:state={product.status} style="margin: 1rem;" />
+				<span
+					>"{product.name[$language] || '...'}" {$dictionary.is}
+					<b>{product.status ? $dictionary.visible : $dictionary.hidden}</b>.</span
+				>
+			</InputGroup>
+		</FormSection>
+
+		<!-- CATEGORIES & VERSIONS -->
+		<FormSection title={$dictionary.categoriesAndVersions}>
+			<FormParagraph content={$dictionary.specifyCategoriesAndVersions} />
+			<InputGroup label={$dictionary.mainVersion}>
+				<Switch bind:state={product.mainVersion} style="margin: 1rem;" />
+				<span
+					>"{product.name[$language] || '...'}"
+					<b>{product.mainVersion ? $dictionary.is : $dictionary.isnot}</b>
+					{$dictionary.theMainVersion}.</span
+				>
+			</InputGroup>
+			<InputGroup label={$dictionary.categories} focusElementID="categories-picker">
+				<ArrayPicker
+					bind:selectedElements={categories}
+					array={categoriesStore}
+					impossibleOptionsIds={sizeCategoryIds}
+					placeholder={$dictionary.addANewCategory}
+					on:change={syncCategories}
+					id="categories-picker"
+				/>
+			</InputGroup>
+			<InputGroup
+				label="{$dictionary.versions} ({$dictionary.optional})"
+				focusElementID="version-picker"
+			>
+				<ArrayPicker
+					bind:selectedElements={versions}
+					array={$allProductsStore}
+					impossibleOptionsIds={[product.id]}
+					placeholder={$dictionary.addANewVersion}
+					on:change={syncVersions}
+					id="version-picker"
+				/>
+			</InputGroup>
+		</FormSection>
+
+		<!-- IMAGES -->
+		<FormSection title={$dictionary.images}>
+			<FormParagraph content={$dictionary.uploadProductImages} />
+			<InputGroup label={$dictionary.images}>
+				<div class="image-gallery">
+					<label class="image-item add-image">
+						<ion-icon name="add" />
+						<input type="file" multiple on:change={handleImageUpload} />
+					</label>
+					{#each product.imageSources as url, index (url)}
+						<div animate:flip={{ duration: 500 }}>
 							<Image
 								image={{
-									source: product.imageHoverSource,
-									alt: product.dbImageHoverSource || '',
+									source: url,
+									alt: product.dbImageSources[index],
+									position: product.imageSources.length > 1 ? index : undefined,
 								}}
 								on:delete={() => {
-									if (product?.dbImageHoverSource) {
-										handleHoverImageDelete(product.dbImageHoverSource);
+									if (product) {
+										handleImageDelete(product.dbImageSources[index], url);
 									}
 								}}
-							/>
-						{:else}
-							<label class="image-item add-image">
-								<ion-icon name="add" />
-								<input type="file" multiple on:change={handleHoverImageUpload} />
-							</label>
-						{/if}
-					</div>
-				</div>
-			</div>
-		</section>
-
-		<!-- ADDITIONAL DETAILS -->
-		<section>
-			<h2>Additional Details</h2>
-			<div class="section-content">
-				<p>Specify details about the product.</p>
-				<div class="details">
-					{#each product.details as item, index (item.id)}
-						<div animate:flip={{ duration: 500 }}>
-							<Specification
-								content={item}
-								specificationIndex={index}
-								specificationsAmount={product.details.length}
-								on:delete={() => {
+								on:reposition={(event) => {
 									if (product) {
-										product.details = product.details.filter(
-											(detail) => detail !== item,
+										product.dbImageSources = repositionElement(
+											product.dbImageSources,
+											product.dbImageSources[index],
+											event.detail,
 										);
-									}
-								}}
-								on:moveUp={() => {
-									if (product) {
-										product.details = repositionElement(
-											product.details,
-											item,
-											index - 1,
-										);
-									}
-								}}
-								on:moveDown={() => {
-									if (product) {
-										product.details = repositionElement(
-											product.details,
-											item,
-											index + 1,
+										product.imageSources = repositionElement(
+											product?.imageSources,
+											url,
+											event.detail,
 										);
 									}
 								}}
 							/>
 						</div>
 					{/each}
-					<button
-						class="newSpecification"
-						type="button"
-						on:click={() => {
-							if (product) {
-								const newDetail = {
-									...structuredClone(emptyDetail),
-									id: crypto.randomUUID(),
-								};
-								product.details = [...product.details, newDetail];
-							}
-						}}
-					>
-						<ion-icon name="add" /> {$dictionary.addASpecification}</button
-					>
 				</div>
-			</div>
-		</section>
+			</InputGroup>
+			<InputGroup label={$dictionary.hoverImage}>
+				<div class="image-gallery">
+					{#if product.imageHoverSource}
+						<Image
+							image={{
+								source: product.imageHoverSource,
+								alt: product.dbImageHoverSource || '',
+							}}
+							on:delete={() => {
+								if (product?.dbImageHoverSource) {
+									handleHoverImageDelete(product.dbImageHoverSource);
+								}
+							}}
+						/>
+					{:else}
+						<label class="image-item add-image">
+							<ion-icon name="add" />
+							<input type="file" multiple on:change={handleHoverImageUpload} />
+						</label>
+					{/if}
+				</div>
+			</InputGroup>
+		</FormSection>
 
-		<!-- ACTIONS -->
-		<section class="button-group">
-			<button type="submit" class="button save-button" on:click={saveProduct}>
-				<ion-icon name="checkmark-circle" />
-				<span>
-					{isNewProduct ? 'Create Product' : 'Save Changes'}
-				</span>
-			</button>
-			{#if !isNewProduct}
+		<!-- ADDITIONAL DETAILS -->
+		<FormSection title={$dictionary.additionalDetails}>
+			<FormParagraph content={$dictionary.specifyProductDetails} />
+			<div class="details">
+				{#each product.details as item, index (item.id)}
+					<div animate:flip={{ duration: 500 }}>
+						<Specification
+							content={item}
+							specificationIndex={index}
+							specificationsAmount={product.details.length}
+							on:delete={() => {
+								if (product) {
+									product.details = product.details.filter(
+										(detail) => detail !== item,
+									);
+								}
+							}}
+							on:moveUp={() => {
+								if (product) {
+									product.details = repositionElement(
+										product.details,
+										item,
+										index - 1,
+									);
+								}
+							}}
+							on:moveDown={() => {
+								if (product) {
+									product.details = repositionElement(
+										product.details,
+										item,
+										index + 1,
+									);
+								}
+							}}
+						/>
+					</div>
+				{/each}
 				<button
+					class="newSpecification"
 					type="button"
-					class="button delete-button"
-					on:click={() => dialogElement.showModal()}
-				>
-					<ion-icon name="trash" />
-					<span>Delete Product</span>
-				</button>
-
-				<Dialog
-					bind:dialogElement
-					parameters={{
-						callback: deleteProduct,
-						title: `Delete ${product.name[$language]}?`,
-						text: `Are you sure that you want to delete the product called ${product.name[$language]}?`,
-						actionButtonText: 'Confirm',
+					on:click={() => {
+						if (product) {
+							const newDetail = {
+								...structuredClone(emptyDetail),
+								id: crypto.randomUUID(),
+							};
+							product.details = [...product.details, newDetail];
+						}
 					}}
-				/>
-			{/if}
-		</section>
-	</form>
+				>
+					<ion-icon name="add" /> {$dictionary.addASpecification}</button
+				>
+			</div>
+		</FormSection>
+	</EditForm>
 {/if}
 
 <style>
-	.edit-product-page {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		padding: 2rem;
-		background-color: #ffffffaa;
-		border-radius: 20px;
-		color: var(--content);
-		width: 100%;
-		max-width: 1500px;
-		margin: auto;
-	}
-
-	header {
-		max-width: 600px;
-		width: 100%;
-		position: relative;
-
-		display: grid;
-		justify-items: center;
-		align-items: center;
-		margin-top: -0.5rem;
-		margin-bottom: 2rem;
-	}
-
-	header a {
-		position: absolute;
-		right: 0;
-		top: -1rem;
-
-		display: flex;
-		align-items: center;
-		text-decoration: none;
-		color: var(--content-5);
-		font-size: 1.2rem;
-		border-radius: 50%;
-		padding: 0.25rem;
-
-		transition: all 0.3s;
-	}
-
-	header a:hover {
-		color: var(--content-8);
-		background-color: #ffffff;
-		box-shadow: 0 0 10px #fff;
-		transform: scale(1.1);
-	}
-
-	header p {
-		color: var(--content-5);
-		font-weight: bold;
-	}
-
-	h1 {
-		font-size: 2.5rem;
-		font-weight: normal;
-	}
-
-	h2 {
-		margin-bottom: 1rem;
-		font-size: 1.5rem;
-		font-weight: 500;
-	}
-
-	section {
-		width: 100%;
-		max-width: 700px;
-		margin-bottom: 2rem;
-
-		border: #00000010 solid 3px;
-		border-radius: 20px;
-		box-shadow: 0 0 10px #00000010;
-		background-color: #fff;
-		padding: 2rem 2rem 1.5rem;
-	}
-
-	.section-content {
-		padding-left: 1.5rem;
-		padding-bottom: 0.5rem;
-		border-left: 2px solid var(--content-2);
-	}
-
-	section p {
-		margin-bottom: 1.25rem;
-		font-size: 1em;
-		color: var(--content-7);
-	}
-
-	.form-group {
-		position: relative;
-
-		margin-bottom: 1.5rem;
-		width: 100%;
-		max-width: 600px;
-		border: 1px solid var(--content-5);
-		border-radius: 5px;
-	}
-
-	.form-group-label {
-		position: absolute;
-		top: 0;
-		transform: translateY(-60%);
-		left: 0.5rem;
-
-		display: flex;
-		align-items: center;
-		column-gap: 0.75ch;
-		font-size: 0.95rem;
-		font-weight: 500;
-		color: var(--content-5);
-		background-color: #ffffff;
-		padding: 0.25em 0.5em;
-	}
-
-	.form-group-label img {
-		height: 0.8em;
-		transform: translateY(0.5px);
-		width: auto;
-		border-radius: 3px;
-	}
-
 	input[type='text'],
 	input[type='number'],
 	.size-stock-group {
@@ -989,57 +809,6 @@
 		font-size: 1.1rem;
 		padding: 1rem 1rem 0.75rem;
 		color: var(--content);
-	}
-
-	.switch {
-		position: relative;
-		display: inline-block;
-		width: 34px;
-		height: 20px;
-		transition: all 0.3s;
-		margin: 1rem;
-	}
-
-	.switch input {
-		opacity: 0;
-		width: 0;
-		height: 0;
-	}
-
-	.switch:hover {
-		filter: brightness(120%);
-	}
-
-	.slider {
-		position: absolute;
-		cursor: pointer;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background-color: #ccc;
-		transition: 0.4s;
-		border-radius: 34px;
-	}
-
-	.slider:before {
-		position: absolute;
-		content: '';
-		height: 14px;
-		width: 14px;
-		left: 3px;
-		bottom: 3px;
-		background-color: white;
-		transition: 0.4s;
-		border-radius: 50%;
-	}
-
-	input:checked + .slider {
-		background-color: #4caf50;
-	}
-
-	input:checked + .slider:before {
-		transform: translateX(14px);
 	}
 
 	.size-stock {
@@ -1114,59 +883,6 @@
 	.newSpecification:hover,
 	.newSpecification:focus-visible {
 		background-color: #00000010;
-	}
-
-	.button-group {
-		display: grid;
-		margin-top: 1rem;
-		row-gap: 1.5rem;
-		padding: 0;
-		background-color: transparent;
-		box-shadow: none;
-		border: none;
-	}
-
-	.button {
-		display: flex;
-		align-items: center;
-		column-gap: 1ch;
-		width: 100%;
-
-		background-color: white;
-		box-shadow: 0 0 10px #00000030;
-		padding: 1.25rem 1rem;
-		border-radius: 15px;
-
-		font-size: 1.2rem;
-		font-weight: 500;
-
-		transition: all 0.2s ease-out;
-	}
-
-	.button:hover {
-		box-shadow: 0 0 15px #00000050;
-		background-color: var(--interactive);
-		color: var(--main);
-	}
-
-	.button ion-icon {
-		font-size: 1.15em;
-	}
-
-	.save-button {
-		color: green;
-	}
-
-	.delete-button {
-		color: rgb(196, 0, 0);
-	}
-
-	.save-button:hover {
-		background-color: green;
-	}
-
-	.delete-button:hover {
-		background-color: rgb(196, 0, 0);
 	}
 
 	input[type='file'] {

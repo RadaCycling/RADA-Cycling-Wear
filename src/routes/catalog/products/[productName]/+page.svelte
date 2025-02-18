@@ -182,42 +182,44 @@
 {#if product}
 	{#key product}
 		<div class="product-container" in:fade>
-			<div class="image-container">
-				<img
-					src={product.imageSources[currentFileIndex]}
-					tabindex="-1"
-					alt="{product.name[$language]} background"
-					class="image-container-bg"
-				/>
-				<Carousel
-					images={product.imageSources}
-					imagesCommonDescription={product.imageAlt[$language]}
-					hideController={true}
-					style="border-radius: 0; aspect-ratio: initial; width: 100%;"
-					imgStyle="max-height: max(calc(60vh - 5rem), 20rem); box-shadow: 0 0 1.5rem var(--content-1); width: 100%; object-fit: contain;"
-					automaticImageChangeTime={60000}
-					bind:currentFileIndex
-				/>
+			{#if product.dbImageSources.length}
+				<div class="image-container">
+					<img
+						src={product.imageSources[currentFileIndex]}
+						tabindex="-1"
+						alt="{product.name[$language]} background"
+						class="image-container-bg"
+					/>
+					<Carousel
+						images={product.imageSources}
+						imagesCommonDescription={product.imageAlt[$language]}
+						hideController={true}
+						style="border-radius: 0; aspect-ratio: initial; width: 100%;"
+						imgStyle="max-height: max(60vh, 20rem); box-shadow: 0 0 1.5rem var(--content-1); width: 100%; object-fit: contain;"
+						automaticImageChangeTime={60000}
+						bind:currentFileIndex
+					/>
 
-				{#if versions}
-					<div class="versions">
-						{#each versions as item}
-							<a
-								aria-label={item.imageAlt[$language]}
-								class:current={product.id === item.id}
-								href={item.href}
-								on:click={() => (resetTabWhenNewProduct = false)}
-							>
-								<img
-									width="50px"
-									src={item.imageSources[0]}
-									alt={item.imageAlt[$language]}
-								/>
-							</a>
-						{/each}
-					</div>
-				{/if}
-			</div>
+					{#if versions}
+						<div class="versions">
+							{#each versions as item}
+								<a
+									aria-label={item.imageAlt[$language]}
+									class:current={product.id === item.id}
+									href={item.href}
+									on:click={() => (resetTabWhenNewProduct = false)}
+								>
+									<img
+										width="50px"
+										src={item.imageSources[0]}
+										alt={item.imageAlt[$language]}
+									/>
+								</a>
+							{/each}
+						</div>
+					{/if}
+				</div>
+			{/if}
 
 			<div class="product-content">
 				<div class="product-head">
@@ -395,6 +397,7 @@
 		overflow: hidden;
 		margin: auto;
 		max-width: 800px;
+		padding-top: 5.25rem;
 	}
 
 	.image-container {
@@ -402,12 +405,11 @@
 		display: flex;
 		justify-content: center;
 		z-index: 0;
-		padding-top: 5rem;
 		height: max(60vh, 20rem);
 	}
 
 	@media screen and (max-width: 750px) {
-		.image-container {
+		.product-container {
 			padding-top: 4rem;
 		}
 
@@ -427,7 +429,7 @@
 		filter: blur(20px);
 		opacity: 0.5;
 		position: absolute;
-		top: 5rem;
+		top: 0;
 	}
 
 	.image-container .versions {

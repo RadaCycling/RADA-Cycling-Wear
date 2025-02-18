@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
+	import { dictionary } from '../../stores';
 
 	const dispatch = createEventDispatcher();
 
@@ -42,6 +43,7 @@
 			href={image.source}
 			target="_blank"
 			class="view"
+			aria-label="{$dictionary.view} {$dictionary.image}"
 			on:mouseover={fillIonIconOpen}
 			on:focus={fillIonIconOpen}
 			on:mouseleave={outlineIonIconOpen}
@@ -50,6 +52,7 @@
 		<button
 			type="button"
 			class="delete"
+			aria-label="{$dictionary.delete} {$dictionary.image}"
 			on:click={() => dispatch('delete')}
 			on:mouseover={fillIonIconDelete}
 			on:focus={fillIonIconDelete}
@@ -58,7 +61,7 @@
 		>
 		{#if image.position !== undefined}
 			<form on:submit|preventDefault={handlePositionChange}>
-				<span>Position:</span>
+				<span>{$dictionary.position}:</span>
 				<input
 					type="number"
 					value={image.position + 1}
@@ -69,6 +72,7 @@
 		{:else}
 			<a
 				style="font-size: 0.9em; color: var(--main-9); direction: rtl;"
+				aria-label="{$dictionary.view} {$dictionary.image}"
 				class="ellipsis"
 				href={image.source}
 				target="_blank">{image.alt}</a

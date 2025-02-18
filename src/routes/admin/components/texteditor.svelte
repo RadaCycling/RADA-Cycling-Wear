@@ -3,6 +3,7 @@
 	import { convertMarkdown } from '../../functions';
 
 	export let content: string;
+	export let id: string | undefined = undefined;
 	let editor: HTMLDivElement;
 	const markerId = 'cursor-marker';
 
@@ -190,6 +191,7 @@
 	on:input={updateContent}
 	role="textbox"
 	tabindex="0"
+	{id}
 />
 
 <style>

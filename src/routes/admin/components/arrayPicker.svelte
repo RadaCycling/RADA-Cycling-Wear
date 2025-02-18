@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { letterToAvatarUrl, sleep } from '../../functions';
+	import { clickOutside, letterToAvatarUrl } from '../../functions';
 	import type { translatableContent } from '../../mockDb';
 	import { createEventDispatcher } from 'svelte';
+	import { dictionary, language } from '../../stores';
 
 	const dispatch = createEventDispatcher();
 
@@ -20,6 +21,7 @@
 	});
 
 	export let placeholder: string = '';
+	export let id: string = 'new-element';
 
 	let optionsVisible: boolean = false;
 	let filterInput: HTMLInputElement;
@@ -32,7 +34,7 @@
 		});
 		possibleOptions = possibleOptions.filter((item) => {
 			return (
-				`${item.name.en} ${item.name.es} ${item.id}`
+				`${item.name[$language]} ${item.id}`
 					.toLowerCase()
 					.includes(filterText.toLowerCase()) || !filterText
 			);
@@ -42,11 +44,6 @@
 	function openOptions() {
 		optionsVisible = true;
 		setOptions();
-	}
-
-	async function handleFilterBlur() {
-		await sleep(200);
-		closeOptions();
 	}
 
 	function closeOptions() {
@@ -70,8 +67,8 @@
 	}
 </script>
 
-<div class="search">
-	<label for="new-element">
+<div class="search" on:outside={closeOptions} use:clickOutside>
+	<label for={id}>
 		<svg
 			width="20"
 			height="20"
@@ -86,18 +83,24 @@
 			/>
 		</svg>
 	</label>
-	<input
-		type="text"
-		autocomplete="off"
-		bind:value={filterText}
-		bind:this={filterInput}
-		on:input={setOptions}
-		on:focus={openOptions}
-		on:blur={handleFilterBlur}
-		name="new-element"
-		id="new-element"
-		{placeholder}
-	/>
+	<form
+		on:submit|preventDefault={() => {
+			addElement(possibleOptions[0]);
+			filterInput.blur();
+		}}
+	>
+		<input
+			type="text"
+			autocomplete="off"
+			bind:value={filterText}
+			bind:this={filterInput}
+			on:input={setOptions}
+			on:focus={openOptions}
+			name={id}
+			{id}
+			{placeholder}
+		/>
+	</form>
 
 	{#if optionsVisible}
 		<div class="options">
@@ -107,18 +110,18 @@
 						<img
 							src={option.imageSrc ||
 								option.imageSources?.[0] ||
-								letterToAvatarUrl(option.name.en.charAt(0))}
-							alt={option.imageAlt?.en}
+								letterToAvatarUrl(option.name[$language].charAt(0))}
+							alt={option.imageAlt?.[$language]}
 						/>
 						<div>
-							<span class="ellipsis">{option.name.en}</span>
+							<span class="ellipsis">{option.name[$language]}</span>
 							<span class="id ellipsis">{option.id}</span>
 						</div>
 						<ion-icon style="color: green;" name="add" />
 					</button>
 				{/each}
 			{:else}
-				<div style="padding: 1rem 1.5rem;">No elements to show.</div>
+				<div style="padding: 1rem 1.5rem;">{$dictionary.noElementsToShow}.</div>
 			{/if}
 		</div>
 	{/if}
@@ -129,10 +132,10 @@
 			<img
 				src={element.imageSrc ||
 					element.imageSources?.[0] ||
-					letterToAvatarUrl(element.name.en.charAt(0))}
-				alt={element.imageAlt?.en}
+					letterToAvatarUrl(element.name[$language].charAt(0))}
+				alt={element.imageAlt?.[$language]}
 			/>
-			<span class="ellipsis">{element.name.en}</span>
+			<span class="ellipsis">{element.name[$language]}</span>
 			<button type="button" on:click={() => deleteElement(element.id)}>
 				<ion-icon name="close" />
 			</button>

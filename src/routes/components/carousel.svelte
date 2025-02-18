@@ -19,6 +19,11 @@
 	export let currentFileIndex: number = 0;
 	let intervalId: ReturnType<typeof setInterval> | undefined;
 
+	function resetIndex() {
+		currentFileIndex = 0;
+	}
+	$: images, resetIndex();
+
 	function nextImage() {
 		currentFileIndex = (currentFileIndex + 1) % images.length;
 	}

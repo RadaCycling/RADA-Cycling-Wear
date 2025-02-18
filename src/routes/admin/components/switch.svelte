@@ -2,14 +2,17 @@
 	import { dictionary } from '../../stores';
 
 	export let state: boolean;
-	export let callback: (...args: any[]) => any;
+	export let callback: ((...args: any[]) => any) | undefined = undefined;
+	export let style: string | undefined = undefined;
 </script>
 
-<label class="switch">
+<label class="switch" {style}>
 	<input
 		type="checkbox"
 		bind:checked={state}
-		on:change={() => callback(state)}
+		on:change={() => {
+			if (callback) callback(state);
+		}}
 		aria-label={state ? $dictionary.deactivate : $dictionary.activate}
 	/>
 	<span class="slider" />
