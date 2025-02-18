@@ -35,7 +35,7 @@
 	import FormParagraph from '../../components/formParagraph.svelte';
 	import FormSection from '../../components/formSection.svelte';
 	import InputGroup from '../../components/inputGroup.svelte';
-	import Switch from '../../components/switch.svelte';
+	import BooleanInput from '../../components/booleanInput.svelte';
 
 	let product: Product | undefined;
 	const newProductParameter = 'new';
@@ -592,16 +592,15 @@
 				/>
 			</InputGroup>
 			<InputGroup label={`${$dictionary.singleSize}`}>
-				<Switch
-					bind:state={isSingleSize}
+				<BooleanInput
+					bind:value={isSingleSize}
 					callback={handleSingleSizeChange}
-					style="margin: 1rem;"
+					descriptionBefore={`"${product.name[$language] || '...'}" ${$dictionary.has}`}
+					descriptionDynamic={{
+						on: $dictionary.onlyOneSize,
+						off: $dictionary.multipleSizes,
+					}}
 				/>
-				<span
-					>"{product.name[$language] || '...'}" {$dictionary.has}
-					<b>{isSingleSize ? $dictionary.onlyOneSize : $dictionary.multipleSizes}</b
-					>.</span
-				>
 			</InputGroup>
 			<InputGroup label={`${$dictionary.unitsInStock}`} focusElementID="units-in-stock">
 				<div class="size-stock">
@@ -634,11 +633,14 @@
 				</div>
 			</InputGroup>
 			<InputGroup label={`${$dictionary.productStatus}`}>
-				<Switch bind:state={product.status} style="margin: 1rem;" />
-				<span
-					>"{product.name[$language] || '...'}" {$dictionary.is}
-					<b>{product.status ? $dictionary.visible : $dictionary.hidden}</b>.</span
-				>
+				<BooleanInput
+					bind:value={product.status}
+					descriptionBefore={`"${product.name[$language] || '...'}" ${$dictionary.is}`}
+					descriptionDynamic={{
+						on: $dictionary.visible,
+						off: $dictionary.hidden,
+					}}
+				/>
 			</InputGroup>
 		</FormSection>
 
@@ -646,12 +648,15 @@
 		<FormSection title={$dictionary.categoriesAndVersions}>
 			<FormParagraph content={$dictionary.specifyCategoriesAndVersions} />
 			<InputGroup label={$dictionary.mainVersion}>
-				<Switch bind:state={product.mainVersion} style="margin: 1rem;" />
-				<span
-					>"{product.name[$language] || '...'}"
-					<b>{product.mainVersion ? $dictionary.is : $dictionary.isnot}</b>
-					{$dictionary.theMainVersion}.</span
-				>
+				<BooleanInput
+					bind:value={product.mainVersion}
+					descriptionBefore={`"${product.name[$language] || '...'}"`}
+					descriptionDynamic={{
+						on: $dictionary.is,
+						off: $dictionary.isnot,
+					}}
+					descriptionAfter={$dictionary.theMainVersion}
+				/>
 			</InputGroup>
 			<InputGroup label={$dictionary.categories} focusElementID="categories-picker">
 				<ArrayPicker
