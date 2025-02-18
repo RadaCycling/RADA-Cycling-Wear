@@ -3,6 +3,7 @@
 	import { fade } from 'svelte/transition';
 	import Dialog from '../components/dialog.svelte';
 	import type { translatableContent } from '../../mockDb';
+	import FormButton from './formButton.svelte';
 
 	let form: HTMLFormElement;
 	let dialogElement: HTMLDialogElement;
@@ -27,13 +28,16 @@
 	};
 </script>
 
-<form in:fade bind:this={form} class="edit-page">
+<form in:fade bind:this={form} class="edit-page" on:submit={saveFunction}>
 	<!-- Title -->
 	<header>
 		{#if backLink}
-			<a href="{baseRoute}/admin/products">
-				<ion-icon name="close" />
-			</a>
+			<div>
+				<a href="{baseRoute}/admin/products">
+					<ion-icon name="arrow-back" />
+				</a>
+				<button type="submit"><ion-icon name="checkmark" /></button>
+			</div>
 		{/if}
 		<h1>{isNew ? staticText.createTitle : staticText.editTitle}</h1>
 		<p>{object.name[$language] || staticText.unnamedSubtitle}</p>
@@ -42,22 +46,20 @@
 	<slot />
 
 	<!-- ACTIONS -->
-	<section class="button-group">
-		<button type="submit" class="button save-button" on:click={saveFunction}>
-			<ion-icon name="checkmark-circle" />
-			<span>
-				{isNew ? staticText.createButton : staticText.saveButton}
-			</span>
-		</button>
+	<section>
+		<FormButton
+			type="submit"
+			ionIcon="checkmark-circle"
+			content={isNew ? staticText.createButton : staticText.saveButton}
+			color="green"
+		/>
 		{#if !isNew}
-			<button
-				type="button"
-				class="button delete-button"
-				on:click={() => dialogElement.showModal()}
-			>
-				<ion-icon name="trash" />
-				<span>{staticText.deleteButton}</span>
-			</button>
+			<FormButton
+				callback={() => dialogElement.showModal()}
+				ionIcon="trash"
+				content={staticText.deleteButton}
+				color="rgb(196, 0, 0)"
+			/>
 
 			<Dialog
 				bind:dialogElement
@@ -99,15 +101,22 @@
 		margin-bottom: 2rem;
 	}
 
-	header a {
+	header div {
 		position: absolute;
+		left: 0;
 		right: 0;
 		top: -1rem;
 
 		display: flex;
 		align-items: center;
+		justify-content: space-between;
+	}
+
+	header a,
+	header button {
+		display: flex;
 		text-decoration: none;
-		color: var(--content-5);
+		color: gray;
 		font-size: 1.2rem;
 		border-radius: 50%;
 		padding: 0.25rem;
@@ -115,11 +124,20 @@
 		transition: all 0.3s;
 	}
 
-	header a:hover {
-		color: var(--content-8);
-		background-color: #ffffff;
-		box-shadow: 0 0 10px #fff;
+	header button {
+		color: green;
+		font-size: 1.15em;
+	}
+
+	header a:hover,
+	header button:hover {
+		background-color: #00000010;
 		transform: scale(1.1);
+	}
+
+	header h1 {
+		font-size: 2.5rem;
+		font-weight: normal;
 	}
 
 	header p {
@@ -127,73 +145,13 @@
 		font-weight: bold;
 	}
 
-	h1 {
-		font-size: 2.5rem;
-		font-weight: normal;
-	}
-
 	section {
+		display: grid;
+		row-gap: 1.5rem;
+
 		width: 100%;
 		max-width: 700px;
-		margin-bottom: 2rem;
-
-		border: #00000010 solid 3px;
-		border-radius: 20px;
-		box-shadow: 0 0 10px #00000010;
-		background-color: #fff;
-		padding: 2rem 2rem 1.5rem;
-	}
-
-	.button-group {
-		display: grid;
 		margin-top: 1rem;
-		row-gap: 1.5rem;
-		padding: 0;
-		background-color: transparent;
-		box-shadow: none;
-		border: none;
-	}
-
-	.button {
-		display: flex;
-		align-items: center;
-		column-gap: 1ch;
-		width: 100%;
-
-		background-color: white;
-		box-shadow: 0 0 10px #00000030;
-		padding: 1.25rem 1rem;
-		border-radius: 15px;
-
-		font-size: 1.2rem;
-		font-weight: 500;
-
-		transition: all 0.2s ease-out;
-	}
-
-	.button:hover {
-		box-shadow: 0 0 15px #00000050;
-		background-color: var(--interactive);
-		color: var(--main);
-	}
-
-	.button ion-icon {
-		font-size: 1.15em;
-	}
-
-	.save-button {
-		color: green;
-	}
-
-	.delete-button {
-		color: rgb(196, 0, 0);
-	}
-
-	.save-button:hover {
-		background-color: green;
-	}
-
-	.delete-button:hover {
-		background-color: rgb(196, 0, 0);
+		margin-bottom: 2rem;
 	}
 </style>

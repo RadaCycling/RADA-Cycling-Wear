@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
+	import { dictionary } from '../../stores';
 
 	// Prop to control toggle state
 	export let state: boolean = false;
@@ -12,10 +13,10 @@
 
 <button type="button" class="toggle-container {state ? 'on' : 'off'}" on:click={toggle}>
 	<div class="toggle-button" in:fade>
-		<span>{state ? 'On' : 'Off'}</span>
+		<span>{state ? $dictionary.on : $dictionary.off}</span>
 	</div>
-	<span class="toggle-label off">Off</span>
-	<span class="toggle-label on">On</span>
+	<span class="toggle-label off">{$dictionary.off}</span>
+	<span class="toggle-label on">{$dictionary.on}</span>
 </button>
 
 <style>

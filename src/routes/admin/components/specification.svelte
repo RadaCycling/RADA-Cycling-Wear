@@ -21,18 +21,18 @@
 	};
 	const moveUpOption: HamburgerMenuOption = {
 		icon: 'chevron-up',
-		text: 'Move Up',
+		text: $dictionary.moveUp,
 		callback: () => dispatch('moveUp'),
 	};
 	const moveDownOption: HamburgerMenuOption = {
 		icon: 'chevron-down',
-		text: 'Move Down',
+		text: $dictionary.moveDown,
 		callback: () => dispatch('moveDown'),
 	};
 	const deleteOption: HamburgerMenuOption = {
 		icon: 'trash',
 		color: 'red',
-		text: 'Delete',
+		text: $dictionary.delete,
 		callback: () => dispatch('delete'),
 	};
 
@@ -64,13 +64,29 @@
 	</header>
 	<div class="row">
 		<img src="{baseImageRoute}/usFlag.webp" alt="English" lang="en" />
-		<input type="text" bind:value={content.label.en} placeholder="Label (English)" />
-		<input type="text" bind:value={content.value.en} placeholder="Content (English)" />
+		<input
+			type="text"
+			bind:value={content.label.en}
+			placeholder="{$dictionary.label} ({$dictionary.english})"
+		/>
+		<input
+			type="text"
+			bind:value={content.value.en}
+			placeholder="{$dictionary.content} ({$dictionary.english})"
+		/>
 	</div>
 	<div class="row">
 		<img src="{baseImageRoute}/spainFlag.webp" alt="Español" lang="es" />
-		<input type="text" bind:value={content.label.es} placeholder="Label (Spanish)" />
-		<input type="text" bind:value={content.value.es} placeholder="Content (Spanish)" />
+		<input
+			type="text"
+			bind:value={content.label.es}
+			placeholder="{$dictionary.label} ({$dictionary.spanish})"
+		/>
+		<input
+			type="text"
+			bind:value={content.value.es}
+			placeholder="{$dictionary.content} ({$dictionary.spanish})"
+		/>
 	</div>
 </div>
 
