@@ -12,6 +12,7 @@
 	export let specificationsAmount: number = 1;
 	export let specificationIndex: number = 0;
 	export let allowDelete: boolean = true;
+	export let newLabel: string = $dictionary.newSpecification;
 
 	type HamburgerMenuOption = {
 		icon?: string;
@@ -57,7 +58,7 @@
 		<div>
 			<Hamburger {menu} />
 			<h4>
-				{content.label[$language] ? content.label[$language] : $dictionary.newSpecification}
+				{content.label[$language] ? content.label[$language] : newLabel}
 			</h4>
 		</div>
 		<Toggle bind:state={content.status} />

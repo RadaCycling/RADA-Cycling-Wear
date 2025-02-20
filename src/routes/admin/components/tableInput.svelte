@@ -6,6 +6,8 @@
 	import type { TableEntry } from '../../mockDb';
 
 	export let elements: TableEntry[];
+	export let defaultLabel: string = $dictionary.newSpecification;
+	export let addButtonText: string = $dictionary.addASpecification;
 
 	const emptyElement: TableEntry = {
 		id: '',
@@ -19,6 +21,7 @@
 	{#each elements as item, index (item.id)}
 		<div animate:flip={{ duration: 500 }}>
 			<Specification
+				newLabel={defaultLabel}
 				content={item}
 				specificationIndex={index}
 				specificationsAmount={elements.length}
@@ -44,7 +47,7 @@
 			elements = [...elements, newDetail];
 		}}
 	>
-		<ion-icon name="add" /> {$dictionary.addASpecification}</button
+		<ion-icon name="add" />{addButtonText}</button
 	>
 </div>
 
