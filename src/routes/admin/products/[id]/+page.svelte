@@ -13,7 +13,7 @@
 		language,
 	} from '../../../stores';
 	import toast from 'svelte-french-toast';
-	import { randomizeFileName, repositionElement } from '../../../functions';
+	import { randomizeFileName } from '../../../functions';
 	import {
 		denormalizeCategories,
 		sizeCategoryIds,
@@ -23,14 +23,10 @@
 		type UnitsInStock,
 		categories as categoriesStore,
 		findProductsByIds,
-		type TableEntry,
 	} from '../../../mockDb';
 	import { goto } from '$app/navigation';
 	import Texteditor from '../../components/texteditor.svelte';
 	import ArrayPicker from '../../components/arrayPicker.svelte';
-	import Image from '../../components/image.svelte';
-	import Specification from '../../components/specification.svelte';
-	import { flip } from 'svelte/animate';
 	import EditForm from '../../components/editForm.svelte';
 	import FormParagraph from '../../components/formParagraph.svelte';
 	import FormSection from '../../components/formSection.svelte';
@@ -38,16 +34,11 @@
 	import BooleanInput from '../../components/booleanInput.svelte';
 	import FormInput from '../../components/formInput.svelte';
 	import ImageInput from '../../components/imageInput.svelte';
+	import TableInput from '../../components/tableInput.svelte';
 
 	let product: Product | undefined;
 	const newProductParameter = 'new';
 	let isNewProduct = false;
-	const emptyDetail: TableEntry = {
-		id: '',
-		status: true,
-		label: { en: '', es: '' },
-		value: { en: '', es: '' },
-	};
 	const emptyProduct: Product = {
 		id: '',
 		unitsInStock: sizeOptions.map((option) => {
@@ -717,84 +708,7 @@
 		<!-- ADDITIONAL DETAILS -->
 		<FormSection title={$dictionary.additionalDetails}>
 			<FormParagraph content={$dictionary.specifyProductDetails} />
-			<div class="details">
-				{#each product.details as item, index (item.id)}
-					<div animate:flip={{ duration: 500 }}>
-						<Specification
-							content={item}
-							specificationIndex={index}
-							specificationsAmount={product.details.length}
-							on:delete={() => {
-								if (product) {
-									product.details = product.details.filter(
-										(detail) => detail !== item,
-									);
-								}
-							}}
-							on:moveUp={() => {
-								if (product) {
-									product.details = repositionElement(
-										product.details,
-										item,
-										index - 1,
-									);
-								}
-							}}
-							on:moveDown={() => {
-								if (product) {
-									product.details = repositionElement(
-										product.details,
-										item,
-										index + 1,
-									);
-								}
-							}}
-						/>
-					</div>
-				{/each}
-				<button
-					class="newSpecification"
-					type="button"
-					on:click={() => {
-						if (product) {
-							const newDetail = {
-								...structuredClone(emptyDetail),
-								id: crypto.randomUUID(),
-							};
-							product.details = [...product.details, newDetail];
-						}
-					}}
-				>
-					<ion-icon name="add" /> {$dictionary.addASpecification}</button
-				>
-			</div>
+			<TableInput bind:elements={product.details} />
 		</FormSection>
 	</EditForm>
 {/if}
-
-<style>
-	.details {
-		display: grid;
-		row-gap: 1.5rem;
-	}
-
-	.newSpecification {
-		display: flex;
-		align-items: center;
-		column-gap: 1ch;
-
-		background-color: var(--main-5);
-		box-shadow: 5px 5px 10px #00000030;
-		padding: 1.5rem 1rem;
-		border-radius: 15px;
-	}
-
-	.newSpecification ion-icon {
-		color: green;
-	}
-
-	.newSpecification:hover,
-	.newSpecification:focus-visible {
-		background-color: #00000010;
-	}
-</style>
