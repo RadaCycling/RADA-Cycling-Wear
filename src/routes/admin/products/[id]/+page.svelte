@@ -36,7 +36,7 @@
 	import FormSection from '../../components/formSection.svelte';
 	import InputGroup from '../../components/inputGroup.svelte';
 	import BooleanInput from '../../components/booleanInput.svelte';
-	import TextInput from '../../components/textInput.svelte';
+	import FormInput from '../../components/formInput.svelte';
 
 	let product: Product | undefined;
 	const newProductParameter = 'new';
@@ -538,7 +538,7 @@
 				focusElementID="name-en"
 				image={`${baseImageRoute}/usFlag.webp`}
 			>
-				<TextInput
+				<FormInput
 					bind:value={product.name.en}
 					required
 					id="name-en"
@@ -550,7 +550,7 @@
 				focusElementID="name-es"
 				image={`${baseImageRoute}/spainFlag.webp`}
 			>
-				<TextInput bind:value={product.name.es} required id="name-es" />
+				<FormInput bind:value={product.name.es} required id="name-es" />
 			</InputGroup>
 			<InputGroup
 				label={`${$dictionary.description} (${$dictionary.english})`}
@@ -567,7 +567,7 @@
 
 			<FormParagraph content={$dictionary.enterUniqueLink} />
 			<InputGroup label={`${$dictionary.productUrl}`} focusElementID="href">
-				<TextInput
+				<FormInput
 					bind:value={product.href}
 					required
 					id="href"
@@ -580,7 +580,7 @@
 		<FormSection title={$dictionary.pricingAndStock}>
 			<FormParagraph content={$dictionary.setPriceAndStock} />
 			<InputGroup label={`${$dictionary.price}`} focusElementID="price">
-				<TextInput
+				<FormInput
 					required
 					id="price"
 					bind:value={product.price}
@@ -592,7 +592,7 @@
 				label={`${$dictionary.oldPrice} (${$dictionary.optional})`}
 				focusElementID="old-price"
 			>
-				<TextInput
+				<FormInput
 					id="old-price"
 					bind:value={product.oldPrice}
 					inputCallback={handlePriceInput}
@@ -614,28 +614,24 @@
 				<div class="size-stock">
 					{#if typeof product.unitsInStock === 'object'}
 						{#each product.unitsInStock as size}
-							<div class="size-stock-group">
-								<label class="size-stock-label" for="units-in-stock-{size.id}"
-									>{$dictionary.size} {size.name}:</label
-								>
-								<input
-									id="units-in-stock-{size.id}"
-									type="number"
-									required
-									value={size.units}
-									on:input={(e) => handleStockInput(e, size)}
-									on:blur={(e) => handleStockInputBlur(e, size)}
-								/>
-							</div>
+							<FormInput
+								label="{$dictionary.size} {size.name}"
+								id="units-in-stock-{size.id}"
+								type="number"
+								required
+								value={size.units}
+								inputCallback={(e) => handleStockInput(e, size)}
+								blurCallback={(e) => handleStockInputBlur(e, size)}
+							/>
 						{/each}
 					{:else}
-						<input
+						<FormInput
 							id="units-in-stock"
 							type="number"
 							required
-							value={product.unitsInStock}
-							on:input={(e) => handleStockInput(e)}
-							on:blur={(e) => handleStockInputBlur(e)}
+							bind:value={product.unitsInStock}
+							inputCallback={handleStockInput}
+							blurCallback={handleStockInputBlur}
 						/>
 					{/if}
 				</div>
@@ -815,34 +811,6 @@
 {/if}
 
 <style>
-	input[type='number'],
-	.size-stock-group {
-		width: 100%;
-		font-size: 1.1rem;
-		padding: 1rem 1rem 0.75rem;
-		color: var(--content);
-	}
-
-	.size-stock {
-		display: grid;
-	}
-
-	.size-stock-group {
-		display: grid;
-		grid-template-columns: auto 1fr;
-		justify-content: flex-start;
-		align-items: center;
-		padding: 0.5rem 1rem 0.5rem;
-	}
-
-	.size-stock-group:not(:last-child) {
-		border-bottom: 1px solid var(--content-2);
-	}
-
-	.size-stock-label {
-		margin-top: 2.8px;
-	}
-
 	.image-gallery {
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
