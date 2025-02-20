@@ -37,6 +37,7 @@
 	import InputGroup from '../../components/inputGroup.svelte';
 	import BooleanInput from '../../components/booleanInput.svelte';
 	import FormInput from '../../components/formInput.svelte';
+	import ImageInput from '../../components/imageInput.svelte';
 
 	let product: Product | undefined;
 	const newProductParameter = 'new';
@@ -611,30 +612,28 @@
 				/>
 			</InputGroup>
 			<InputGroup label={`${$dictionary.unitsInStock}`} focusElementID="units-in-stock">
-				<div class="size-stock">
-					{#if typeof product.unitsInStock === 'object'}
-						{#each product.unitsInStock as size}
-							<FormInput
-								label="{$dictionary.size} {size.name}"
-								id="units-in-stock-{size.id}"
-								type="number"
-								required
-								value={size.units}
-								inputCallback={(e) => handleStockInput(e, size)}
-								blurCallback={(e) => handleStockInputBlur(e, size)}
-							/>
-						{/each}
-					{:else}
+				{#if typeof product.unitsInStock === 'object'}
+					{#each product.unitsInStock as size}
 						<FormInput
-							id="units-in-stock"
+							label="{$dictionary.size} {size.name}"
+							id="units-in-stock-{size.id}"
 							type="number"
 							required
-							bind:value={product.unitsInStock}
-							inputCallback={handleStockInput}
-							blurCallback={handleStockInputBlur}
+							value={size.units}
+							inputCallback={(e) => handleStockInput(e, size)}
+							blurCallback={(e) => handleStockInputBlur(e, size)}
 						/>
-					{/if}
-				</div>
+					{/each}
+				{:else}
+					<FormInput
+						id="units-in-stock"
+						type="number"
+						required
+						bind:value={product.unitsInStock}
+						inputCallback={handleStockInput}
+						blurCallback={handleStockInputBlur}
+					/>
+				{/if}
 			</InputGroup>
 			<InputGroup label={`${$dictionary.productStatus}`}>
 				<BooleanInput
@@ -691,64 +690,20 @@
 		<FormSection title={$dictionary.images}>
 			<FormParagraph content={$dictionary.uploadProductImages} />
 			<InputGroup label={$dictionary.images}>
-				<div class="image-gallery">
-					<label class="image-item add-image">
-						<ion-icon name="add" />
-						<input type="file" multiple on:change={handleImageUpload} />
-					</label>
-					{#each product.imageSources as url, index (url)}
-						<div animate:flip={{ duration: 500 }}>
-							<Image
-								image={{
-									source: url,
-									alt: product.dbImageSources[index],
-									position: product.imageSources.length > 1 ? index : undefined,
-								}}
-								on:delete={() => {
-									if (product) {
-										handleImageDelete(product.dbImageSources[index], url);
-									}
-								}}
-								on:reposition={(event) => {
-									if (product) {
-										product.dbImageSources = repositionElement(
-											product.dbImageSources,
-											product.dbImageSources[index],
-											event.detail,
-										);
-										product.imageSources = repositionElement(
-											product?.imageSources,
-											url,
-											event.detail,
-										);
-									}
-								}}
-							/>
-						</div>
-					{/each}
-				</div>
+				<ImageInput
+					bind:webSources={product.imageSources}
+					bind:originalSources={product.dbImageSources}
+					deleteCallback={handleImageDelete}
+					uploadCallback={handleImageUpload}
+				/>
 			</InputGroup>
 			<InputGroup label={$dictionary.hoverImage}>
-				<div class="image-gallery">
-					{#if product.imageHoverSource}
-						<Image
-							image={{
-								source: product.imageHoverSource,
-								alt: product.dbImageHoverSource || '',
-							}}
-							on:delete={() => {
-								if (product?.dbImageHoverSource) {
-									handleHoverImageDelete(product.dbImageHoverSource);
-								}
-							}}
-						/>
-					{:else}
-						<label class="image-item add-image">
-							<ion-icon name="add" />
-							<input type="file" multiple on:change={handleHoverImageUpload} />
-						</label>
-					{/if}
-				</div>
+				<ImageInput
+					bind:webSources={product.imageHoverSource}
+					bind:originalSources={product.dbImageHoverSource}
+					deleteCallback={handleHoverImageDelete}
+					uploadCallback={handleHoverImageUpload}
+				/>
 			</InputGroup>
 		</FormSection>
 
@@ -811,35 +766,6 @@
 {/if}
 
 <style>
-	.image-gallery {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-		gap: 1rem;
-		margin-bottom: 1.5rem;
-		padding: 1.5rem 1rem 0;
-	}
-
-	.image-item {
-		position: relative;
-		width: 150px;
-		height: 150px;
-	}
-
-	.image-item.add-image {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		background-color: var(--content-1);
-		color: var(--content);
-		font-size: 2rem;
-		border-radius: 10px;
-		cursor: pointer;
-	}
-
-	.image-item.add-image:hover {
-		background-color: var(--content-2);
-	}
-
 	.details {
 		display: grid;
 		row-gap: 1.5rem;
@@ -863,9 +789,5 @@
 	.newSpecification:hover,
 	.newSpecification:focus-visible {
 		background-color: #00000010;
-	}
-
-	input[type='file'] {
-		display: none;
 	}
 </style>

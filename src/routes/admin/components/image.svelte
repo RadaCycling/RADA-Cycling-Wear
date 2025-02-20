@@ -36,50 +36,52 @@
 	}
 </script>
 
-<div class="image-item">
-	<img src={image.source} alt={image.alt} />
-	<div class="image-actions">
-		<a
-			href={image.source}
-			target="_blank"
-			class="view"
-			aria-label="{$dictionary.view} {$dictionary.image}"
-			on:mouseover={fillIonIconOpen}
-			on:focus={fillIonIconOpen}
-			on:mouseleave={outlineIonIconOpen}
-			on:blur={outlineIonIconOpen}><ion-icon name={ionIconOpen} /></a
-		>
-		<button
-			type="button"
-			class="delete"
-			aria-label="{$dictionary.delete} {$dictionary.image}"
-			on:click={() => dispatch('delete')}
-			on:mouseover={fillIonIconDelete}
-			on:focus={fillIonIconDelete}
-			on:mouseleave={outlineIonIconDelete}
-			on:blur={outlineIonIconDelete}><ion-icon name={ionIconDelete} /></button
-		>
-		{#if image.position !== undefined}
-			<form on:submit|preventDefault={handlePositionChange}>
-				<span>{$dictionary.position}:</span>
-				<input
-					type="number"
-					value={image.position + 1}
-					bind:this={positionInput}
-					on:change={handlePositionChange}
-				/>
-			</form>
-		{:else}
+{#if image.source}
+	<div class="image-item">
+		<img src={image.source} alt={image.alt} />
+		<div class="image-actions">
 			<a
-				style="font-size: 0.9em; color: var(--main-9); direction: rtl;"
-				aria-label="{$dictionary.view} {$dictionary.image}"
-				class="ellipsis"
 				href={image.source}
-				target="_blank">{image.alt}</a
+				target="_blank"
+				class="view"
+				aria-label="{$dictionary.view} {$dictionary.image}"
+				on:mouseover={fillIonIconOpen}
+				on:focus={fillIonIconOpen}
+				on:mouseleave={outlineIonIconOpen}
+				on:blur={outlineIonIconOpen}><ion-icon name={ionIconOpen} /></a
 			>
-		{/if}
+			<button
+				type="button"
+				class="delete"
+				aria-label="{$dictionary.delete} {$dictionary.image}"
+				on:click={() => dispatch('delete')}
+				on:mouseover={fillIonIconDelete}
+				on:focus={fillIonIconDelete}
+				on:mouseleave={outlineIonIconDelete}
+				on:blur={outlineIonIconDelete}><ion-icon name={ionIconDelete} /></button
+			>
+			{#if image.position !== undefined}
+				<form on:submit|preventDefault={handlePositionChange}>
+					<span>{$dictionary.position}:</span>
+					<input
+						type="number"
+						value={image.position + 1}
+						bind:this={positionInput}
+						on:change={handlePositionChange}
+					/>
+				</form>
+			{:else}
+				<a
+					style="font-size: 0.9em; color: var(--main-9); direction: rtl;"
+					aria-label="{$dictionary.view} {$dictionary.image}"
+					class="ellipsis"
+					href={image.source}
+					target="_blank">{image.alt}</a
+				>
+			{/if}
+		</div>
 	</div>
-</div>
+{/if}
 
 <style>
 	.image-item {
