@@ -440,9 +440,16 @@
 
 		// Save the product
 		if (id === newProductParameter) {
-			// Update Product in Database
+			// Modify product to include new id
 			const newDocRef = doc(collection(db, 'products'));
 			product.id = newDocRef.id;
+			if (Array.isArray(product.versionsIds)) {
+				product.versionsIds = product.versionsIds.map((id) =>
+					id?.trim() === '' ? newDocRef.id : id,
+				);
+			}
+
+			// Update Product in Database
 			await setDoc(newDocRef, product);
 
 			// Update Product Locally

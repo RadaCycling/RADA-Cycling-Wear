@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { baseRoute, dictionary, language, productsStore } from '../stores';
 	import { findProductsByIds, type Product, type translatableContent } from '../mockDb';
+	import { letterToAvatarUrl } from '../functions';
 
 	export let product: Product;
 
@@ -106,7 +107,12 @@
 					class:current={currentVersionSrc === item.imageSources[0]}
 					on:click={() => changeVersion(item)}
 				>
-					<img width="50px" src={item.imageSources[0]} alt={item.imageAlt[$language]} />
+					<img
+						width="50px"
+						src={item.imageSources[0] ||
+							letterToAvatarUrl(item.name[$language].charAt(0))}
+						alt={item.imageAlt[$language]}
+					/>
 				</button>
 			{/each}
 		</div>

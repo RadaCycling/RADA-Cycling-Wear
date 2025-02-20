@@ -20,6 +20,7 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import Carousel from '../../../components/carousel.svelte';
+	import { letterToAvatarUrl } from '../../../functions';
 
 	let product: Product | undefined;
 	let versions: Product[] | undefined;
@@ -200,7 +201,7 @@
 						bind:currentFileIndex
 					/>
 
-					{#if versions}
+					{#if versions && versions.length > 1}
 						<div class="versions">
 							{#each versions as item}
 								<a
@@ -211,7 +212,8 @@
 								>
 									<img
 										width="50px"
-										src={item.imageSources[0]}
+										src={item.imageSources[0] ||
+											letterToAvatarUrl(item.name[$language].charAt(0))}
 										alt={item.imageAlt[$language]}
 									/>
 								</a>
@@ -444,7 +446,6 @@
 	}
 
 	.versions a {
-		background: none;
 		border-radius: var(--borderRadius, 10px);
 		border: none;
 		padding: 5px;
@@ -461,6 +462,7 @@
 	}
 
 	.versions img {
+		background-color: white;
 		width: 50px;
 		height: 50px;
 		object-fit: cover;
