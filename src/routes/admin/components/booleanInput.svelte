@@ -9,17 +9,29 @@
 	export let callback: ((...args: any[]) => any) | undefined = undefined;
 </script>
 
-<i>
-	<Switch bind:state={value} style="margin: 1rem;" {callback} />
-	<span>{descriptionBefore}</span>
-	{#key value}
-		<b in:fade
-			>{value ? descriptionDynamic.on : descriptionDynamic.off}{!descriptionAfter
-				? '.'
-				: ''}</b
-		>
-	{/key}
-	{#if descriptionAfter}
-		<span>{descriptionAfter}.</span>
-	{/if}
-</i>
+<div>
+	<Switch bind:state={value} {callback} />
+	<i>
+		<span>{descriptionBefore}</span>
+		{#key value}
+			<b in:fade
+				>{value ? descriptionDynamic.on : descriptionDynamic.off}{!descriptionAfter
+					? '.'
+					: ''}</b
+			>
+		{/key}
+		{#if descriptionAfter}
+			<span>{descriptionAfter}.</span>
+		{/if}
+	</i>
+</div>
+
+<style>
+	div {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		align-items: center;
+		margin: 1rem;
+		gap: 1rem;
+	}
+</style>

@@ -143,6 +143,7 @@
 	header p {
 		color: var(--content-5);
 		font-weight: bold;
+		text-align: center;
 	}
 
 	section {

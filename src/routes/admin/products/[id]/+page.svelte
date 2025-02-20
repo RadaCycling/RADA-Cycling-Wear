@@ -36,6 +36,7 @@
 	import FormSection from '../../components/formSection.svelte';
 	import InputGroup from '../../components/inputGroup.svelte';
 	import BooleanInput from '../../components/booleanInput.svelte';
+	import TextInput from '../../components/textInput.svelte';
 
 	let product: Product | undefined;
 	const newProductParameter = 'new';
@@ -186,12 +187,23 @@
 	}
 
 	function checkPriceInput() {
-		if (product?.price === '$') {
-			product.price = '$0.00';
-		}
-		if (product?.oldPrice === '$') {
+		if (!product) return;
+
+		// Normalize price and oldPrice
+		product.price = formatPrice(product.price, '$0.00');
+		product.oldPrice = formatPrice(product.oldPrice, '');
+
+		// Ensure oldPrice is different from price
+		if (product.oldPrice === product.price) {
 			product.oldPrice = null;
 		}
+	}
+
+	function formatPrice(value: string | null, defaultValue: string): string {
+		if (!value || value === '$') return defaultValue;
+
+		const num = parseFloat(value?.replace('$', ''));
+		return isNaN(num) ? defaultValue : `$${num.toFixed(2)}`;
 	}
 
 	function getCategories() {
@@ -526,12 +538,11 @@
 				focusElementID="name-en"
 				image={`${baseImageRoute}/usFlag.webp`}
 			>
-				<input
-					id="name-en"
-					type="text"
-					required
+				<TextInput
 					bind:value={product.name.en}
-					on:change={checkHREF}
+					required
+					id="name-en"
+					changeCallback={checkHREF}
 				/>
 			</InputGroup>
 			<InputGroup
@@ -539,7 +550,7 @@
 				focusElementID="name-es"
 				image={`${baseImageRoute}/spainFlag.webp`}
 			>
-				<input id="name-es" type="text" required bind:value={product.name.es} />
+				<TextInput bind:value={product.name.es} required id="name-es" />
 			</InputGroup>
 			<InputGroup
 				label={`${$dictionary.description} (${$dictionary.english})`}
@@ -556,12 +567,11 @@
 
 			<FormParagraph content={$dictionary.enterUniqueLink} />
 			<InputGroup label={`${$dictionary.productUrl}`} focusElementID="href">
-				<input
-					id="href"
-					type="text"
-					required
+				<TextInput
 					bind:value={product.href}
-					on:change={checkHREF}
+					required
+					id="href"
+					changeCallback={checkHREF}
 				/>
 			</InputGroup>
 		</FormSection>
@@ -570,25 +580,23 @@
 		<FormSection title={$dictionary.pricingAndStock}>
 			<FormParagraph content={$dictionary.setPriceAndStock} />
 			<InputGroup label={`${$dictionary.price}`} focusElementID="price">
-				<input
-					id="price"
-					type="text"
+				<TextInput
 					required
+					id="price"
 					bind:value={product.price}
-					on:input={handlePriceInput}
-					on:blur={checkPriceInput}
+					inputCallback={handlePriceInput}
+					blurCallback={checkPriceInput}
 				/>
 			</InputGroup>
 			<InputGroup
 				label={`${$dictionary.oldPrice} (${$dictionary.optional})`}
 				focusElementID="old-price"
 			>
-				<input
+				<TextInput
 					id="old-price"
-					type="text"
 					bind:value={product.oldPrice}
-					on:input={handlePriceInput}
-					on:blur={checkPriceInput}
+					inputCallback={handlePriceInput}
+					blurCallback={checkPriceInput}
 				/>
 			</InputGroup>
 			<InputGroup label={`${$dictionary.singleSize}`}>
@@ -807,7 +815,6 @@
 {/if}
 
 <style>
-	input[type='text'],
 	input[type='number'],
 	.size-stock-group {
 		width: 100%;
