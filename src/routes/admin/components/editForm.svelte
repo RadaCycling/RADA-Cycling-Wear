@@ -33,7 +33,7 @@
 	<header>
 		{#if backLink}
 			<div>
-				<a href="{baseRoute}/admin/products">
+				<a href={backLink}>
 					<ion-icon name="arrow-back" />
 				</a>
 				<button type="submit"><ion-icon name="checkmark" /></button>

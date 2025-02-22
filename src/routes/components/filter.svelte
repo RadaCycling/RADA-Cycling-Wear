@@ -10,7 +10,7 @@
 		dispatch('change');
 	}
 
-	export let options: { id: number; name: string }[];
+	export let options: { id: string; name: string }[];
 	export let style: string = '';
 
 	let optionsVisible: boolean = false;

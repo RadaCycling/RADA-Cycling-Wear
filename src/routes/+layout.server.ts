@@ -1,15 +1,15 @@
 import { db, storage } from "$lib/firebase/rada";
-import { collection, getDocs, type DocumentData } from "firebase/firestore";
+import { collection, doc, getDocs, setDoc, type DocumentData } from "firebase/firestore";
 import type { LayoutServerLoad } from "./$types";
 import { ref, getDownloadURL } from 'firebase/storage';
-import type { Product } from "./mockDb";
+import { type Product, type Category, type PortfolioItem } from "./mockDb";
 
 // Fetch a collection from Firestore
 async function fetchCollection(collectionName: string): Promise<DocumentData> {
     try {
         const snapshot = await getDocs(collection(db, collectionName));
 
-        // If fetching products, resolve image URLs
+        // Resolve image URLs
         if (collectionName === 'products') {
             const products = snapshot.docs.map((doc) => doc.data() as Product);
             for (const product of products) {
@@ -39,6 +39,21 @@ async function fetchCollection(collectionName: string): Promise<DocumentData> {
             }
             return products;
         }
+        else if (collectionName === 'categories') {
+            const categories = snapshot.docs.map((doc) => doc.data() as Category);
+            for (const category of categories) {
+                if (!category.dbImageSrc) {
+                    category.dbImageSrc = category.imageSrc;
+                }
+                try {
+                    const imageRef = ref(storage, `categories/${category.dbImageSrc}`);
+                    category.imageSrc = await getDownloadURL(imageRef);
+                } catch (e) {
+                    console.error("Error on layout.server.ts fetching category image source: ", (e as Error).message);
+                }
+            }
+            return categories;
+        }
 
         return snapshot.docs.map((doc) => doc.data());
     } catch (error) {
@@ -59,3 +74,16 @@ export const load: LayoutServerLoad = async () => {
         portfolio,
     };
 };
+
+async function uploadMockDbObjectToFirestore(object: any, collectionName: string) {
+    try {
+        const colRef = collection(db, collectionName);
+        for (const element of object) {
+            const docRef = doc(colRef, element.id.toString());
+            await setDoc(docRef, element);
+        }
+        console.log("Elements uploaded successfully");
+    } catch (error) {
+        console.error("Error uploading elements:", error);
+    }
+}

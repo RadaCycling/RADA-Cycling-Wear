@@ -53,7 +53,7 @@ export type CartItem = {
     id?: string;
     productId: string;
     quantity: number;
-    sizeId: number;
+    sizeId: string;
 };
 
 export const cartItems: Writable<CartItem[]> = writable([]);

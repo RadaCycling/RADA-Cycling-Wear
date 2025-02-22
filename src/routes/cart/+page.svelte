@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { fade, slide } from 'svelte/transition';
-	import { baseRoute, cartItems, dictionary, productsStore } from '../stores';
+	import { baseRoute, cartItems, dictionary } from '../stores';
 	import {
 		denormalizeCartItems,
 		type DenormalizedCartItem,
@@ -15,7 +15,7 @@
 
 	function getCartItems() {
 		try {
-			denormalizedData = denormalizeCartItems($cartItems, $productsStore);
+			denormalizedData = denormalizeCartItems($cartItems);
 		} catch (error) {
 			console.error(error);
 		}

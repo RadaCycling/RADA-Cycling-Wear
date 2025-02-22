@@ -1,300 +1,78 @@
 import toast from "svelte-french-toast";
-import { activeSNavMenu, baseImageRoute, baseRoute, type CartItem, cartItems, dictionary, type Language, language } from "./stores"
+import { activeSNavMenu, baseRoute, type CartItem, cartItems, categoriesStore, dictionary, type Language, language, productsStore } from "./stores"
 import { get } from 'svelte/store';
 
 export type translatableContent = { en: string; es: string; }
 
 // #region Categories
 export type Category = {
-    id: number
+    id: string;
 
+    dbImageSrc: string;
     imageSrc: string;
     smallImageSrc?: string;
+    dbSmallImageSrc?: string;
     imageAlt: translatableContent;
 
     name: translatableContent;
-    description?: translatableContent;
+    description: translatableContent;
     href: string;
 
-    genderSpecific?: boolean;
-    sizeAgnostic?: boolean;
+    genderSpecific: boolean;
+    sizeAgnostic: boolean;
 };
 
 type CatalogSection = {
     name: translatableContent;
-    categoryIds: number[];
+    categoryIds: string[];
     categories?: Category[]; // Optional, will be filled by denormalize function
 };
 
 export type CatalogCategory = {
-    id: number;
+    id: string;
     href: string;
     name: translatableContent;
-    featuredCategoryId: number | undefined;
+    featuredCategoryId: string | undefined;
     featuredCategory?: Category; // Optional, will be filled by the denormalize function
     sections: CatalogSection[];
 }
 
 
-export let featuredCategories: number[] = [7, 15]
-
-export let categories: Category[] = [
-    {
-        id: 0,
-        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
-        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
-        imageAlt: { en: "Cyclist wearing a short sleeve jersey", es: "Ciclista con camiseta de manga corta" },
-        name: { en: "Short Sleeve Jerseys", es: "Camisetas de Manga Corta" },
-        description: { en: "Experience unparalleled comfort and aerodynamic performance with our short sleeve jerseys. Designed for the heat of competition and the freedom of the open road.", es: "Experimenta un confort y rendimiento aerodinámico incomparables con nuestras camisetas de manga corta. Diseñadas para el calor de la competencia y la libertad de la carretera abierta." },
-        href: "short-sleeve-jerseys",
-        genderSpecific: true,
-    },
-    {
-        id: 1,
-        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
-        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
-        imageAlt: { en: "Cyclist wearing a long sleeve jersey", es: "Ciclista con camiseta de manga larga" },
-        name: { en: "Jerseys", es: "Camisetas" },
-        description: { en: "Gear up for cooler rides with our long sleeve jerseys. Offering extra protection without sacrificing breathability or comfort.", es: "Prepárate para rutas más frescas con nuestras camisetas de manga larga. Ofrecen protección adicional sin sacrificar la transpirabilidad o el confort." },
-        href: "long-sleeve-jerseys",
-        genderSpecific: true,
-    },
-    {
-        id: 2,
-        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
-        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
-        imageAlt: { en: "Cyclist with cycling bib shorts", es: "Ciclista con pantalones de ciclismo" },
-        name: { en: "Bibs", es: "Pantalones" },
-        description: { en: "Elevate your ride with our cycling bibs. Engineered for long-lasting comfort and support, ensuring you stay focused on the ride ahead.", es: "Eleva tu recorrido con nuestras mallas de ciclismo. Diseñadas para proporcionar confort y soporte duraderos, asegurando que te mantengas concentrado en el camino por delante." },
-        href: "bibs",
-        genderSpecific: true,
-    },
-    {
-        id: 3,
-        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
-        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
-        imageAlt: { en: "Casual shirt for cyclists", es: "Camisa casual para ciclistas" },
-        name: { en: "Shirts", es: "Camisas" },
-        description: { en: "Discover our range of casual cycling shirts, blending style and functionality. Perfect for the café stop or the commute.", es: "Descubre nuestra gama de camisas de ciclismo casual, que combinan estilo y funcionalidad. Perfectas para la parada en el café o el trayecto." },
-        href: "shirts",
-        genderSpecific: true,
-    },
-    {
-        id: 4,
-        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
-        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
-        imageAlt: { en: "Cyclist wearing cycling shorts", es: "Ciclista con shorts de ciclismo" },
-        name: { en: "Shorts", es: "Shorts" },
-        description: { en: "Find your perfect fit with our cycling shorts, designed for ultimate comfort and durability, mile after mile.", es: "Encuentra tu ajuste perfecto con nuestros shorts de ciclismo, diseñados para ofrecer la máxima comodidad y durabilidad, kilómetro tras kilómetro." },
-        href: "shorts",
-        genderSpecific: true,
-    },
-    {
-        id: 5,
-        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
-        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
-        imageAlt: { en: "Cyclist wearing a jacket", es: "Ciclista con chaqueta" },
-        name: { en: "Jackets & Vests", es: "Chaquetas y Chalecos" },
-        description: { en: "Brave the elements with our jackets and vests. From windproof to waterproof, layer up in style without compromising on performance.", es: "Enfréntate a los elementos con nuestras chaquetas y chalecos. Desde a prueba de viento hasta impermeables, vístete por capas con estilo sin comprometer el rendimiento." },
-        href: "jackets-vests",
-        genderSpecific: true,
-    },
-    {
-        id: 6,
-        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
-        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
-        imageAlt: { en: "Cycling accessories", es: "Accesorios para ciclismo" },
-        name: { en: "Accessories", es: "Accesorios" },
-        description: { en: "Complete your kit with our cycling accessories. Everything you need from gloves to caps, ensuring every ride is a great one.", es: "Completa tu equipo con nuestros accesorios para ciclismo. Todo lo que necesitas desde guantes hasta gorras, asegurando que cada salida sea excepcional." },
-        href: "accessories",
-        genderSpecific: true,
-    },
-    {
-        id: 7,
-        imageSrc: `${baseImageRoute}/Resources/category_man.webp`,
-        smallImageSrc: `${baseImageRoute}/Resources/category_man.webp`,
-        imageAlt: { en: "Complete collection of men's cycling wear", es: "Colección completa de ropa de ciclismo para hombres" },
-        name: { en: "Men", es: "Hombres" },
-        description: { en: "Discover our comprehensive collection of men's cycling wear. Tailored for performance, comfort, and style.", es: "Descubre nuestra colección completa de ropa de ciclismo para hombres. Diseñada para rendimiento, confort y estilo." },
-        href: "men",
-        genderSpecific: false,
-    },
-    {
-        id: 8,
-        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
-        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
-        imageAlt: { en: "Cycling wear for hot conditions", es: "Ropa de ciclismo para condiciones cálidas" },
-        name: { en: "Hot", es: "Calor" },
-        description: { en: "Embrace summer with garments designed to keep you cool and comfortable when it’s scorching. Crafted with breathable fabrics for optimal ventilation, and that wick sweat away.", es: "Afronta el verano con prendas diseñadas para mantenerte fresco y cómodo cuando hace mucho calor. Confeccionadas con tejidos transpirables para una ventilación óptima que aleja el sudor." },
-        href: "hot-conditions",
-        genderSpecific: true,
-    },
-    {
-        id: 9,
-        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
-        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
-        imageAlt: { en: "Cycling wear for cold conditions", es: "Ropa de ciclismo para condiciones frías" },
-        name: { en: "Cold", es: "Frío" },
-        description: { en: "Conquer the cold with our cycling wear designed for chilly rides. Stay warm without the bulk, thanks to innovative thermal technologies and layering solutions.", es: "Conquista el frío con nuestra ropa de ciclismo diseñada para paseos fríos. Mantente caliente sin volumen gracias a tecnologías térmicas innovadoras y soluciones de capas." },
-        href: "cold-conditions",
-        genderSpecific: true,
-    },
-    {
-        id: 10,
-        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
-        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
-        imageAlt: { en: "Cycling wear for wet conditions", es: "Ropa de ciclismo para condiciones húmedas" },
-        name: { en: "Wet", es: "Húmedo" },
-        description: { en: "Don’t let rain stop your ride. Our wet conditions gear is waterproof and breathable, keeping you dry and comfortable in any downpour.", es: "No dejes que la lluvia detenga tu paseo. Nuestro equipo para condiciones húmedas es impermeable y transpirable, manteniéndote seco y cómodo en cualquier aguacero." },
-        href: "wet-conditions",
-        genderSpecific: true,
-    },
-    {
-        id: 11,
-        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
-        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
-        imageAlt: { en: "Featured basics of cycling wear", es: "Básicos destacados de ropa de ciclismo" },
-        name: { en: "Basics", es: "Básicos" },
-        description: { en: "Get started with our essentials. Quality basics that every cyclist needs, from reliable jerseys to versatile shorts.", es: "Comienza con nuestros esenciales. Básicos de calidad que todo ciclista necesita, desde camisetas confiables hasta shorts versátiles." },
-        href: "basics",
-        genderSpecific: true,
-    },
-    {
-        id: 12,
-        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
-        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
-        imageAlt: { en: "Featured 360-degree range of cycling wear", es: "Gama destacada de 360 grados de ropa de ciclismo" },
-        name: { en: "360", es: "360" },
-        description: { en: "Experience our 360-degree range, where innovation meets the open road. Cutting-edge materials and designs that move with you.", es: "Experimenta nuestra gama de 360 grados, donde la innovación se encuentra con la carretera abierta. Materiales y diseños de vanguardia que se mueven contigo." },
-        href: "360-range",
-        genderSpecific: true,
-    },
-    {
-        id: 13,
-        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
-        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
-        imageAlt: { en: "Featured pinnacle series of cycling wear", es: "Serie cumbre destacada de ropa de ciclismo" },
-        name: { en: "Pinnacle", es: "Cumbre" },
-        description: { en: "Reach the summit with Pinnacle. Our premium line features the best in performance, comfort, and style, for serious cyclists who demand the best.", es: "Alcanza la cima con Cumbre. Nuestra línea premium ofrece lo mejor en rendimiento, confort y estilo, para ciclistas serios que exigen lo mejor." },
-        href: "pinnacle-series",
-        genderSpecific: true,
-    },
-    {
-        id: 14,
-        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
-        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
-        imageAlt: { en: "Gift cards for cycling wear", es: "Tarjetas de regalo para ropa de ciclismo" },
-        name: { en: "Gift Cards", es: "Tarjetas de Regalo" },
-        description: { en: "The perfect gift for the cyclist in your life. Give them the choice with our gift cards, redeemable across our entire range.", es: "El regalo perfecto para el ciclista en tu vida. Dales la elección con nuestras tarjetas de regalo, canjeables en toda nuestra gama." },
-        href: "gift-cards",
-        genderSpecific: false,
-        sizeAgnostic: true,
-    },
-    {
-        id: 15,
-        imageSrc: `${baseImageRoute}/Resources/category_woman.webp`,
-        smallImageSrc: `${baseImageRoute}/Resources/category_woman.webp`,
-        imageAlt: { en: "Complete collection of women's cycling wear", es: "Colección completa de ropa de ciclismo para mujeres" },
-        name: { en: "Women", es: "Mujeres" },
-        description: { en: "Explore our full range of women's cycling wear, designed by women for women. Where comfort meets style, empowering your ride.", es: "Explora nuestra gama completa de ropa de ciclismo para mujeres, diseñada por mujeres para mujeres. Donde el confort se encuentra con el estilo, empoderando tu paseo." },
-        href: "women",
-        genderSpecific: false,
-    },
-    {
-        id: 16,
-        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
-        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
-        imageAlt: { en: "XS Size Cycling Gear", es: "Equipo de ciclismo talla XS" },
-        name: { en: "XS", es: "XS" },
-        description: { en: "Discover our selection of XS size cycling gear, perfectly tailored for those who prefer a snug fit. Ideal for maximizing performance and comfort.", es: "Descubre nuestra selección de equipo de ciclismo talla XS, perfectamente adaptado para aquellos que prefieren un ajuste ceñido. Ideal para maximizar rendimiento y comodidad." },
-        href: "size-xs",
-        genderSpecific: false,
-    },
-    {
-        id: 17,
-        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
-        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
-        imageAlt: { en: "S Size Cycling Gear", es: "Equipo de ciclismo talla S" },
-        name: { en: "S", es: "S" },
-        description: { en: "Explore our range of S size cycling wear, designed for optimal movement and aerodynamics. Perfect for cyclists who value precision and fit.", es: "Explora nuestra gama de ropa de ciclismo talla S, diseñada para un movimiento óptimo y aerodinámica. Perfecto para ciclistas que valoran la precisión y el ajuste." },
-        href: "size-s",
-        genderSpecific: false,
-    },
-    {
-        id: 18,
-        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
-        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
-        imageAlt: { en: "M Size Cycling Gear", es: "Equipo de ciclismo talla M" },
-        name: { en: "M", es: "M" },
-        description: { en: "Browse our collection of M size cycling apparel, offering a balance of comfort and performance for the enthusiastic cyclist.", es: "Consulta nuestra colección de ropa de ciclismo talla M, que ofrece un equilibrio entre comodidad y rendimiento para el ciclista entusiasta." },
-        href: "size-m",
-        genderSpecific: false,
-    },
-    {
-        id: 19,
-        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
-        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
-        imageAlt: { en: "L Size Cycling Gear", es: "Equipo de ciclismo talla L" },
-        name: { en: "L", es: "L" },
-        description: { en: "Check out our selection of L size cycling clothing, engineered for durability and freedom of movement. Gear up for any challenge.", es: "Revisa nuestra selección de ropa de ciclismo talla L, diseñada para durabilidad y libertad de movimiento. Prepárate para cualquier desafío." },
-        href: "size-l",
-        genderSpecific: false,
-    },
-    {
-        id: 20,
-        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
-        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
-        imageAlt: { en: "XL Size Cycling Gear", es: "Equipo de ciclismo talla XL" },
-        name: { en: "XL", es: "XL" },
-        description: { en: "Find your perfect fit with our XL size cycling gear, designed for extra comfort without compromising on performance.", es: "Encuentra tu ajuste perfecto con nuestro equipo de ciclismo talla XL, diseñado para un confort extra sin comprometer el rendimiento." },
-        href: "size-xl",
-        genderSpecific: false,
-    },
-    {
-        id: 21,
-        imageSrc: `${baseImageRoute}/demo/amsterdam.webp`,
-        smallImageSrc: `${baseImageRoute}/demo/amsterdam-small.webp`,
-        imageAlt: { en: "XXL Size Cycling Gear", es: "Equipo de ciclismo talla XXL" },
-        name: { en: "XXL", es: "XXL" },
-        description: { en: "Explore our XXL size cycling wear for superior comfort and style. Ideal for those who seek extra room and ease.", es: "Explora nuestra ropa de ciclismo talla XXL para un confort y estilo superiores. Ideal para aquellos que buscan espacio extra y facilidad." },
-        href: "size-xxl",
-        genderSpecific: false,
-    }
-];
+export let featuredCategories: string[] = ['7', '15']
 
 export const sizeOptions = [
-    { id: 16, name: 'XS' },
-    { id: 17, name: 'S' },
-    { id: 18, name: 'M' },
-    { id: 19, name: 'L' },
-    { id: 20, name: 'XL' },
-    { id: 21, name: 'XXL' },
+    { id: '16', name: 'XS' },
+    { id: '17', name: 'S' },
+    { id: '18', name: 'M' },
+    { id: '19', name: 'L' },
+    { id: '20', name: 'XL' },
+    { id: '21', name: 'XXL' },
 ];
 export const sizeCategoryIds = sizeOptions.map((option) => {
     return option.id;
 });
 
 export const genderOptions = [
-    { id: 7, name: get(dictionary).men },
-    { id: 15, name: get(dictionary).women },
+    { id: '7', name: get(dictionary).men },
+    { id: '15', name: get(dictionary).women },
 ];
 export const genderCategoryIds = genderOptions.map((option) => {
     return option.id;
 });
 
 
-export function denormalizeCatalogCategory(catalogCategory: CatalogCategory): CatalogCategory {
+export function denormalizeCatalogCategory(catalogCategory: CatalogCategory, categories: Category[] = get(categoriesStore)): CatalogCategory {
     // Denormalize each section by mapping the category IDs to their full data
     const denormalizedSections: CatalogSection[] = catalogCategory.sections.map(section => {
         const denormalizedCategoryIds = section.categoryIds.map(categoryId => {
             // Find the full category data by its ID
             const categoryData = categories.find(category => category.id === categoryId);
-            // If the category isn't found (which shouldn't happen), throw an error
             if (!categoryData) {
-                throw new Error(`Category with ID ${categoryId} not found`);
+                console.error(`Category with ID ${categoryId} not found`);
             }
+
             return categoryData;
-        });
+        }).filter(category => category !== undefined) as Category[];;
 
         // Return the section with the denormalized categories included
         return {
@@ -314,22 +92,22 @@ export function denormalizeCatalogCategory(catalogCategory: CatalogCategory): Ca
     };
 }
 
-export function denormalizeCategories(ids: number[]): Category[] {
+export function denormalizeCategories(ids: string[], categories: Category[] = get(categoriesStore)): Category[] {
     const denormalizedCategoryIds = ids.map(categoryId => {
         // Find the full category data by its ID
         const categoryData = categories.find(category => category.id === categoryId);
-        // If the category isn't found (which shouldn't happen), throw an error
         if (!categoryData) {
-            throw new Error(`Category with ID ${categoryId} not found`);
+            console.error(`Category with ID ${categoryId} not found`);
         }
+
         return categoryData;
-    });
+    }).filter(category => category !== undefined) as Category[];
 
     // Return an object with the denormalized categories.
     return denormalizedCategoryIds;
 }
 
-export function findCatalogCategoryByID(id: number): CatalogCategory | undefined {
+export function findCatalogCategoryByID(id: string): CatalogCategory | undefined {
     return categoryMenus.find(categoryMenu => categoryMenu.id === id);
 }
 
@@ -343,42 +121,42 @@ export function findCatalogSectionByName(sectionName: string): CatalogSection | 
     return matchingSection;
 }
 
-export function findCategoryByHref(href: string): Category | undefined {
+export function findCategoryByHref(href: string, categories: Category[] = get(categoriesStore)): Category | undefined {
     return categories.find(category => category.href === href);
 }
 
-export function findCategoryById(id: number): Category | undefined {
+export function findCategoryById(id: string, categories: Category[] = get(categoriesStore)): Category | undefined {
     return categories.find(category => category.id === id);
 }
 
-export function getCategoryIdsFromHrefs(hrefs: string[]): number[] {
+export function getCategoryIdsFromHrefs(hrefs: string[], categories: Category[] = get(categoriesStore)): string[] {
     return hrefs.map(href => {
-        const category = findCategoryByHref(href);
+        const category = findCategoryByHref(href, categories);
         if (!category) {
-            throw new Error(`Category not found for href: ${href}`);
+            console.error(`Category not found for href: ${href}`);
         }
-        return category.id;
-    });
+        return category?.id;
+    }).filter(id => id !== undefined) as string[];
 }
 
-export function getCategoryHrefsFromIds(ids: number[]): string[] {
+export function getCategoryHrefsFromIds(ids: string[], categories: Category[] = get(categoriesStore)): string[] {
     return ids.map(id => {
-        const category = findCategoryById(id);
+        const category = findCategoryById(id, categories);
         if (!category) {
-            throw new Error(`Category not found for id: ${id}`);
+            console.error(`Category not found for id: ${id}`);
         }
-        return category.href;
-    });
+        return category?.href;
+    }).filter(href => href !== undefined) as string[];;
 }
 
-export function getCategoryNamesFromIds(ids: number[]): string[] {
+export function getCategoryNamesFromIds(ids: string[], categories: Category[] = get(categoriesStore)): string[] {
     return ids.map(id => {
-        const category = findCategoryById(id);
+        const category = findCategoryById(id, categories);
         if (!category) {
-            throw new Error(`Category not found for id: ${id}`);
+            console.error(`Category not found for id: ${id}`);
         }
-        return category.name[get(language) as Language];
-    });
+        return category?.name[get(language) as Language];
+    }).filter(name => name !== undefined) as string[];;
 }
 // #endregion
 
@@ -405,14 +183,14 @@ export const mainMenu: MenuItem[] = [
         classname: 'baseButton extraSpaceLink',
         icon: 'man',
         iconStyle: 'font-size: 2em; margin-left: -8px;',
-        callback: () => generateSectionsMenu(0),
+        callback: () => generateSectionsMenu('menmenu'),
     },
     {
         name: get(dictionary).women,
         classname: 'baseButton extraSpaceLink',
         icon: 'woman',
         iconStyle: 'font-size: 2em; margin-left: -8px;',
-        callback: () => generateSectionsMenu(1),
+        callback: () => generateSectionsMenu('womenmenu'),
     },
     {
         name: get(dictionary).custom,
@@ -436,7 +214,7 @@ export const mainMenu: MenuItem[] = [
 
 export let categoryMenus: CatalogCategory[] = [
     {
-        id: 0,
+        id: 'menmenu',
         name: { en: "men", es: "hombres" },
         href: "men",
         featuredCategoryId: undefined,
@@ -444,7 +222,7 @@ export let categoryMenus: CatalogCategory[] = [
             {
                 name: { en: "apparel", es: "ropa" },
                 categoryIds: [
-                    1, 2, 6
+                    '1', '2', '6'
                 ]
             },
             // {
@@ -462,7 +240,7 @@ export let categoryMenus: CatalogCategory[] = [
         ]
     },
     {
-        id: 1,
+        id: 'womenmenu',
         name: { en: "women", es: "mujeres" },
         href: "women",
         featuredCategoryId: undefined,
@@ -470,7 +248,7 @@ export let categoryMenus: CatalogCategory[] = [
             {
                 name: { en: "apparel", es: "ropa" },
                 categoryIds: [
-                    1, 2, 6
+                    '1', '2', '6'
                 ]
             },
             // {
@@ -489,7 +267,7 @@ export let categoryMenus: CatalogCategory[] = [
     }
 ];
 
-export function generateSectionsMenu(catalogCategoryID: number): void {
+export function generateSectionsMenu(catalogCategoryID: string, categories: Category[] = get(categoriesStore)): void {
     const catalogCategory = findCatalogCategoryByID(catalogCategoryID);
 
     if (!catalogCategory) {
@@ -505,14 +283,14 @@ export function generateSectionsMenu(catalogCategoryID: number): void {
         },
         ...catalogCategory.sections.map(section => ({
             name: section.name[get(language) as Language],
-            callback: () => generateCategoryMenu(section.name[get(language) as Language], catalogCategoryID),
+            callback: () => generateCategoryMenu(section.name[get(language) as Language], catalogCategoryID, categories),
         })),
     ];
 
     renderMenu(sectionsMenu);
 }
 
-export function generateCategoryMenu(sectionName: string, catalogCategoryID: number): void {
+export function generateCategoryMenu(sectionName: string, catalogCategoryID: string, categories: Category[] = get(categoriesStore)): void {
     // Find the catalog category by name
     const catalogCategory = findCatalogCategoryByID(catalogCategoryID);
     if (!catalogCategory) {
@@ -521,7 +299,7 @@ export function generateCategoryMenu(sectionName: string, catalogCategoryID: num
     }
 
     // Denormalize the catalog category to include category objects
-    const denormalizedCatalogCategory = denormalizeCatalogCategory(catalogCategory);
+    const denormalizedCatalogCategory = denormalizeCatalogCategory(catalogCategory, categories);
 
     // Find the section within the catalog category
     const section = denormalizedCatalogCategory.sections.find(s => s.name[get(language) as Language] === sectionName);
@@ -535,11 +313,11 @@ export function generateCategoryMenu(sectionName: string, catalogCategoryID: num
         {
             name: sectionName,
             classname: "baseButton backButton",
-            callback: () => generateSectionsMenu(catalogCategoryID),
+            callback: () => generateSectionsMenu(catalogCategoryID, categories),
         },
         ...section.categories.map(category => ({
             name: category.name[get(language) as Language],
-            href: `${baseRoute}/catalog/${category.href}/${category.genderSpecific
+            href: `${baseRoute}/catalog/${category.href}/${!category.genderSpecific
                 ? catalogCategory.href
                 : ''}`,
         })),
@@ -571,12 +349,12 @@ export type Product = {
     mainVersion: boolean,
     versionsIds: string[] | null,
     href: string,
-    categoryIds: number[]
+    categoryIds: string[]
     unitsInStock: UnitsInStock[] | number
 }
 
 export type UnitsInStock = {
-    id: number;
+    id: string;
     name: string;
     units: number;
 }
@@ -588,7 +366,7 @@ export type TableEntry = {
     status: boolean;
 };
 
-export function findProductsByIds(ids: string[], products: Product[]): Product[] {
+export function findProductsByIds(ids: string[], products: Product[] = get(productsStore)): Product[] {
     // Convert the products object to an array of products
     const productArray = Object.values(products);
 
@@ -600,7 +378,7 @@ export function findProductsByIds(ids: string[], products: Product[]): Product[]
     return matchingProducts;
 }
 
-export function findProductsByCategoryIds(categoryIds: number[], products: Product[]): Product[] {
+export function findProductsByCategoryIds(categoryIds: string[], products: Product[] = get(productsStore)): Product[] {
     // Convert the products object to an array of products
     const productArray = Object.values(products);
 
@@ -612,11 +390,11 @@ export function findProductsByCategoryIds(categoryIds: number[], products: Produ
     return matchingProducts;
 }
 
-export function findProductByHref(hrefParam: string, products: Product[]): Product | undefined {
+export function findProductByHref(hrefParam: string, products: Product[] = get(productsStore)): Product | undefined {
     return Object.values(products).find((product) => product.href === hrefParam);
 }
 
-export function findSimilarProducts(product: Product, count: number, products: Product[]): Product[] {
+export function findSimilarProducts(product: Product, count: number, products: Product[] = get(productsStore)): Product[] {
     // Convert products object to an array and filter out the original product
     const otherProducts = Object.values(products).filter(
         (p) =>
@@ -632,12 +410,12 @@ export function findSimilarProducts(product: Product, count: number, products: P
     return shuffledProducts.slice(0, count);
 }
 
-export function findProductsByHrefs(hrefs: string[], products: Product[]): Product[] {
-    let categoryIds = getCategoryIdsFromHrefs(hrefs);
+export function findProductsByCategoryHrefs(hrefs: string[], products: Product[] = get(productsStore), categories: Category[] = get(categoriesStore)): Product[] {
+    let categoryIds = getCategoryIdsFromHrefs(hrefs, categories);
     return findProductsByCategoryIds(categoryIds, products);
 }
 
-export function getUnitsAvailable(product: Product, sizeId: number | undefined): number {
+export function getUnitsAvailable(product: Product, sizeId: string | undefined): number {
     let units = 0;
     if (typeof product.unitsInStock === 'number') {
         units = product.unitsInStock;
@@ -802,7 +580,7 @@ export function calculateAverageRating(reviews: Review[]): string | undefined {
 // #region Cart
 export type DenormalizedCartItem = {
     productId: string,
-    sizeId?: number,
+    sizeId?: string,
     quantity: number,
     name: string,
     imageSrc: string,
@@ -812,7 +590,7 @@ export type DenormalizedCartItem = {
     href: string,
 }
 
-export function denormalizeCartItems(cartItems: CartItem[], products: Product[]): DenormalizedCartItem[] {
+export function denormalizeCartItems(cartItems: CartItem[], products: Product[] = get(productsStore), categories: Category[] = get(categoriesStore)): DenormalizedCartItem[] {
     return cartItems.map((item) => {
         const product = Object.values(products).find(product => product.id === item.productId);
         if (!product) {
@@ -826,7 +604,7 @@ export function denormalizeCartItems(cartItems: CartItem[], products: Product[])
 
         let productSize;
         if (item.sizeId) {
-            productSize = findCategoryById(item.sizeId)?.name[get(language) as Language];
+            productSize = findCategoryById(item.sizeId, categories)?.name[get(language) as Language];
         }
         let name = `${product.name[get(language) as Language]}${productSize ? " - " + get(dictionary).size + ' ' + productSize : ""}`
 
@@ -852,10 +630,10 @@ export function denormalizeCartItems(cartItems: CartItem[], products: Product[])
     }).filter(item => item !== null);
 }
 
-export function addToCart(productId: string, quantity: number, sizeId?: number, name?: string): void {
+export function addToCart(productId: string, quantity: number, sizeId?: string, name?: string): void {
     // Adds a product to the cart or updates the quantity if the product already exists.
     cartItems.update(items => {
-        sizeId ||= 0
+        sizeId ||= '0'
 
         const existingItemIndex = items.findIndex(item => item.productId === productId && item.sizeId === sizeId);
         if (existingItemIndex !== -1) {
@@ -889,8 +667,8 @@ export function addToCart(productId: string, quantity: number, sizeId?: number, 
     });
 }
 
-export function removeFromCart(productId: string, name: string, sizeId?: number): void {
-    sizeId ||= 0
+export function removeFromCart(productId: string, name: string, sizeId?: string): void {
+    sizeId ||= '0'
 
     cartItems.update(items => items.filter(item => item.productId !== productId || item.sizeId !== sizeId));
 
@@ -902,8 +680,8 @@ export function removeFromCart(productId: string, name: string, sizeId?: number)
         })
 }
 
-export function getCartItemFromIDs(cartItemsStore: CartItem[], productId: string, sizeId?: number) {
-    sizeId ||= 0
+export function getCartItemFromIDs(cartItemsStore: CartItem[], productId: string, sizeId?: string) {
+    sizeId ||= '0'
 
     return Object.values(cartItemsStore).find(item => item.productId === productId && item.sizeId === sizeId)
 }

@@ -6,7 +6,7 @@
 		type CatalogCategory,
 		denormalizeCatalogCategory,
 	} from '../mockDb';
-	import { baseImageRoute, baseRoute, dictionary, isAdmin, language, user } from '../stores';
+	import { baseRoute, dictionary, isAdmin, language } from '../stores';
 	import Logo from './logo.svelte';
 	import SNav from './sNav.svelte';
 	import { fade } from 'svelte/transition';
@@ -16,8 +16,8 @@
 
 	export let isCatalogMenuVisible: boolean = false;
 	let catalogMenu: CatalogCategory | undefined;
-	let lastMenuOpened: number = -1;
-	function openCatalogMenu(menuID: number) {
+	let lastMenuOpened: string = '-1';
+	function openCatalogMenu(menuID: string) {
 		// Get menu information.
 		catalogMenu = findCatalogCategoryByID(menuID);
 		if (catalogMenu) {
@@ -28,7 +28,7 @@
 
 		if (lastMenuOpened === menuID && isCatalogMenuVisible) {
 			isCatalogMenuVisible = false;
-			lastMenuOpened = -1;
+			lastMenuOpened = '-1';
 		} else {
 			isCatalogMenuVisible = true;
 			lastMenuOpened = menuID;
@@ -63,13 +63,13 @@
 			>
 			<button
 				class="link"
-				class:active={lastMenuOpened === 0}
-				on:click={() => openCatalogMenu(0)}>{$dictionary.men}</button
+				class:active={lastMenuOpened === 'menmenu'}
+				on:click={() => openCatalogMenu('menmenu')}>{$dictionary.men}</button
 			>
 			<button
 				class="link"
-				class:active={lastMenuOpened === 1}
-				on:click={() => openCatalogMenu(1)}>{$dictionary.women}</button
+				class:active={lastMenuOpened === 'womenmenu'}
+				on:click={() => openCatalogMenu('womenmenu')}>{$dictionary.women}</button
 			>
 			<a
 				class="link"
@@ -126,7 +126,7 @@
 				class="x catalogMenu"
 				on:outside={() => {
 					isCatalogMenuVisible = false;
-					lastMenuOpened = -1;
+					lastMenuOpened = '-1';
 				}}
 				use:clickOutsideOrChild
 				out:fade
@@ -139,7 +139,7 @@
 								{#each section.categories as category}
 									<a
 										class="link"
-										href="{baseRoute}/catalog/{category.href}/{category.genderSpecific
+										href="{baseRoute}/catalog/{category.href}/{!category.genderSpecific
 											? catalogMenu.href
 											: ''}">{category.name[$language]}</a
 									>
@@ -152,7 +152,7 @@
 					<div class="featuredSection">
 						<a
 							href="{baseRoute}/catalog/{catalogMenu.featuredCategory
-								?.href}/{catalogMenu.featuredCategory?.genderSpecific
+								?.href}/{!catalogMenu.featuredCategory?.genderSpecific
 								? lastMenuOpened
 								: ''}"
 							aria-label={catalogMenu.featuredCategory?.name[$language]}

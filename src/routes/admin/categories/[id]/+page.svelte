@@ -4,38 +4,303 @@
 	import { ref, uploadBytes, deleteObject, getDownloadURL } from 'firebase/storage';
 	import { page } from '$app/stores';
 	import { db, storage } from '$lib/firebase/rada';
-	import { allProductsStore, baseRoute, language } from '../../../stores';
+	import {
+		categoriesStore,
+		baseImageRoute,
+		baseRoute,
+		dictionary,
+		language,
+		dataReady,
+	} from '../../../stores';
 	import toast from 'svelte-french-toast';
-	import { autoResizeTextarea } from '../../../functions';
+	import { randomizeFileName } from '../../../functions';
 	import type { Category } from '../../../mockDb';
 	import { goto } from '$app/navigation';
-
-	let form: HTMLFormElement;
+	import Texteditor from '../../components/texteditor.svelte';
+	import EditForm from '../../components/editForm.svelte';
+	import FormParagraph from '../../components/formParagraph.svelte';
+	import FormSection from '../../components/formSection.svelte';
+	import InputGroup from '../../components/inputGroup.svelte';
+	import FormInput from '../../components/formInput.svelte';
+	import ImageInput from '../../components/imageInput.svelte';
+	import BooleanInput from '../../components/booleanInput.svelte';
 
 	let category: Category | undefined;
-	const newParameter = 'new';
-	let isNew = false;
-
+	const newCategoryParameter = 'new';
+	let isNewCategory = false;
 	const emptyCategory: Category = {
-		id: 0,
-		imageSrc: '',
-		imageAlt: { en: '', es: '' },
+		id: '',
 		name: { en: '', es: '' },
+		description: { en: '', es: '' },
+		imageSrc: '',
+		dbImageSrc: '',
+		imageAlt: { en: '', es: '' },
 		href: '',
+		genderSpecific: false,
+		sizeAgnostic: false,
 	};
 
 	let id: string = '';
+	let imageFile: File | null = null;
+
+	function checkHREF() {
+		if (!category) return;
+
+		category.href = category.href.replace(/[^a-zA-Z0-9-]/g, '');
+		if (category.href === '') {
+			category.href = category.name.en
+				.toLowerCase()
+				.replaceAll(' ', '-')
+				.replace(/[^a-zA-Z0-9-]/g, '');
+		}
+	}
+
+	async function setImageUrlFromStorage() {
+		if (!category) return;
+
+		if (category.dbImageSrc) {
+			const imageRef = ref(storage, `categories/${category.dbImageSrc}`);
+			category.imageSrc = await getDownloadURL(imageRef);
+		} else {
+			category.imageSrc = '';
+		}
+	}
+
+	async function handleImageUpload(event: Event) {
+		const target = event.target as HTMLInputElement;
+		if (target.files && category) {
+			imageFile = target.files[0];
+			imageFile = randomizeFileName(imageFile);
+
+			category.dbImageSrc = imageFile.name;
+			category.imageSrc = URL.createObjectURL(imageFile);
+		}
+
+		// Reset Input Element
+		target.value = '';
+	}
+
+	async function handleImageDelete() {
+		if (!category || !category.dbImageSrc) return;
+
+		const imageRef = ref(storage, `categories/${category.dbImageSrc}`);
+		await deleteObject(imageRef);
+
+		category.dbImageSrc = '';
+		category.imageSrc = '';
+	}
 
 	onMount(async () => {
 		id = $page.params.id;
-		isNew = id === newParameter;
-		// category = isNew ? emptyCategory : $allCategoriesStore.find((p) => p.id === id);
+		isNewCategory = id === newCategoryParameter;
+		category = isNewCategory
+			? emptyCategory
+			: structuredClone($categoriesStore.find((c) => c.id.toString() === id));
 
 		if (category) {
-			// Set the form values
-		} else if (!isNew) {
-			toast.error('Invalid category ID');
+			await setImageUrlFromStorage();
+		} else if (!isNewCategory) {
+			toast.error($dictionary.invalidCategoryId);
 			goto(baseRoute + '/admin/categories');
+			return;
 		}
 	});
+
+	async function saveCategory() {
+		// Validate the category
+		if (!category) {
+			toast.error($dictionary.categoryNotFound);
+			return;
+		} else if (!category.name.en || !category.name.es || !category.href) {
+			toast.error($dictionary.pleaseFillInAllRequiredFields);
+			return;
+		}
+		$dataReady = false;
+
+		// Update Image
+		if (imageFile) {
+			const imageRef = ref(storage, `categories/${imageFile.name}`);
+			await uploadBytes(imageRef, imageFile);
+			await setImageUrlFromStorage();
+		}
+
+		// Save the category
+		if (id === newCategoryParameter) {
+			// Modify category to include new id
+			const newDocRef = doc(collection(db, 'categories'));
+			category.id = newDocRef.id;
+
+			// Update Category in Database
+			await setDoc(newDocRef, category);
+
+			// Update Category Locally
+			categoriesStore.update((categories) => {
+				if (!category) return categories;
+				return [...categories, category];
+			});
+
+			toast.success($dictionary.newCategoryCreatedSuccessfully);
+		} else {
+			// Update Category in Database
+			const docRef = doc(db, 'categories', id);
+			await updateDoc(docRef, category);
+
+			// Update Category Locally
+			categoriesStore.update((categories) => {
+				const index = categories.findIndex((c) => c.id.toString() === id);
+				if (index !== -1 && category) {
+					categories[index] = category;
+				}
+				return categories;
+			});
+
+			toast.success($dictionary.changesSavedSuccessfully);
+		}
+
+		$dataReady = true;
+		goto(baseRoute + '/admin/categories');
+	}
+
+	async function deleteCategory() {
+		// Delete Category from Firestore
+		try {
+			const docRef = doc(db, 'categories', id);
+			await deleteDoc(docRef);
+
+			categoriesStore.update((categories) =>
+				categories.filter((c) => c.id.toString() !== id),
+			);
+
+			toast.success($dictionary.categoryDeletedSuccessfully);
+		} catch (error) {
+			toast.error($dictionary.categoryCouldNotBeDeleted);
+		}
+
+		// Delete Category's Image from Storage
+		try {
+			if (category && category.dbImageSrc) {
+				const imageRef = ref(storage, `categories/${category.dbImageSrc}`);
+				await deleteObject(imageRef);
+			}
+		} catch (error) {
+			toast($dictionary.warningCategoryImageCouldNotBeDeleted);
+		}
+
+		goto(baseRoute + '/admin/categories');
+	}
 </script>
+
+<svelte:head>
+	<title
+		>{isNewCategory ? $dictionary.createCategory : $dictionary.editCategory} -
+		{category?.name[$language] || $dictionary.unnamedCategory}</title
+	>
+</svelte:head>
+
+{#if category}
+	<EditForm
+		object={category}
+		saveFunction={saveCategory}
+		deleteFunction={deleteCategory}
+		staticText={{
+			createTitle: $dictionary.createCategory,
+			editTitle: $dictionary.editCategory,
+			unnamedSubtitle: $dictionary.unnamedCategory,
+			createButton: $dictionary.createNewCategory,
+			saveButton: $dictionary.saveChanges,
+			deleteButton: $dictionary.deleteCategory,
+			deleteDialogTitle: `${$dictionary.openQuestionMark}${$dictionary.delete} ${category.name[$language]}?`,
+			deleteDialogDescription: `${$dictionary.areYouSureThatYouWantToDeleteTheCategoryCalled} ${category.name[$language]}?`,
+			deleteDialogConfirmButton: $dictionary.confirm,
+		}}
+		backLink="{baseRoute}/admin/categories"
+		isNew={isNewCategory}
+	>
+		<!-- GENERAL INFORMATION -->
+		<FormSection title={$dictionary.generalInformation}>
+			<FormParagraph content={$dictionary.provideBasicDetailsCategory} />
+			<InputGroup
+				label={`${$dictionary.name} (${$dictionary.english})`}
+				focusElementID="name-en"
+				image={`${baseImageRoute}/usFlag.webp`}
+			>
+				<FormInput
+					bind:value={category.name.en}
+					required
+					id="name-en"
+					changeCallback={checkHREF}
+				/>
+			</InputGroup>
+			<InputGroup
+				label={`${$dictionary.name} (${$dictionary.spanish})`}
+				focusElementID="name-es"
+				image={`${baseImageRoute}/spainFlag.webp`}
+			>
+				<FormInput bind:value={category.name.es} required id="name-es" />
+			</InputGroup>
+			<InputGroup
+				label={`${$dictionary.description} (${$dictionary.english})`}
+				image={`${baseImageRoute}/usFlag.webp`}
+			>
+				<Texteditor bind:content={category.description.en} />
+			</InputGroup>
+			<InputGroup
+				label={`${$dictionary.description} (${$dictionary.spanish})`}
+				image={`${baseImageRoute}/spainFlag.webp`}
+			>
+				<Texteditor bind:content={category.description.es} />
+			</InputGroup>
+
+			<FormParagraph content={$dictionary.enterUniqueLinkCategory} />
+			<InputGroup label={`${$dictionary.categoryUrl}`} focusElementID="href">
+				<FormInput
+					bind:value={category.href}
+					required
+					id="href"
+					changeCallback={checkHREF}
+				/>
+			</InputGroup>
+		</FormSection>
+
+		<!-- IMAGES -->
+		<FormSection title={$dictionary.images}>
+			<FormParagraph content={$dictionary.uploadCategoryImage} />
+			<InputGroup label={$dictionary.image}>
+				<ImageInput
+					bind:webSources={category.imageSrc}
+					bind:originalSources={category.dbImageSrc}
+					deleteCallback={handleImageDelete}
+					uploadCallback={handleImageUpload}
+				/>
+			</InputGroup>
+		</FormSection>
+
+		<!-- ADDITIONAL SETTINGS -->
+		<FormSection title={$dictionary.additionalSettings}>
+			<FormParagraph content={$dictionary.genderFilteringDescription} />
+			<InputGroup label={$dictionary.genderSpecific}>
+				<BooleanInput
+					bind:value={category.genderSpecific}
+					descriptionBefore={`"${category.name[$language] || '...'}"`}
+					descriptionDynamic={{
+						on: $dictionary.doesNotHave,
+						off: $dictionary.has,
+					}}
+					descriptionAfter={$dictionary.genderFiltering}
+				/>
+			</InputGroup>
+			<FormParagraph content={$dictionary.sizeFilteringDescription} />
+			<InputGroup label={$dictionary.singleSize}>
+				<BooleanInput
+					bind:value={category.sizeAgnostic}
+					descriptionBefore={`"${category.name[$language] || '...'}"`}
+					descriptionDynamic={{
+						on: $dictionary.doesNotHave,
+						off: $dictionary.has,
+					}}
+					descriptionAfter={$dictionary.sizeFiltering}
+				/>
+			</InputGroup>
+		</FormSection>
+	</EditForm>
+{/if}

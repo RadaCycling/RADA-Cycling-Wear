@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Category } from '../mockDb';
-	import { baseImageRoute, baseRoute, language, dictionary } from '../stores';
+	import { baseRoute, language, dictionary } from '../stores';
 
 	export let style: string = '';
 

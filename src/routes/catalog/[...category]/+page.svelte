@@ -14,18 +14,18 @@
 		sizeCategoryIds,
 		sizeOptions as sizeGuide,
 	} from '../../mockDb';
-	import { baseImageRoute, baseRoute, dictionary, language, productsStore } from '../../stores';
+	import { baseRoute, dictionary, language } from '../../stores';
 	import Product from '../../components/product.svelte';
 	import Filter from '../../components/filter.svelte';
 	import { goto } from '$app/navigation';
 
 	let parameters: string[];
 
-	let sizeOptions = [{ id: -1, name: $dictionary.size }, ...sizeGuide];
-	let genderOptions = [{ id: -1, name: $dictionary.gender }, ...genderGuide];
+	let sizeOptions = [{ id: '-1', name: $dictionary.size }, ...sizeGuide];
+	let genderOptions = [{ id: '-1', name: $dictionary.gender }, ...genderGuide];
 
 	let mainCategory: Category | undefined;
-	let categoryIds: number[];
+	let categoryIds: string[];
 	let categoryNames: string[];
 
 	let matchingProducts: ProductType[];
@@ -39,7 +39,7 @@
 
 		categoryNames = getCategoryNamesFromIds(categoryIds);
 
-		matchingProducts = findProductsByCategoryIds(categoryIds, $productsStore);
+		matchingProducts = findProductsByCategoryIds(categoryIds);
 
 		// Reset selected indices
 		selectedSizeIndex = 0;
@@ -79,9 +79,9 @@
 	let selectedSortIndex = 0;
 	$: selectedSortIndex, sortByPrice();
 	const sortOptions = [
-		{ id: -1, name: $dictionary.sortBy },
-		{ id: 1, name: `${$dictionary.price} ($-$$)` },
-		{ id: 2, name: `${$dictionary.price} ($$-$)` },
+		{ id: '-1', name: $dictionary.sortBy },
+		{ id: '1', name: `${$dictionary.price} ($-$$)` },
+		{ id: '2', name: `${$dictionary.price} ($$-$)` },
 	];
 
 	function filterBySize() {
@@ -89,7 +89,7 @@
 		categoryIds = categoryIds.filter((id) => !sizeCategoryIds.includes(id));
 
 		// If a size is selected (not the 'Size' option with id -1), add the selected size category
-		if (sizeOptions[selectedSizeIndex].id !== -1) {
+		if (sizeOptions[selectedSizeIndex].id !== '-1') {
 			categoryIds.push(sizeOptions[selectedSizeIndex].id);
 		}
 
@@ -101,7 +101,7 @@
 		categoryIds = categoryIds.filter((id) => !genderCategoryIds.includes(id));
 
 		// If a gender is selected (not the 'Gender' option with id -1), add the selected gender category
-		if (genderOptions[selectedGenderIndex].id !== -1) {
+		if (genderOptions[selectedGenderIndex].id !== '-1') {
 			categoryIds.push(genderOptions[selectedGenderIndex].id);
 		}
 
@@ -144,7 +144,7 @@
 		if (!mainCategory?.sizeAgnostic) {
 			selectedSizeIndex = 0;
 		}
-		if (mainCategory?.genderSpecific) {
+		if (!mainCategory?.genderSpecific) {
 			selectedGenderIndex = 0;
 		}
 		selectedSortIndex = 0;
@@ -174,7 +174,7 @@
 		{/if} -->
 
 		<section class="filters">
-			{#if mainCategory?.genderSpecific}
+			{#if !mainCategory?.genderSpecific}
 				<Filter
 					on:change={filterByGender}
 					options={genderOptions}

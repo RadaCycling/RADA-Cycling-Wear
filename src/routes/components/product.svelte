@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { baseRoute, dictionary, language, productsStore } from '../stores';
+	import { baseRoute, dictionary, language } from '../stores';
 	import { findProductsByIds, type Product, type translatableContent } from '../mockDb';
 	import { letterToAvatarUrl } from '../functions';
 
@@ -13,7 +13,7 @@
 	let price: string = product.price;
 	let oldPrice: string | null = product.oldPrice;
 	let versions: Product[] | undefined = product.versionsIds
-		? findProductsByIds(product.versionsIds, $productsStore)
+		? findProductsByIds(product.versionsIds)
 		: undefined;
 	let href: string = product.href;
 

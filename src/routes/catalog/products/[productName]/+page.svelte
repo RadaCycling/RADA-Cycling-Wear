@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { fade, scale } from 'svelte/transition';
-	import { dictionary, type CartItem, cartItems, language, productsStore } from '../../../stores';
+	import { dictionary, type CartItem, cartItems, language } from '../../../stores';
 	import Products from '../../../components/products.svelte';
 	import Review from '../../../components/review.svelte';
 	import {
@@ -31,14 +31,14 @@
 
 	let productReviews: ReviewType[];
 
-	let sizeOptions: { id: number; name: string }[];
+	let sizeOptions: { id: string; name: string }[];
 
-	function getSizeNameById(id: number): string | undefined {
+	function getSizeNameById(id: string): string | undefined {
 		const sizeOption = allSizeOptions.find((option) => option.id === id);
 		return sizeOption?.name;
 	}
 
-	let sizeId: number | undefined;
+	let sizeId: string | undefined;
 	let sizeName: string | undefined;
 	let unitsAvailable: number;
 
@@ -93,17 +93,16 @@
 		sizeId = undefined;
 		sizeName = undefined;
 
-		product = structuredClone(findProductByHref($page.params.productName, $productsStore));
+		product = structuredClone(findProductByHref($page.params.productName));
 
 		if (product) {
-			versions = product.versionsIds
-				? findProductsByIds(product.versionsIds, $productsStore)
-				: undefined;
+			versions = product.versionsIds ? findProductsByIds(product.versionsIds) : undefined;
 			sizeOptions = allSizeOptions.filter((option) =>
 				product?.categoryIds.includes(option.id),
 			);
 
-			handleSizeChange(Number($page.url.searchParams.get('sizeID')));
+			const sizeParam = $page.url.searchParams.get('sizeID');
+			if (sizeParam) handleSizeChange(sizeParam);
 
 			product.details = product.details.filter((el) => el.status);
 
@@ -112,7 +111,7 @@
 			averageRating = calculateAverageRating(productReviews) || '-';
 			reviewCount = productReviews.length;
 
-			similarProducts = findSimilarProducts(product, 8, $productsStore);
+			similarProducts = findSimilarProducts(product, 8);
 
 			checkIfProductIsInCart();
 		}
@@ -160,7 +159,7 @@
 			}
 		}
 	}
-	function handleSizeChange(id: number) {
+	function handleSizeChange(id: string) {
 		if (sizeId !== id) {
 			sizeId = id;
 			sizeName = getSizeNameById(id);

@@ -1,6 +1,12 @@
 <script lang="ts">
-	import { sizeCategoryIds, categories as categoriesStore, type Product } from '../../mockDb';
-	import { baseRoute, allProductsStore, language, dictionary } from '../../stores';
+	import { sizeCategoryIds, type Product } from '../../mockDb';
+	import {
+		baseRoute,
+		allProductsStore,
+		language,
+		dictionary,
+		categoriesStore,
+	} from '../../stores';
 	import toast from 'svelte-french-toast';
 	import { doc, updateDoc } from 'firebase/firestore';
 	import { db } from '$lib/firebase/rada';
@@ -56,12 +62,13 @@
 				.map((element) => {
 					return {
 						name:
-							categoriesStore.find((category) => category.id === element)?.name[
+							$categoriesStore.find((category) => category.id === element)?.name[
 								$language
 							] || '...',
 						href: `${baseRoute}/admin/categories/${element}`,
 					} as Badge;
-				});
+				})
+				.filter((element) => element.name !== '...');
 			if (!productCategories.length) productCategories.push(fallbackCategory);
 			const categoriesCell: Cell = {
 				type: 'badgeArray',

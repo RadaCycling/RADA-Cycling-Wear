@@ -8,6 +8,7 @@
 		allProductsStore,
 		baseImageRoute,
 		baseRoute,
+		categoriesStore,
 		dataReady,
 		dictionary,
 		language,
@@ -21,7 +22,6 @@
 		type Category,
 		type Product,
 		type UnitsInStock,
-		categories as categoriesStore,
 		findProductsByIds,
 	} from '../../../mockDb';
 	import { goto } from '$app/navigation';
@@ -662,7 +662,7 @@
 			<InputGroup label={$dictionary.categories} focusElementID="categories-picker">
 				<ArrayPicker
 					bind:selectedElements={categories}
-					array={categoriesStore}
+					array={$categoriesStore}
 					impossibleOptionsIds={sizeCategoryIds}
 					placeholder={$dictionary.addANewCategory}
 					on:change={syncCategories}

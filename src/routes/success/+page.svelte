@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { baseRoute, cartItems, dictionary, productsStore } from '../stores';
+	import { baseRoute, cartItems, dictionary } from '../stores';
 	import { denormalizeCartItems } from '../mockDb';
 	import { onMount } from 'svelte';
 
@@ -7,9 +7,7 @@
 	function getCartImages() {
 		try {
 			if ($cartItems.length > 0) {
-				cartImages = denormalizeCartItems($cartItems, $productsStore).map(
-					(item) => item.imageSrc,
-				);
+				cartImages = denormalizeCartItems($cartItems).map((item) => item.imageSrc);
 
 				$cartItems = [];
 			}
