@@ -6,6 +6,7 @@
 		type DenormalizedCartItem,
 		removeFromCart,
 		addToCart,
+		sizeCategoryIds,
 	} from '../mockDb';
 	import { onMount } from 'svelte';
 
@@ -41,7 +42,9 @@
 			{#each denormalizedData as item (`${item.productId}-${item.sizeId}`)}
 				<div class="cart-item" transition:slide>
 					<a
-						href="{baseRoute}/catalog/products/{item.href}{item.sizeId
+						href="{baseRoute}/catalog/products/{item.href}{sizeCategoryIds.includes(
+							item.sizeId || '',
+						)
 							? '?sizeID=' + item.sizeId
 							: ''}"
 						class="imageLink"
@@ -50,7 +53,9 @@
 					</a>
 					<div class="item-details">
 						<a
-							href="{baseRoute}/catalog/products/{item.href}{item.sizeId
+							href="{baseRoute}/catalog/products/{item.href}{sizeCategoryIds.includes(
+								item.sizeId || '',
+							)
 								? '?sizeID=' + item.sizeId
 								: ''}"
 						>

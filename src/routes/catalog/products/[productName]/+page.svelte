@@ -102,7 +102,7 @@
 			);
 
 			const sizeParam = $page.url.searchParams.get('sizeID');
-			if (sizeParam) handleSizeChange(sizeParam);
+			handleSizeChange(sizeParam);
 
 			product.details = product.details.filter((el) => el.status);
 
@@ -159,8 +159,8 @@
 			}
 		}
 	}
-	function handleSizeChange(id: string) {
-		if (sizeId !== id) {
+	function handleSizeChange(id: string | null) {
+		if (id && sizeId !== id) {
 			sizeId = id;
 			sizeName = getSizeNameById(id);
 		} else {

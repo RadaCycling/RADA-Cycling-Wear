@@ -597,14 +597,14 @@ export function denormalizeCartItems(cartItems: CartItem[], products: Product[] 
             return null;
         }
 
-        const unitsAvailable = getUnitsAvailable(product, item.sizeId);
+        const unitsAvailable = getUnitsAvailable(product, item.sizeId.toString());
         if (!unitsAvailable) {
             return null;
         }
 
         let productSize;
-        if (item.sizeId) {
-            productSize = findCategoryById(item.sizeId, categories)?.name[get(language) as Language];
+        if (sizeCategoryIds.includes(item.sizeId.toString())) {
+            productSize = findCategoryById(item.sizeId.toString(), categories)?.name[get(language) as Language];
         }
         let name = `${product.name[get(language) as Language]}${productSize ? " - " + get(dictionary).size + ' ' + productSize : ""}`
 
@@ -618,7 +618,7 @@ export function denormalizeCartItems(cartItems: CartItem[], products: Product[] 
 
         return {
             productId: item.productId,
-            sizeId: item.sizeId,
+            sizeId: item.sizeId.toString(),
             quantity: item.quantity,
             name: name,
             imageSrc: product.imageSources[0],
@@ -635,7 +635,7 @@ export function addToCart(productId: string, quantity: number, sizeId?: string, 
     cartItems.update(items => {
         sizeId ||= '0'
 
-        const existingItemIndex = items.findIndex(item => item.productId === productId && item.sizeId === sizeId);
+        const existingItemIndex = items.findIndex(item => item.productId === productId && item.sizeId.toString() === sizeId);
         if (existingItemIndex !== -1) {
             // Update quantity of an existing item
             const updatedItems = [...items];
@@ -670,7 +670,7 @@ export function addToCart(productId: string, quantity: number, sizeId?: string, 
 export function removeFromCart(productId: string, name: string, sizeId?: string): void {
     sizeId ||= '0'
 
-    cartItems.update(items => items.filter(item => item.productId !== productId || item.sizeId !== sizeId));
+    cartItems.update(items => items.filter(item => item.productId !== productId || item.sizeId.toString() !== sizeId));
 
     toast.success(`"${name}" ${get(dictionary).hasBeenRemovedFromTheCart}`,
         {
@@ -683,7 +683,7 @@ export function removeFromCart(productId: string, name: string, sizeId?: string)
 export function getCartItemFromIDs(cartItemsStore: CartItem[], productId: string, sizeId?: string) {
     sizeId ||= '0'
 
-    return Object.values(cartItemsStore).find(item => item.productId === productId && item.sizeId === sizeId)
+    return Object.values(cartItemsStore).find(item => item.productId === productId && item.sizeId.toString() === sizeId)
 }
 // #endregion
 
