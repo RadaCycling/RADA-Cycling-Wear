@@ -1,3 +1,9 @@
+import { dictionary } from "./stores"
+import { get, writable } from 'svelte/store';
+import { browser } from "$app/environment";
+import toast from "svelte-french-toast";
+import type { Action } from "svelte/action";
+
 export function sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -182,9 +188,6 @@ export function convertMarkdown(text: string): string {
     return text;
 }
 
-import toast from "svelte-french-toast";
-import type { Action } from "svelte/action";
-
 interface Attributes {
     "on:outside"?: (event: CustomEvent) => void
 }
@@ -249,8 +252,6 @@ export function handleSwipe(element: HTMLElement, onSwipeRight: () => void, onSw
     });
 }
 
-import { dictionary } from "./stores"
-import { get } from 'svelte/store';
 let storedDictionary = get(dictionary)
 export function anErrorOccurred(error: string = storedDictionary.anErrorHasOccurred) {
     toast.error(error);
@@ -280,4 +281,25 @@ export function repositionElement(arr: Array<any> | undefined, element: any, new
     arr.splice(newIndex, 0, element);
 
     return arr;
+}
+
+export function localStorageStore(key: string, defaultValue: any) {
+    let storedValue: string | null = null;
+    if (browser) {
+        let json = localStorage.getItem(key)
+        if (json) {
+            storedValue = JSON.parse(json);
+        }
+    }
+
+    const store = writable(storedValue || defaultValue);
+
+    // Subscribe to store changes and update local storage
+    store.subscribe(value => {
+        if (browser) {
+            localStorage.setItem(key, JSON.stringify(value));
+        }
+    });
+
+    return store;
 }

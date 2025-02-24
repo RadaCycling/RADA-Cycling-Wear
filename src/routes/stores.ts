@@ -7,6 +7,7 @@ import { collection, doc, getDoc, setDoc, getDocs, addDoc, deleteDoc } from 'fir
 import type { User } from 'firebase/auth';
 
 export const activeSNavMenu: Writable<MenuItem[]> = writable();
+export const activeAdminPage: Writable<string> = writable('');
 
 // Database
 export const dataReady: Writable<boolean> = writable(false);
