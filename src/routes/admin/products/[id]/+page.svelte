@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { doc, updateDoc, deleteDoc, setDoc, collection } from 'firebase/firestore';
-	import { ref, uploadBytes, deleteObject, getDownloadURL } from 'firebase/storage';
 	import { page } from '$app/stores';
-	import { db, storage } from '$lib/firebase/rada';
+	import { db } from '$lib/firebase/rada';
 	import {
 		allProductsStore,
 		baseImageRoute,
@@ -35,6 +34,11 @@
 	import FormInput from '../../components/formInput.svelte';
 	import ImageInput from '../../components/imageInput.svelte';
 	import TableInput from '../../components/tableInput.svelte';
+	import {
+		deleteImageFromStorage,
+		getImageFromStorage,
+		syncImageStorage,
+	} from '$lib/firebase/imageFunctions';
 
 	let product: Product | undefined;
 	const newProductParameter = 'new';
@@ -69,6 +73,8 @@
 	let isSingleSize: boolean;
 	let singleSizeChangerMemory: UnitsInStock[] | number;
 	let imageFiles: File[] = [];
+	let imagesAddedLocally: File[] = [];
+	let imagesDeletedLocally: string[] = [];
 
 	function handleStockInput(e: Event, size?: UnitsInStock) {
 		if (!product) return;
@@ -243,15 +249,16 @@
 		if (type === 'main' || type === 'all') {
 			product.imageSources = await Promise.all(
 				product.dbImageSources.map(async (imageSource) => {
-					const imageRef = ref(storage, `products/${imageSource}`);
-					return await getDownloadURL(imageRef);
+					return await getImageFromStorage(imageSource, 'products');
 				}),
 			);
 		}
 		if (type === 'hover' || type === 'all') {
 			if (product.dbImageHoverSource) {
-				const imageRef = ref(storage, `products/${product.dbImageHoverSource}`);
-				product.imageHoverSource = await getDownloadURL(imageRef);
+				product.imageHoverSource = await getImageFromStorage(
+					product.dbImageHoverSource,
+					'products',
+				);
 			} else {
 				product.imageHoverSource = '';
 			}
@@ -322,64 +329,6 @@
 		product.imageHoverSource = '';
 	}
 
-	const imagesAddedLocally: File[] = [];
-	async function addImageToStorage(imageFile: File) {
-		const imageRef = ref(storage, `products/${imageFile.name}`);
-		await uploadBytes(imageRef, imageFile);
-	}
-
-	const imagesDeletedLocally: string[] = [];
-	async function deleteImageFromStorage(imageSource: string) {
-		const imageRef = ref(storage, `products/${imageSource}`);
-		await deleteObject(imageRef);
-	}
-
-	function syncImageLists(): void {
-		const deleteCount: Record<string, number> = {};
-		const addCount: Record<string, number> = {};
-
-		// Count occurrences in imagesDeletedLocally
-		for (const name of imagesDeletedLocally) {
-			deleteCount[name] = (deleteCount[name] || 0) + 1;
-		}
-
-		// Count occurrences in imagesAddedLocally (store original File objects)
-		const originalFiles: Record<string, File> = {};
-		for (const file of imagesAddedLocally) {
-			addCount[file.name] = (addCount[file.name] || 0) + 1;
-			if (!originalFiles[file.name]) {
-				originalFiles[file.name] = file;
-			}
-		}
-
-		// Adjust counts: Remove common elements
-		for (const name in deleteCount) {
-			if (addCount[name]) {
-				const minCount = Math.min(deleteCount[name], addCount[name]);
-				deleteCount[name] -= minCount;
-				addCount[name] -= minCount;
-			}
-		}
-
-		// Reconstruct imagesDeletedLocally without duplicates
-		imagesDeletedLocally.length = 0;
-		for (const name in deleteCount) {
-			if (deleteCount[name] > 0) {
-				for (let i = 0; i < deleteCount[name]; i++) {
-					imagesDeletedLocally.push(name);
-				}
-			}
-		}
-
-		// Reconstruct imagesAddedLocally using original File objects
-		imagesAddedLocally.length = 0;
-		for (const name in addCount) {
-			if (addCount[name] > 0) {
-				imagesAddedLocally.push(originalFiles[name]);
-			}
-		}
-	}
-
 	onMount(async () => {
 		id = $page.params.id;
 		isNewProduct = id === newProductParameter;
@@ -399,7 +348,6 @@
 		} else if (!isNewProduct) {
 			toast.error($dictionary.invalidProductId);
 			goto(baseRoute + '/admin/products');
-			return;
 		}
 	});
 
@@ -418,15 +366,7 @@
 		$dataReady = false;
 
 		// Update Images
-		syncImageLists();
-		for (let i = 0; i < imagesDeletedLocally.length; i++) {
-			const element = imagesDeletedLocally[i];
-			await deleteImageFromStorage(element);
-		}
-		for (let i = 0; i < imagesAddedLocally.length; i++) {
-			const element = imagesAddedLocally[i];
-			await addImageToStorage(element);
-		}
+		await syncImageStorage(imagesAddedLocally, imagesDeletedLocally, 'products');
 		await setImageUrlsFromStorage();
 
 		// Save the product
@@ -489,10 +429,10 @@
 			if (product) {
 				for (let index = 0; index < product.dbImageSources.length; index++) {
 					const element = product.dbImageSources[index];
-					await deleteImageFromStorage(element);
+					await deleteImageFromStorage(element, 'products');
 				}
 				if (product.dbImageHoverSource) {
-					await deleteImageFromStorage(product.dbImageHoverSource);
+					await deleteImageFromStorage(product.dbImageHoverSource, 'products');
 				}
 			}
 		} catch (error) {

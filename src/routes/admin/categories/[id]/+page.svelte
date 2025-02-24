@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { doc, updateDoc, deleteDoc, setDoc, collection } from 'firebase/firestore';
-	import { ref, uploadBytes, deleteObject, getDownloadURL } from 'firebase/storage';
 	import { page } from '$app/stores';
-	import { db, storage } from '$lib/firebase/rada';
+	import { db } from '$lib/firebase/rada';
 	import {
 		categoriesStore,
 		baseImageRoute,
@@ -24,6 +23,11 @@
 	import FormInput from '../../components/formInput.svelte';
 	import ImageInput from '../../components/imageInput.svelte';
 	import BooleanInput from '../../components/booleanInput.svelte';
+	import {
+		deleteImageFromStorage,
+		getImageFromStorage,
+		syncImageStorage,
+	} from '$lib/firebase/imageFunctions';
 
 	let category: Category | undefined;
 	const newCategoryParameter = 'new';
@@ -38,10 +42,15 @@
 		href: '',
 		genderSpecific: false,
 		sizeAgnostic: false,
+		smallImageSrc: '',
+		dbSmallImageSrc: '',
 	};
 
 	let id: string = '';
 	let imageFile: File | null = null;
+	let smallImageFile: File | null = null;
+	let imagesAddedLocally: File[] = [];
+	let imagesDeletedLocally: string[] = [];
 
 	function checkHREF() {
 		if (!category) return;
@@ -55,14 +64,24 @@
 		}
 	}
 
-	async function setImageUrlFromStorage() {
+	async function setImageUrlsFromStorage() {
 		if (!category) return;
 
+		// Set Image URL
 		if (category.dbImageSrc) {
-			const imageRef = ref(storage, `categories/${category.dbImageSrc}`);
-			category.imageSrc = await getDownloadURL(imageRef);
+			category.imageSrc = await getImageFromStorage(category.dbImageSrc, 'categories');
 		} else {
-			category.imageSrc = '';
+			category.dbImageSrc = '';
+		}
+
+		// Set Small Image URL
+		if (category.dbSmallImageSrc) {
+			category.smallImageSrc = await getImageFromStorage(
+				category.dbSmallImageSrc,
+				'categories',
+			);
+		} else {
+			category.dbSmallImageSrc = '';
 		}
 	}
 
@@ -74,20 +93,45 @@
 
 			category.dbImageSrc = imageFile.name;
 			category.imageSrc = URL.createObjectURL(imageFile);
+			imagesAddedLocally.push(imageFile);
 		}
 
 		// Reset Input Element
 		target.value = '';
 	}
 
+	async function handleSmallImageUpload(event: Event) {
+		const target = event.target as HTMLInputElement;
+		if (target.files && category) {
+			smallImageFile = target.files[0];
+			smallImageFile = randomizeFileName(smallImageFile);
+
+			category.dbSmallImageSrc = smallImageFile.name;
+			category.smallImageSrc = URL.createObjectURL(smallImageFile);
+			imagesAddedLocally.push(smallImageFile);
+		}
+
+		// Reset Input Element
+		target.value = '';
+	}
+
+	// TODO: Only delete from firestore when the category is saved
 	async function handleImageDelete() {
 		if (!category || !category.dbImageSrc) return;
 
-		const imageRef = ref(storage, `categories/${category.dbImageSrc}`);
-		await deleteObject(imageRef);
+		imagesDeletedLocally.push(category.dbImageSrc);
 
 		category.dbImageSrc = '';
 		category.imageSrc = '';
+	}
+
+	async function handleSmallImageDelete() {
+		if (!category || !category.dbSmallImageSrc) return;
+
+		imagesDeletedLocally.push(category.dbSmallImageSrc);
+
+		category.dbSmallImageSrc = '';
+		category.smallImageSrc = '';
 	}
 
 	onMount(async () => {
@@ -98,11 +142,10 @@
 			: structuredClone($categoriesStore.find((c) => c.id.toString() === id));
 
 		if (category) {
-			await setImageUrlFromStorage();
+			await setImageUrlsFromStorage();
 		} else if (!isNewCategory) {
 			toast.error($dictionary.invalidCategoryId);
 			goto(baseRoute + '/admin/categories');
-			return;
 		}
 	});
 
@@ -117,12 +160,9 @@
 		}
 		$dataReady = false;
 
-		// Update Image
-		if (imageFile) {
-			const imageRef = ref(storage, `categories/${imageFile.name}`);
-			await uploadBytes(imageRef, imageFile);
-			await setImageUrlFromStorage();
-		}
+		// Update Images
+		await syncImageStorage(imagesAddedLocally, imagesDeletedLocally, 'categories');
+		await setImageUrlsFromStorage();
 
 		// Save the category
 		if (id === newCategoryParameter) {
@@ -178,9 +218,13 @@
 
 		// Delete Category's Image from Storage
 		try {
-			if (category && category.dbImageSrc) {
-				const imageRef = ref(storage, `categories/${category.dbImageSrc}`);
-				await deleteObject(imageRef);
+			if (category) {
+				if (category.dbImageSrc) {
+					await deleteImageFromStorage(category.dbImageSrc, 'categories');
+				}
+				if (category.dbSmallImageSrc) {
+					await deleteImageFromStorage(category.dbSmallImageSrc, 'categories');
+				}
 			}
 		} catch (error) {
 			toast($dictionary.warningCategoryImageCouldNotBeDeleted);
@@ -271,6 +315,15 @@
 					bind:originalSources={category.dbImageSrc}
 					deleteCallback={handleImageDelete}
 					uploadCallback={handleImageUpload}
+				/>
+			</InputGroup>
+			<FormParagraph content={$dictionary.uploadCategorySmallImage} />
+			<InputGroup label="{$dictionary.smallImage} ({$dictionary.optional})">
+				<ImageInput
+					bind:webSources={category.smallImageSrc}
+					bind:originalSources={category.dbSmallImageSrc}
+					deleteCallback={handleSmallImageDelete}
+					uploadCallback={handleSmallImageUpload}
 				/>
 			</InputGroup>
 		</FormSection>

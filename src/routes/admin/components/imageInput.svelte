@@ -3,8 +3,8 @@
 	import Image from './image.svelte';
 	import { repositionElement } from '../../functions';
 
-	export let webSources: string[] | string | null;
-	export let originalSources: string[] | string | null;
+	export let webSources: string[] | string | null | undefined;
+	export let originalSources: string[] | string | null | undefined;
 	export let uploadCallback: (...args: any[]) => any;
 	export let deleteCallback: (...args: any[]) => any;
 

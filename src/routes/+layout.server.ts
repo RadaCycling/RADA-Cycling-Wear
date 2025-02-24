@@ -1,8 +1,8 @@
-import { db, storage } from "$lib/firebase/rada";
+import { db } from "$lib/firebase/rada";
 import { collection, doc, getDocs, setDoc, type DocumentData } from "firebase/firestore";
 import type { LayoutServerLoad } from "./$types";
-import { ref, getDownloadURL } from 'firebase/storage';
 import { type Product, type Category, type PortfolioItem } from "./mockDb";
+import { getImageFromStorage } from "$lib/firebase/imageFunctions";
 
 // Fetch a collection from Firestore
 async function fetchCollection(collectionName: string): Promise<DocumentData> {
@@ -13,28 +13,13 @@ async function fetchCollection(collectionName: string): Promise<DocumentData> {
         if (collectionName === 'products') {
             const products = snapshot.docs.map((doc) => doc.data() as Product);
             for (const product of products) {
-                if (!product.dbImageSources) {
-                    product.dbImageSources = product.imageSources;
-                }
+                product.dbImageSources ||= product.imageSources;
                 product.imageSources = await Promise.all(product.dbImageSources.map(async (imageSource) => {
-                    try {
-                        const imageRef = ref(storage, `products/${imageSource}`);
-                        return await getDownloadURL(imageRef);
-                    } catch (e) {
-                        console.error("Error on layout.server.ts fetching image source: ", (e as Error).message);
-                        return imageSource;
-                    }
+                    return await getImageFromStorage(imageSource, 'products');
                 }));
                 if (product.imageHoverSource) {
-                    if (!product.dbImageHoverSource) {
-                        product.dbImageHoverSource = product.imageHoverSource;
-                    }
-                    try {
-                        const imageRef = ref(storage, `products/${product.dbImageHoverSource}`);
-                        product.imageHoverSource = await getDownloadURL(imageRef);
-                    } catch (e) {
-                        console.error("Error on layout.server.ts fetching hover image source: ", (e as Error).message);
-                    }
+                    product.dbImageHoverSource ||= product.imageHoverSource;
+                    product.imageHoverSource = await getImageFromStorage(product.dbImageHoverSource, 'products');
                 }
             }
             return products;
@@ -42,14 +27,15 @@ async function fetchCollection(collectionName: string): Promise<DocumentData> {
         else if (collectionName === 'categories') {
             const categories = snapshot.docs.map((doc) => doc.data() as Category);
             for (const category of categories) {
-                if (!category.dbImageSrc) {
-                    category.dbImageSrc = category.imageSrc;
+                // Assign main image
+                if (category.imageSrc) {
+                    category.dbImageSrc ||= category.imageSrc;
+                    category.imageSrc = await getImageFromStorage(category.dbImageSrc, 'categories');
                 }
-                try {
-                    const imageRef = ref(storage, `categories/${category.dbImageSrc}`);
-                    category.imageSrc = await getDownloadURL(imageRef);
-                } catch (e) {
-                    console.error("Error on layout.server.ts fetching category image source: ", (e as Error).message);
+                // Assign small image
+                if (category.smallImageSrc) {
+                    category.dbSmallImageSrc ||= category.smallImageSrc;
+                    category.smallImageSrc = await getImageFromStorage(category.dbSmallImageSrc, 'categories');
                 }
             }
             return categories;
