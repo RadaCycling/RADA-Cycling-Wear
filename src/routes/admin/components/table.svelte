@@ -1,77 +1,131 @@
 <script lang="ts">
-	import { slide } from 'svelte/transition';
 	import type { Head, Row } from '../types/table';
 	import Badge from './badge.svelte';
 	import Switch from './switch.svelte';
 
 	export let head: Head;
 	export let body: Row[];
+
+	let innerWidth: number;
+
+	// Compute which column indices should be visible.
+	$: visibleIndices = computeVisibleIndices(innerWidth);
+
+	function computeVisibleIndices(width: number) {
+		// Assume each column needs at least 200px.
+		const minWidth = 200;
+		// How many columns can we fit?
+		const maxColumns = Math.max(1, Math.floor(width / minWidth));
+
+		// Separate required columns (those without importance) from optional ones.
+		const requiredColumns = head
+			.map((col, index) => ({ index, hasImportance: col.importance !== undefined }))
+			.filter((col) => !col.hasImportance)
+			.map((col) => col.index);
+
+		const optionalColumns = head
+			.map((col, index) => ({
+				index,
+				importance: col.importance || 0,
+			}))
+			.filter((col) => col.importance > 0);
+
+		// Sort optional columns by importance (descending)
+		optionalColumns.sort((a, b) => b.importance - a.importance);
+
+		// Determine how many optional columns can fit
+		const remainingSlots = Math.max(maxColumns - requiredColumns.length, 0);
+		const selectedOptionalIndices = optionalColumns
+			.slice(0, remainingSlots)
+			.map((col) => col.index);
+
+		// Combine required and selected optional indices
+		const visibleIndices = [...requiredColumns, ...selectedOptionalIndices];
+
+		// Sort indices to preserve the original column order
+		visibleIndices.sort((a, b) => a - b);
+
+		return visibleIndices;
+	}
 </script>
 
-<table>
-	<thead>
-		<tr>
-			{#each head as columnHeader}
-				<th>
-					<div class="th_content">{columnHeader}</div>
-				</th>
-			{/each}
-		</tr>
-	</thead>
-	<tbody>
-		{#each body as row (row)}
+<!-- Bind the window's innerWidth -->
+<svelte:window bind:innerWidth />
+
+<div>
+	<table>
+		<thead>
 			<tr>
-				{#each row as cell}
-					{#if cell.type === 'image' && typeof cell.content === 'string'}
-						<td>
-							<a href={cell.link}>
-								<img src={cell.content} alt={cell.alt} />
-							</a>
-						</td>
-					{:else if cell.type === 'string'}
-						<td class="ellipsis allow-select">
-							<a href={cell.link}>
-								{cell.content}
-							</a>
-						</td>
-					{:else if cell.type === 'switch' && typeof cell.content === 'boolean' && cell.callback}
-						<td class="center-align">
-							<Switch bind:state={cell.content} callback={cell.callback} />
-						</td>
-					{:else if cell.type === 'badgeArray' && typeof cell.content === 'object'}
-						<td class="ellipsis">
-							{#each cell.content as item}
-								<Badge badge={item} />
-							{/each}
-						</td>
-					{:else if cell.type === 'link' && typeof cell.content === 'string'}
-						<td class="center-align">
-							<a
-								class="action-button edit-button"
-								href={cell.link}
-								aria-label={cell.alt}
-							>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									viewBox="0 0 24 24"
-									width="24"
-									height="24"
-								>
-									<path d={cell.content} />
-								</svg>
-							</a>
-						</td>
-					{/if}
+				{#each visibleIndices as i}
+					<th>
+						<div class="th_content">{head[i].name}</div>
+					</th>
 				{/each}
 			</tr>
-		{/each}
-	</tbody>
-</table>
+		</thead>
+		<tbody>
+			{#each body as row (row)}
+				<tr>
+					{#each visibleIndices as i}
+						{#if row[i].type === 'image' && typeof row[i].content === 'string'}
+							<td>
+								<a href={row[i].link}>
+									<img src={row[i].content} alt={row[i].alt} />
+								</a>
+							</td>
+						{:else if row[i].type === 'string'}
+							<td class="ellipsis allow-select">
+								<a href={row[i].link}>
+									{row[i].content}
+								</a>
+							</td>
+						{:else if row[i].type === 'switch' && typeof row[i].content === 'boolean' && row[i].callback}
+							<td class="center-align">
+								<Switch bind:state={row[i].content} callback={row[i].callback} />
+							</td>
+						{:else if row[i].type === 'badgeArray' && typeof row[i].content === 'object'}
+							<td class="ellipsis">
+								{#each row[i].content as item}
+									<Badge badge={item} />
+								{/each}
+							</td>
+						{:else if row[i].type === 'link' && typeof row[i].content === 'string'}
+							<td class="center-align">
+								<a
+									class="action-button edit-button"
+									href={row[i].link}
+									aria-label={row[i].alt}
+								>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										viewBox="0 0 24 24"
+										width="24"
+										height="24"
+									>
+										<path d={row[i].content} />
+									</svg>
+								</a>
+							</td>
+						{/if}
+					{/each}
+				</tr>
+			{/each}
+		</tbody>
+	</table>
+</div>
 
 <style>
+	div {
+		width: 100%;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+
 	table {
 		width: 100%;
+		max-width: 100%;
 		border-collapse: collapse;
+		table-layout: auto;
 	}
 
 	tbody tr:not(:last-of-type) {
@@ -95,8 +149,16 @@
 		cursor: default;
 	}
 
-	th:not(:first-of-type):not(:last-of-type) {
+	th {
 		padding: 0 0.2rem;
+	}
+
+	th:first-of-type {
+		padding-left: 0;
+	}
+
+	th:last-of-type {
+		padding-right: 0;
 	}
 
 	td {
@@ -128,7 +190,7 @@
 	}
 
 	.ellipsis {
-		max-width: 200px;
+		max-width: min(200px, 33vw);
 	}
 
 	.center-align {

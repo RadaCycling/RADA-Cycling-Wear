@@ -26,7 +26,6 @@
 		display: grid;
 		align-items: center;
 		justify-items: center;
-		min-width: 800px;
 	}
 
 	main {
@@ -49,5 +48,16 @@
 		font-size: 2.25rem;
 		font-weight: 500;
 		border-radius: 15px;
+	}
+
+	@media (max-width: 800px) {
+		h1 {
+			margin-bottom: 1rem;
+			font-size: 2rem;
+		}
+
+		main {
+			padding: 1rem 1rem 1.5rem;
+		}
 	}
 </style>

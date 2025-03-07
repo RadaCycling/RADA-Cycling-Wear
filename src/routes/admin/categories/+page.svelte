@@ -7,11 +7,24 @@
 	import DataController from '../components/dataController.svelte';
 
 	const tableHead = [
-		$dictionary.image,
-		$dictionary.name,
-		$dictionary.description,
-		'HREF',
-		$dictionary.action,
+		{
+			name: $dictionary.image,
+			importance: 3,
+		},
+		{
+			name: $dictionary.name,
+		},
+		{
+			name: $dictionary.description,
+			importance: 1,
+		},
+		{
+			name: 'HREF',
+			importance: 2,
+		},
+		{
+			name: $dictionary.action,
+		},
 	];
 
 	function transformCategoriesToRows(categories: Category[]): Row[] {

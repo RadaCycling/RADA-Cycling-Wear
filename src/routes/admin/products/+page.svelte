@@ -16,12 +16,28 @@
 	import DataController from '../components/dataController.svelte';
 
 	const tableHead = [
-		$dictionary.image,
-		$dictionary.name,
-		$dictionary.price,
-		$dictionary.status,
-		$dictionary.categories,
-		$dictionary.action,
+		{
+			name: $dictionary.image,
+			importance: 4,
+		},
+		{
+			name: $dictionary.name,
+		},
+		{
+			name: $dictionary.price,
+			importance: 3,
+		},
+		{
+			name: $dictionary.status,
+			importance: 2,
+		},
+		{
+			name: $dictionary.categories,
+			importance: 1,
+		},
+		{
+			name: $dictionary.action,
+		},
 	];
 
 	function transformProductsToRows(products: Product[]): Row[] {

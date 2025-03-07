@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { language } from '../../stores';
-	import type { Row } from '../types/table';
+	import type { Column, Row } from '../types/table';
 	import Table from './table.svelte';
 
 	export let allItems: Array<any>;
-	export let tableHead: string[];
+	export let tableHead: Column[];
 	export let itemIntoRowTransformationFunction: (...args: any[]) => Row[];
 	export let searchProperties: Array<string>;
 	export let controllerTexts: ControllerTexts;
@@ -57,16 +57,14 @@
 </script>
 
 <div class="header">
-	<div class="action-buttons">
-		<a class="add-button" href={addItemHref} aria-label={controllerTexts.add}>
-			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-				<path
-					d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-6H5v-2h6V5h2v6h6v2h-6v6z"
-				/>
-			</svg>
-			{controllerTexts.add}
-		</a>
-	</div>
+	<a class="add-button" href={addItemHref} aria-label={controllerTexts.add}>
+		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+			<path
+				d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-6H5v-2h6V5h2v6h6v2h-6v6z"
+			/>
+		</svg>
+		{controllerTexts.add}
+	</a>
 	<input
 		type="text"
 		placeholder="{controllerTexts.search}..."
@@ -74,7 +72,7 @@
 		class="search-bar"
 	/>
 </div>
-<div class="products">
+<div>
 	{#if allItems.length > 0}
 		{#if rows.length > 0}
 			<Table head={tableHead} body={rows} />
@@ -89,10 +87,25 @@
 <style>
 	.header {
 		display: flex;
-		gap: 2rem;
+		flex-wrap: wrap-reverse;
+		column-gap: 2rem;
+		row-gap: 0.5rem;
 		justify-content: space-between;
 		align-items: center;
 		margin-bottom: 1rem;
+	}
+
+	@media (max-width: 500px) {
+		.header {
+			font-size: 0.95rem;
+			margin-bottom: 0.75rem;
+		}
+
+		.add-button,
+		.search-bar {
+			width: 100%;
+			margin: auto;
+		}
 	}
 
 	.add-button {

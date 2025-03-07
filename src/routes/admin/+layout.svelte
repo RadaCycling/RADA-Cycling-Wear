@@ -90,7 +90,7 @@
 
 	.sidebar {
 		width: 100%;
-		padding: 1rem;
+		padding: 1rem 2rem;
 		box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
 
 		position: fixed;
@@ -116,10 +116,7 @@
 
 		display: flex;
 		align-items: center;
-	}
-
-	.sidebar nav ul li {
-		margin: 0 1rem;
+		gap: 2rem;
 	}
 
 	.sidebar nav ul li a {
@@ -131,6 +128,16 @@
 	.content {
 		margin-top: 3rem;
 		padding: 2rem 2rem 4rem;
+	}
+
+	@media (max-width: 950px) {
+		.content {
+			padding: 2rem 0 4rem;
+		}
+
+		.sidebar {
+			padding: 1.25rem 1rem 0.75rem;
+		}
 	}
 
 	@media screen and (max-width: 750px) {

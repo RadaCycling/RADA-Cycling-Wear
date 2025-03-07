@@ -10,5 +10,9 @@ export type Cell = {
     callback?: (...args: any[]) => any;
     alt?: string;
 };
+export type Column = {
+    name: string;
+    importance?: number;
+};
 export type Row = Cell[];
-export type Head = string[];
+export type Head = Column[];
