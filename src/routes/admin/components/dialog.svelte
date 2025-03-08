@@ -65,7 +65,7 @@
 	}
 
 	h1 {
-		font-size: 1.5rem;
+		font-size: 1.5em;
 		font-weight: normal;
 		color: var(--content);
 		text-align: center;
@@ -88,7 +88,7 @@
 
 	button {
 		padding: 0.75rem 1.5rem;
-		font-size: 1rem;
+		font-size: 1em;
 		font-weight: 500;
 		border: none;
 		border-radius: 5px;

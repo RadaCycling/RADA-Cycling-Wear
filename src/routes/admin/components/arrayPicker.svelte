@@ -166,7 +166,7 @@
 	}
 
 	.element span {
-		font-size: 1.1rem;
+		font-size: 1.1em;
 		font-weight: normal;
 	}
 
@@ -188,7 +188,7 @@
 	.search {
 		position: relative;
 		padding: 1rem;
-		font-size: 1.1rem;
+		font-size: 1.1em;
 	}
 
 	.search svg {
@@ -240,5 +240,37 @@
 	.option:focus-visible,
 	.option:hover {
 		background-color: #00000010;
+	}
+
+	@media (max-width: 500px) {
+		.element img,
+		.option img {
+			width: 40px;
+			height: 40px;
+		}
+
+		.element span {
+			font-size: 1em;
+		}
+
+		.element button {
+			margin: 0 0.5rem;
+		}
+
+		.search {
+			font-size: 1em;
+		}
+
+		.search svg {
+			left: calc(0.5rem + 10px);
+		}
+
+		.search input {
+			padding: 0.5em 1em 0.5em calc(0.5rem + 30px);
+		}
+
+		.options {
+			--margin: 0.25rem;
+		}
 	}
 </style>

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { slide } from 'svelte/transition';
-	import { baseRoute, dictionary, activeSNavMenu, user, isAdmin } from '../stores';
+	import { baseRoute, dictionary, activeSNavMenu, isAdmin } from '../stores';
 	import Base from './base.svelte';
 	import { sleep } from '../functions';
 	import { goto } from '$app/navigation';
@@ -74,6 +74,7 @@
 			{#if $isAdmin}
 				<a
 					class="link adminLink"
+					on:click|preventDefault={() => linkBehaviour(`${baseRoute}/admin`)}
 					class:active={$page.url.pathname.includes(`${baseRoute}/admin`)}
 					href="{baseRoute}/admin"
 				>

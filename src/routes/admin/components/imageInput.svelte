@@ -58,6 +58,7 @@
 <style>
 	.image-gallery {
 		display: grid;
+		justify-items: center;
 		grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
 		gap: 1rem;
 		margin-bottom: 1.5rem;
@@ -85,5 +86,16 @@
 
 	input[type='file'] {
 		display: none;
+	}
+
+	@media (max-width: 500px) {
+		.image-gallery {
+			grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+		}
+
+		label {
+			width: 175px;
+			height: 175px;
+		}
 	}
 </style>

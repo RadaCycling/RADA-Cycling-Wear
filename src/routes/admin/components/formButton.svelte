@@ -31,7 +31,7 @@
 		padding: 1.25rem 1rem;
 		border-radius: 15px;
 
-		font-size: 1.2rem;
+		font-size: 1.2em;
 		font-weight: 500;
 
 		transition: all 0.2s ease-out;

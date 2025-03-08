@@ -57,7 +57,7 @@
 	<header>
 		<div>
 			<Hamburger {menu} />
-			<h4>
+			<h4 class="ellipsis">
 				{content.label[$language] ? content.label[$language] : newLabel}
 			</h4>
 		</div>
@@ -76,7 +76,7 @@
 			placeholder="{$dictionary.content} ({$dictionary.english})"
 		/>
 	</div>
-	<div class="row">
+	<div class="row spanish">
 		<img src="{baseImageRoute}/spainFlag.webp" alt="Español" lang="es" />
 		<input
 			type="text"
@@ -103,8 +103,9 @@
 	}
 
 	header {
-		display: flex;
-		justify-content: space-between;
+		display: grid;
+		grid-template-columns: 1fr auto;
+		row-gap: 0.5rem;
 		align-items: center;
 		margin-bottom: 0.5rem;
 	}
@@ -120,10 +121,14 @@
 		font-weight: 500;
 	}
 
+	.ellipsis {
+		max-width: 30vw;
+	}
+
 	.row {
 		display: grid;
 		align-items: center;
-		gap: 2ch;
+		gap: 1rem;
 		grid-template-columns: auto 1fr 1.5fr;
 	}
 
@@ -140,5 +145,34 @@
 		font-size: 1em;
 		padding: 0.75em;
 		width: 100%;
+	}
+
+	@media (max-width: 500px) {
+		.specification {
+			padding: 1.25rem 0.75rem;
+
+			background-color: white;
+		}
+
+		header div {
+			font-size: 0.95em;
+			column-gap: 1ch;
+		}
+
+		.row {
+			grid-template-columns: auto 1fr;
+			column-gap: 0.5rem;
+			row-gap: 1rem;
+			font-size: 0.95em;
+		}
+
+		.row input:last-child {
+			grid-column: 2;
+		}
+
+		.spanish {
+			padding-top: 1rem;
+			border-top: #00000030 solid 1px;
+		}
 	}
 </style>

@@ -75,4 +75,11 @@
 	.toggle-label.on {
 		color: white;
 	}
+
+	@media (max-width: 500px) {
+		.toggle-container {
+			--width: 70px;
+			--height: 30px;
+		}
+	}
 </style>

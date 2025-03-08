@@ -333,6 +333,11 @@
 	}
 
 	@media screen and (max-width: 500px) {
+		nav {
+			padding: 0.5rem;
+			gap: 1.5rem;
+		}
+
 		#snavToggle ion-icon {
 			font-size: 2.2rem;
 		}

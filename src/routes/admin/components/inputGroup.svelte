@@ -44,6 +44,7 @@
 		color: var(--content-5);
 		background-color: #ffffff;
 		padding: 0.25em 0.5em;
+		max-width: 90%;
 	}
 
 	.input-group-label img {
@@ -51,5 +52,15 @@
 		transform: translateY(0.5px);
 		width: auto;
 		border-radius: 3px;
+	}
+
+	@media (max-width: 400px) {
+		.input-group {
+			margin-top: 2rem;
+		}
+
+		.input-group-label {
+			font-size: 0.9rem;
+		}
 	}
 </style>

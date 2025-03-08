@@ -66,6 +66,8 @@
 		box-shadow: 5px 5px 10px #00000030;
 		padding: 1.5rem 1rem;
 		border-radius: 15px;
+
+		text-align: left;
 	}
 
 	button ion-icon {

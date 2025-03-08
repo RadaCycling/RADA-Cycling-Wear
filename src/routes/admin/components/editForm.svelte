@@ -80,8 +80,8 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		padding: 2rem;
-		background-color: #ffffffaa;
+		padding: 2rem 1rem;
+		background-color: #ffffff;
 		border-radius: 20px;
 		color: var(--content);
 		width: 100%;
@@ -154,5 +154,28 @@
 		max-width: 700px;
 		margin-top: 1rem;
 		margin-bottom: 2rem;
+	}
+
+	@media (max-width: 500px) {
+		.edit-page {
+			padding: 2rem 1rem 0;
+		}
+
+		header {
+			margin-top: 0.5rem;
+		}
+
+		header div {
+			top: -2rem;
+		}
+
+		header h1 {
+			font-size: 2.2rem;
+		}
+
+		section {
+			font-size: 0.9rem;
+			row-gap: 1.25rem;
+		}
 	}
 </style>

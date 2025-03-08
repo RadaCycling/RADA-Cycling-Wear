@@ -34,4 +34,23 @@
 		padding-bottom: 0.5rem;
 		border-left: 2px solid var(--content-2);
 	}
+
+	@media (max-width: 500px) {
+		section {
+			padding: 0.25rem;
+
+			background-color: transparent;
+			box-shadow: none;
+			border: none;
+			border-radius: 0;
+		}
+
+		section h2 {
+			font-size: 1.25rem;
+		}
+
+		section div {
+			padding-left: 1rem;
+		}
+	}
 </style>

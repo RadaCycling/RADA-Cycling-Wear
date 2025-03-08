@@ -66,4 +66,10 @@
 	label {
 		margin-top: 2.8px;
 	}
+
+	@media (max-width: 500px) {
+		div {
+			font-size: 1rem;
+		}
+	}
 </style>

@@ -151,4 +151,16 @@
 	input {
 		width: 3ch;
 	}
+
+	@media (max-width: 500px) {
+		.image-item {
+			width: 175px;
+			height: 175px;
+			font-size: 1.1rem;
+		}
+
+		form {
+			font-size: 1.05rem;
+		}
+	}
 </style>
