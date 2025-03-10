@@ -270,7 +270,7 @@ export function repositionElement(arr: Array<any> | undefined, element: any, new
     // Check if the element exists in the array
     const currentIndex = arr.indexOf(element);
     if (currentIndex === -1) {
-        console.log("Element not found in array");
+        console.error("Element not found in array");
         return arr;
     }
 

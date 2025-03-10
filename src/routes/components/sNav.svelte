@@ -13,7 +13,7 @@
 	import { sleep } from '../functions';
 	import { goto } from '$app/navigation';
 	import Logo from './logo.svelte';
-	import { mainMenu, type MenuItem } from '../mockDb';
+	import { getMainMenu } from '../mockDb';
 
 	export let active: boolean = false;
 
@@ -21,7 +21,7 @@
 	let lastFocusableElement: HTMLAnchorElement;
 
 	function restartMenu() {
-		$activeSNavMenu = mainMenu;
+		$activeSNavMenu = getMainMenu();
 	}
 
 	$: $language, restartMenu();
@@ -35,7 +35,7 @@
 		restartMenu();
 	}
 
-	const adminMenu: MenuItem[] = [
+	$: adminMenu = [
 		{
 			name: $dictionary.admin,
 			callback: restartMenu,
@@ -308,6 +308,10 @@
 		nav {
 			width: 35ch;
 			padding: 3rem 1.5rem;
+		}
+
+		.dynamicLink span {
+			font-weight: 500;
 		}
 
 		.baseButton {

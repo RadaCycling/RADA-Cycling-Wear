@@ -105,7 +105,6 @@ export const actions = {
             };
 
             if (contactMethod === "email") {
-                console.log('sending email');
                 // Send email
                 await sendEmail(message);
             } else {

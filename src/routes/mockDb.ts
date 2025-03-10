@@ -171,46 +171,44 @@ export type MenuItem = {
     iconStyle?: string;
 };
 
-export const mainMenu: MenuItem[] = [
-    {
-        name: get(dictionary).home,
-        classname: 'baseButton extraSpaceLink',
-        icon: 'home',
-        href: `${baseRoute}/`,
-    },
-    {
-        name: get(dictionary).men,
-        classname: 'baseButton extraSpaceLink',
-        icon: 'man',
-        iconStyle: 'font-size: 2em; margin-left: -8px;',
-        callback: () => generateSectionsMenu('menmenu'),
-    },
-    {
-        name: get(dictionary).women,
-        classname: 'baseButton extraSpaceLink',
-        icon: 'woman',
-        iconStyle: 'font-size: 2em; margin-left: -8px;',
-        callback: () => generateSectionsMenu('womenmenu'),
-    },
-    {
-        name: get(dictionary).custom,
-        classname: 'baseButton extraSpaceLink',
-        icon: 'mail',
-        href: `${baseRoute}/custom`,
-    },
-    // {
-    //     name: get(dictionary).ourWork,
-    //     classname: 'baseButton extraSpaceLink',
-    //     icon: 'people',
-    //     href: `${baseRoute}/our-work`,
-    // },
-    {
-        name: get(dictionary).myAccount,
-        classname: 'baseButton extraSpaceLink',
-        icon: 'person-circle',
-        href: `${baseRoute}/my-account`,
-    },
-];
+export function getMainMenu(): MenuItem[] {
+    const dict = get(dictionary);
+
+    return [
+        {
+            name: dict.home,
+            classname: 'baseButton extraSpaceLink',
+            icon: 'home',
+            href: `${baseRoute}/`,
+        },
+        {
+            name: dict.men,
+            classname: 'baseButton extraSpaceLink',
+            icon: 'man',
+            iconStyle: 'font-size: 2em; margin-left: -8px;',
+            callback: () => generateSectionsMenu('menmenu'),
+        },
+        {
+            name: dict.women,
+            classname: 'baseButton extraSpaceLink',
+            icon: 'woman',
+            iconStyle: 'font-size: 2em; margin-left: -8px;',
+            callback: () => generateSectionsMenu('womenmenu'),
+        },
+        {
+            name: dict.custom,
+            classname: 'baseButton extraSpaceLink',
+            icon: 'mail',
+            href: `${baseRoute}/custom`,
+        },
+        {
+            name: dict.myAccount,
+            classname: 'baseButton extraSpaceLink',
+            icon: 'person-circle',
+            href: `${baseRoute}/my-account`,
+        },
+    ];
+}
 
 export let categoryMenus: CatalogCategory[] = [
     {
@@ -279,7 +277,7 @@ export function generateSectionsMenu(catalogCategoryID: string, categories: Cate
         {
             name: catalogCategory.name[get(language) as Language],
             classname: "baseButton backButton",
-            callback: () => renderMenu(mainMenu),
+            callback: () => renderMenu(getMainMenu()),
         },
         ...catalogCategory.sections.map(section => ({
             name: section.name[get(language) as Language],

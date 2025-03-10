@@ -45,7 +45,7 @@
 						return true;
 					}
 				} catch (error) {
-					console.log(`array[${element}] is neither a string nor TranslatableContent.`);
+					console.error(`array[${element}] is neither a string nor TranslatableContent.`);
 				}
 			}
 
