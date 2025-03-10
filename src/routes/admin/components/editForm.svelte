@@ -158,7 +158,8 @@
 
 	@media (max-width: 500px) {
 		.edit-page {
-			padding: 2rem 1rem 0;
+			padding: 2.5rem 1rem 0;
+			border-radius: 0;
 		}
 
 		header {
@@ -166,7 +167,7 @@
 		}
 
 		header div {
-			top: -2rem;
+			top: -2.5rem;
 		}
 
 		header h1 {

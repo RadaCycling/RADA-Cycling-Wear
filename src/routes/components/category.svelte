@@ -47,7 +47,7 @@
 		text-transform: uppercase;
 
 		width: 100%;
-		padding: clamp(1rem, 4vw, 2rem) clamp(1.5rem, 6vw, 3rem) clamp(2rem, 8vw, 4rem);
+		padding: clamp(1rem, 4vw, 2rem) clamp(0.5rem, 6vw, 3rem) clamp(2rem, 8vw, 4rem);
 
 		z-index: 1;
 

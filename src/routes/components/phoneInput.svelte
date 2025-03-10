@@ -226,7 +226,6 @@
 		width: 100%;
 		border: 1px solid #ccc;
 		border-radius: 5px;
-		font-size: 0.9em;
 		max-width: calc(100vw - 3rem);
 	}
 
@@ -288,6 +287,10 @@
 		display: grid;
 		justify-content: stretch;
 		width: fit-content;
+	}
+
+	:global(.telInput input) {
+		width: 100%;
 	}
 
 	/* Dropdown styles for country selection */

@@ -290,10 +290,6 @@
 		transform: translateY(1px);
 	}
 
-	.x {
-		display: none;
-	}
-
 	.links {
 		gap: 3em;
 	}
@@ -319,14 +315,6 @@
 	}
 
 	@media screen and (min-width: 75rem) {
-		.x {
-			display: flex;
-		}
-
-		.s {
-			display: none;
-		}
-
 		.buttons {
 			font-size: 1.15rem;
 		}

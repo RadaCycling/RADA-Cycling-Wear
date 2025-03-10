@@ -71,7 +71,7 @@
 	}
 
 	.moreWork {
-		width: 15rem;
+		width: 12rem;
 		max-width: 100%;
 
 		margin: auto;

@@ -391,3 +391,17 @@ article footer p {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+.x {
+    display: none !important;
+}
+
+@media screen and (min-width: 75rem) {
+    .x {
+        display: flex !important;
+    }
+
+    .s {
+        display: none !important;
+    }
+}

@@ -11,7 +11,7 @@
 </script>
 
 <div class="admin-layout">
-	<aside class="sidebar">
+	<aside class="sidebar x">
 		<nav>
 			<ul>
 				<li>
@@ -19,7 +19,7 @@
 						on:click={() => {
 							$activeAdminPage = '';
 						}}
-						class="link hide"
+						class="link"
 						class:active={$page.url.pathname === `${baseRoute}/admin`}
 						href="{baseRoute}/admin">{$dictionary.dashboard}</a
 					>
@@ -78,6 +78,7 @@
 		</nav>
 	</aside>
 	<div class="content" in:fade>
+		<div class="sidebar-initial-space x" />
 		<slot />
 	</div>
 </div>
@@ -125,18 +126,18 @@
 		font-weight: normal;
 	}
 
+	.sidebar-initial-space {
+		height: 3rem;
+		width: 100%;
+	}
+
 	.content {
-		margin-top: 3rem;
 		padding: 2rem 2rem 4rem;
 	}
 
 	@media (max-width: 950px) {
 		.content {
-			padding: 2rem 0 4rem;
-		}
-
-		.sidebar {
-			padding: 1.25rem 1rem 0.75rem;
+			padding: 1.5rem 0 4rem;
 		}
 	}
 
@@ -144,9 +145,11 @@
 		.admin-layout {
 			margin-top: 4rem;
 		}
+	}
 
-		.sidebar {
-			top: 4rem;
+	@media screen and (max-width: 500px) {
+		.content {
+			padding: 0rem 0 4rem;
 		}
 	}
 </style>
