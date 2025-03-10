@@ -52,11 +52,13 @@ export const sizeCategoryIds = sizeOptions.map((option) => {
     return option.id;
 });
 
-export const genderOptions = [
-    { id: '7', name: get(dictionary).men },
-    { id: '15', name: get(dictionary).women },
-];
-export const genderCategoryIds = genderOptions.map((option) => {
+export function getGenderOptions() {
+    return [
+        { id: '7', name: get(dictionary).men },
+        { id: '15', name: get(dictionary).women },
+    ];
+}
+export const genderCategoryIds = getGenderOptions().map((option) => {
     return option.id;
 });
 

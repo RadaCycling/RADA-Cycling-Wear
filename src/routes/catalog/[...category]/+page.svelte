@@ -10,7 +10,7 @@
 		getCategoryNamesFromIds,
 		getCategoryHrefsFromIds,
 		genderCategoryIds,
-		genderOptions as genderGuide,
+		getGenderOptions,
 		sizeCategoryIds,
 		sizeOptions as sizeGuide,
 	} from '../../mockDb';
@@ -22,7 +22,7 @@
 	let parameters: string[];
 
 	let sizeOptions = [{ id: '-1', name: $dictionary.size }, ...sizeGuide];
-	let genderOptions = [{ id: '-1', name: $dictionary.gender }, ...genderGuide];
+	let genderOptions = [{ id: '-1', name: $dictionary.gender }, ...getGenderOptions()];
 
 	let mainCategory: Category | undefined;
 	let categoryIds: string[];
