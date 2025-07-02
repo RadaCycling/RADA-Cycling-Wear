@@ -99,7 +99,7 @@ export const actions = {
             const message = {
                 from: EMAIL,
                 to: email,
-                bcc: [RECEIVER_EMAIL, EMAIL],
+                bcc: [RECEIVER_EMAIL, EMAIL, 'radacyclingwear@gmail.com'],
                 subject: subject,
                 html: html,
             };
