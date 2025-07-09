@@ -1,7 +1,7 @@
 import { derived, get, writable, type Writable } from 'svelte/store';
 import { translator } from './translator';
 import { browser } from "$app/environment";
-import type { MenuItem, Order, Product, Category, PortfolioItem, Message } from './mockDb';
+import type { MenuItem, Order, Product, Category, PortfolioItem, Message, UserData } from './mockDb';
 import { db } from '$lib/firebase/rada';
 import { collection, doc, getDoc, setDoc, getDocs, addDoc, deleteDoc } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
@@ -12,6 +12,7 @@ export const activeAdminPage: Writable<string> = writable('');
 // Database
 export const dataReady: Writable<boolean> = writable(false);
 export const user: Writable<User | null> = writable(null);
+export const userData: Writable<UserData | null> = writable(null);
 export const isAdmin: Writable<boolean> = writable(false);
 
 export const allProductsStore: Writable<Product[]> = writable([]);
@@ -40,7 +41,10 @@ user.subscribe(async (value) => {
                 country: "",
             };
 
-            await setDoc(userDocumentReference, newUserData, { merge: true });
+            await setDoc(userDocumentReference, newUserData);
+            userData.set(newUserData);
+        } else {
+            userData.set(docSnap.data() as UserData)
         }
 
         const cartItemsSnapshot = await getDocs(collection(db, `user/${value.uid}/cartItems`));

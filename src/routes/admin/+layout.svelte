@@ -49,7 +49,7 @@
 						on:click={() => {
 							$activeAdminPage = 'portfolio';
 						}}
-						class="link"
+						class="link hide"
 						class:active={$page.url.pathname.includes(`${baseRoute}/admin/portfolio`)}
 						href="{baseRoute}/admin/portfolio">{$dictionary.portfolio}</a
 					>
@@ -59,7 +59,7 @@
 						on:click={() => {
 							$activeAdminPage = 'orders';
 						}}
-						class="link"
+						class="link hide"
 						class:active={$page.url.pathname.includes(`${baseRoute}/admin/orders`)}
 						href="{baseRoute}/admin/orders">{$dictionary.orders}</a
 					>
@@ -69,7 +69,7 @@
 						on:click={() => {
 							$activeAdminPage = 'messages';
 						}}
-						class="link"
+						class="link hide"
 						class:active={$page.url.pathname.includes(`${baseRoute}/admin/messages`)}
 						href="{baseRoute}/admin/messages">{$dictionary.messages}</a
 					>

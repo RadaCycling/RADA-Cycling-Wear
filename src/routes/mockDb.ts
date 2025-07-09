@@ -4,6 +4,8 @@ import { get } from 'svelte/store';
 
 export type translatableContent = { en: string; es: string; }
 
+export type UserData = { name: string; address: string; city: string; state: string; zip: string; country: string; phone: string; email: string; }
+
 // #region Categories
 export type Category = {
     id: string;

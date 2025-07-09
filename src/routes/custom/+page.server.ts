@@ -2,6 +2,8 @@ import { EMAIL, RECEIVER_EMAIL, WHATSAPP_TOKEN, WHATSAPP_ENDPOINT } from "$env/s
 import transporter from "$lib/email/rada.server";
 import axios from "axios";
 import type { Options } from "nodemailer/lib/mailer";
+import { db } from "$lib/firebase/rada";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 const sendEmail = async (message: Options) => {
     await new Promise((resolve, reject) => {
@@ -81,6 +83,26 @@ export const actions = {
             const messageContent = formData.get("message") as string;
 
             const contactMethod = formData.get("contactMethod") as string;
+
+            // Add message to database
+            try {
+                const messageData = {
+                    firstName,
+                    lastName,
+                    teamName,
+                    email,
+                    phone,
+                    teamSize,
+                    messageContent,
+                    contactMethod,
+                    userId: "",
+                    timestamp: serverTimestamp()
+                };
+
+                await addDoc(collection(db, "messages"), messageData);
+            } catch (error) {
+                console.log(error)
+            }
 
             const subject = `${firstName} ${lastName} - RADA Custom Inquiry`;
 
